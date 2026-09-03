@@ -14,7 +14,7 @@ from tradegraph_etl import transform
 from tradegraph_etl.load import GraphStoreLoader, StoreEndpoints
 from tradegraph_etl.sources.sample import DEFAULT_SAMPLE_DIR, read_sample
 
-ONTOLOGY_PATH = Path(__file__).resolve().parents[3].parent / "ontology" / "tradegraph.ttl"
+ONTOLOGY_PATH = Path(__file__).resolve().parents[3] / "ontology" / "tradegraph.ttl"
 GRAPH_FILES = {
     transform.GRAPH_ENTITIES: "entities.nt",
     transform.GRAPH_POSITIONS: "positions.nt",
@@ -35,8 +35,9 @@ def main() -> None:
 @click.option("--funds", type=int, default=None, help="Live mode: number of default 13F filers.")
 @click.option("--fund-cik", "fund_ciks", multiple=True, help="Live mode: explicit 13F filer CIK.")
 @click.option("--issuer-limit", type=int, default=None)
+@click.option("--ontology", type=click.Path(path_type=Path), default=ONTOLOGY_PATH)
 @click.option("--out", type=click.Path(path_type=Path), default=Path("build"))
-def build(use_sample, use_live, sample_dir, user_agent, funds, fund_ciks, issuer_limit, out):
+def build(use_sample, use_live, sample_dir, user_agent, funds, fund_ciks, issuer_limit, ontology, out):
     """Transform source data to N-Triples files, one per named graph."""
     if use_sample == use_live:
         raise click.UsageError("choose exactly one of --sample or --live")
@@ -48,14 +49,14 @@ def build(use_sample, use_live, sample_dir, user_agent, funds, fund_ciks, issuer
 
         if not user_agent:
             raise click.UsageError("--user-agent or SEC_USER_AGENT is required in live mode")
-        ciks = list(fund_ciks) or DEFAULT_13F_FILERS[:funds] if funds else list(fund_ciks) or None
+        ciks = list(fund_ciks) or (DEFAULT_13F_FILERS[:funds] if funds else None)
         ds = build_live(EdgarClient(user_agent), ciks, issuer_limit, log=click.echo)
     problems = transform.validate(ds)
     if problems:
         for p in problems[:20]:
             click.echo(f"error: {p}", err=True)
         sys.exit(1)
-    store = transform.to_rdf(ds, ONTOLOGY_PATH.read_text() if ONTOLOGY_PATH.exists() else None)
+    store = transform.to_rdf(ds, ontology.read_text() if ontology.exists() else None)
     out.mkdir(parents=True, exist_ok=True)
     for graph_iri, filename in GRAPH_FILES.items():
         store.graph(graph_iri).serialize(destination=out / filename, format="nt", encoding="utf-8")
