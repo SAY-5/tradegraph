@@ -1,0 +1,213 @@
+@prefix tg:   <https://tradegraph.dev/ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+# TradeGraph ontology
+#
+# A compact vocabulary for counterparties, legal entities, positions and the
+# SEC filings they were derived from. The class hierarchy and the naming
+# conventions follow FIBO (Financial Industry Business Ontology) where a
+# reasonable analogue exists, but the vocabulary is intentionally small so that
+# the SPARQL used by the API stays readable.
+#
+# Named graphs used by the ETL:
+#   https://tradegraph.dev/graph/entities   legal entities and lineage
+#   https://tradegraph.dev/graph/positions  positions and filings
+#   https://tradegraph.dev/graph/ontology   this file
+
+<https://tradegraph.dev/ontology>
+    a owl:Ontology ;
+    rdfs:label "TradeGraph ontology" ;
+    dct:description "Counterparties, legal entities, positions and SEC filings." ;
+    owl:versionInfo "1.0.0" .
+
+#################################################################
+# Classes
+#################################################################
+
+tg:LegalEntity a owl:Class ;
+    rdfs:label "Legal entity" ;
+    rdfs:comment "Any organisation identified by a CIK, LEI or both. Root of the entity hierarchy." .
+
+tg:Counterparty a owl:Class ;
+    rdfs:subClassOf tg:LegalEntity ;
+    rdfs:label "Counterparty" ;
+    rdfs:comment "A legal entity that appears on at least one side of a trade or position." .
+
+tg:Issuer a owl:Class ;
+    rdfs:subClassOf tg:Counterparty ;
+    rdfs:label "Issuer" ;
+    rdfs:comment "A legal entity that issues securities held in positions." .
+
+tg:Fund a owl:Class ;
+    rdfs:subClassOf tg:Counterparty ;
+    rdfs:label "Fund" ;
+    rdfs:comment "An institutional investment manager or fund that reports holdings (13F filer)." .
+
+tg:Subsidiary a owl:Class ;
+    rdfs:subClassOf tg:LegalEntity ;
+    rdfs:label "Subsidiary" ;
+    rdfs:comment "A legal entity listed as a subsidiary in an Exhibit 21 style disclosure." .
+
+tg:Position a owl:Class ;
+    rdfs:label "Position" ;
+    rdfs:comment "A holding of an instrument by a fund as of a reporting date." .
+
+tg:Trade a owl:Class ;
+    rdfs:subClassOf tg:Position ;
+    rdfs:label "Trade" ;
+    rdfs:comment "A position change recorded as a discrete transaction." .
+
+tg:Instrument a owl:Class ;
+    rdfs:label "Instrument" ;
+    rdfs:comment "A security identified by ticker, CUSIP or class (e.g. common stock, put, call)." .
+
+tg:Filing a owl:Class ;
+    rdfs:label "Filing" ;
+    rdfs:comment "An SEC filing (10-K, 13F-HR, ...) that is the provenance of triples." .
+
+#################################################################
+# Lineage properties
+#################################################################
+
+tg:subsidiaryOf a owl:ObjectProperty, owl:TransitiveProperty ;
+    rdfs:label "subsidiary of" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range tg:LegalEntity ;
+    rdfs:comment "Points from a subsidiary to its direct parent. Declared transitive so Stardog reasoning can materialise the closure; the API uses property paths so it works without reasoning." .
+
+tg:hasParent a owl:ObjectProperty ;
+    owl:equivalentProperty tg:subsidiaryOf ;
+    rdfs:label "has parent" .
+
+tg:hasSubsidiary a owl:ObjectProperty ;
+    owl:inverseOf tg:subsidiaryOf ;
+    rdfs:label "has subsidiary" .
+
+tg:counterpartyOf a owl:ObjectProperty, owl:SymmetricProperty ;
+    rdfs:label "counterparty of" ;
+    rdfs:domain tg:Counterparty ;
+    rdfs:range tg:Counterparty ;
+    rdfs:comment "Two counterparties that face each other through at least one position." .
+
+#################################################################
+# Position properties
+#################################################################
+
+tg:holds a owl:ObjectProperty ;
+    rdfs:label "holds" ;
+    rdfs:domain tg:Fund ;
+    rdfs:range tg:Position .
+
+tg:heldBy a owl:ObjectProperty ;
+    owl:inverseOf tg:holds ;
+    rdfs:label "held by" .
+
+tg:instrument a owl:ObjectProperty ;
+    rdfs:label "instrument" ;
+    rdfs:domain tg:Position ;
+    rdfs:range tg:Instrument .
+
+tg:issuedBy a owl:ObjectProperty ;
+    rdfs:label "issued by" ;
+    rdfs:domain tg:Instrument ;
+    rdfs:range tg:Issuer .
+
+tg:issuer a owl:ObjectProperty ;
+    rdfs:label "issuer" ;
+    rdfs:domain tg:Position ;
+    rdfs:range tg:Issuer ;
+    rdfs:comment "Denormalised shortcut from a position to the issuer of its instrument." .
+
+tg:quantity a owl:DatatypeProperty ;
+    rdfs:label "quantity" ;
+    rdfs:domain tg:Position ;
+    rdfs:range xsd:decimal .
+
+tg:value a owl:DatatypeProperty ;
+    rdfs:label "value" ;
+    rdfs:domain tg:Position ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Market value in USD as reported." .
+
+tg:asOf a owl:DatatypeProperty ;
+    rdfs:label "as of" ;
+    rdfs:domain tg:Position ;
+    rdfs:range xsd:date .
+
+tg:instrumentClass a owl:DatatypeProperty ;
+    rdfs:label "instrument class" ;
+    rdfs:domain tg:Instrument ;
+    rdfs:range xsd:string ;
+    rdfs:comment "One of COMMON, PREFERRED, DEBT, PUT, CALL." .
+
+tg:cusip a owl:DatatypeProperty ;
+    rdfs:label "CUSIP" ;
+    rdfs:domain tg:Instrument ;
+    rdfs:range xsd:string .
+
+#################################################################
+# Filing and provenance
+#################################################################
+
+tg:filedIn a owl:ObjectProperty ;
+    rdfs:label "filed in" ;
+    rdfs:range tg:Filing ;
+    rdfs:comment "Links a position or a subsidiary assertion to the filing it was extracted from." .
+
+tg:filedBy a owl:ObjectProperty ;
+    rdfs:label "filed by" ;
+    rdfs:domain tg:Filing ;
+    rdfs:range tg:LegalEntity .
+
+tg:formType a owl:DatatypeProperty ;
+    rdfs:label "form type" ;
+    rdfs:domain tg:Filing ;
+    rdfs:range xsd:string .
+
+tg:accessionNumber a owl:DatatypeProperty ;
+    rdfs:label "accession number" ;
+    rdfs:domain tg:Filing ;
+    rdfs:range xsd:string .
+
+tg:periodOfReport a owl:DatatypeProperty ;
+    rdfs:label "period of report" ;
+    rdfs:domain tg:Filing ;
+    rdfs:range xsd:date .
+
+#################################################################
+# Identifiers
+#################################################################
+
+tg:cik a owl:DatatypeProperty ;
+    rdfs:label "CIK" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range xsd:string ;
+    rdfs:comment "SEC Central Index Key, zero padded to ten digits." .
+
+tg:lei a owl:DatatypeProperty ;
+    rdfs:label "LEI" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range xsd:string .
+
+tg:ticker a owl:DatatypeProperty ;
+    rdfs:label "ticker" ;
+    rdfs:range xsd:string .
+
+tg:name a owl:DatatypeProperty ;
+    rdfs:subPropertyOf rdfs:label ;
+    rdfs:label "name" ;
+    rdfs:range xsd:string .
+
+tg:jurisdiction a owl:DatatypeProperty ;
+    rdfs:label "jurisdiction" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range xsd:string .
+
+tg:sic a owl:DatatypeProperty ;
+    rdfs:label "SIC code" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range xsd:string .
