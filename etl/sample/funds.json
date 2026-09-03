@@ -1,0 +1,2872 @@
+[
+ {
+  "id": "0002012383",
+  "name": "BlackRock, Inc.",
+  "cik": "0002012383",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238301",
+  "name": "Blackrock Strategic Equity Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238302",
+  "name": "Blackrock Global Select Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238303",
+  "name": "Blackrock Income Opportunities Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238304",
+  "name": "Blackrock Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238305",
+  "name": "Blackrock International Value Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F01238306",
+  "name": "Blackrock Total Return Bond Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238307",
+  "name": "Blackrock Dividend Focus Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01238308",
+  "name": "Blackrock Technology Leaders Fund",
+  "cik": null,
+  "parent": "0002012383",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001113169",
+  "name": "PRICE T ROWE GROUP INC",
+  "cik": "0001113169",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F11316901",
+  "name": "Price T ROWE Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F11316902",
+  "name": "Price T ROWE Global Select Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F11316903",
+  "name": "Price T ROWE Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F11316904",
+  "name": "Price T ROWE Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F11316905",
+  "name": "Price T ROWE International Value Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F11316906",
+  "name": "Price T ROWE Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F11316907",
+  "name": "Price T ROWE Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001113169",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000914208",
+  "name": "Invesco Ltd.",
+  "cik": "0000914208",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F91420801",
+  "name": "Invesco Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F91420802",
+  "name": "Invesco Global Select Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F91420803",
+  "name": "Invesco Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F91420804",
+  "name": "Invesco Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F91420805",
+  "name": "Invesco International Value Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F91420806",
+  "name": "Invesco Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F91420807",
+  "name": "Invesco Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000914208",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000038777",
+  "name": "FRANKLIN RESOURCES INC",
+  "cik": "0000038777",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877701",
+  "name": "Franklin Resources Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877702",
+  "name": "Franklin Resources Global Select Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877703",
+  "name": "Franklin Resources Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877704",
+  "name": "Franklin Resources Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877705",
+  "name": "Franklin Resources International Value Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F03877706",
+  "name": "Franklin Resources Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877707",
+  "name": "Franklin Resources Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F03877708",
+  "name": "Franklin Resources Technology Leaders Fund",
+  "cik": null,
+  "parent": "0000038777",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000820027",
+  "name": "AMERIPRISE FINANCIAL INC",
+  "cik": "0000820027",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82002701",
+  "name": "Ameriprise Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000820027",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82002702",
+  "name": "Ameriprise Financial Global Select Fund",
+  "cik": null,
+  "parent": "0000820027",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82002703",
+  "name": "Ameriprise Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000820027",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82002704",
+  "name": "Ameriprise Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000820027",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001004434",
+  "name": "AFFILIATED MANAGERS GROUP, INC.",
+  "cik": "0001004434",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443401",
+  "name": "Affiliated Managers Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443402",
+  "name": "Affiliated Managers Global Select Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443403",
+  "name": "Affiliated Managers Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443404",
+  "name": "Affiliated Managers Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443405",
+  "name": "Affiliated Managers International Value Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F00443406",
+  "name": "Affiliated Managers Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443407",
+  "name": "Affiliated Managers Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00443408",
+  "name": "Affiliated Managers Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001004434",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001858681",
+  "name": "Apollo Global Management, Inc.",
+  "cik": "0001858681",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F85868101",
+  "name": "Apollo Global Management Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001858681",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F85868102",
+  "name": "Apollo Global Management Global Select Fund",
+  "cik": null,
+  "parent": "0001858681",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F85868103",
+  "name": "Apollo Global Management Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001858681",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F85868104",
+  "name": "Apollo Global Management Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001858681",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F85868105",
+  "name": "Apollo Global Management International Value Fund",
+  "cik": null,
+  "parent": "0001858681",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F85868106",
+  "name": "Apollo Global Management Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001858681",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001404912",
+  "name": "KKR & Co. Inc.",
+  "cik": "0001404912",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F40491201",
+  "name": "KKR Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001404912",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F40491202",
+  "name": "KKR Global Select Fund",
+  "cik": null,
+  "parent": "0001404912",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F40491203",
+  "name": "KKR Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001404912",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F40491204",
+  "name": "KKR Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001404912",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F40491205",
+  "name": "KKR International Value Fund",
+  "cik": null,
+  "parent": "0001404912",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F40491206",
+  "name": "KKR Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001404912",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001393818",
+  "name": "Blackstone Inc.",
+  "cik": "0001393818",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39381801",
+  "name": "Blackstone Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001393818",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39381802",
+  "name": "Blackstone Global Select Fund",
+  "cik": null,
+  "parent": "0001393818",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39381803",
+  "name": "Blackstone Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001393818",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39381804",
+  "name": "Blackstone Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001393818",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39381805",
+  "name": "Blackstone International Value Fund",
+  "cik": null,
+  "parent": "0001393818",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F39381806",
+  "name": "Blackstone Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001393818",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001527166",
+  "name": "Carlyle Group Inc.",
+  "cik": "0001527166",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F52716601",
+  "name": "Carlyle Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001527166",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F52716602",
+  "name": "Carlyle Global Select Fund",
+  "cik": null,
+  "parent": "0001527166",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F52716603",
+  "name": "Carlyle Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001527166",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F52716604",
+  "name": "Carlyle Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001527166",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F52716605",
+  "name": "Carlyle International Value Fund",
+  "cik": null,
+  "parent": "0001527166",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0001176948",
+  "name": "Ares Management Corp",
+  "cik": "0001176948",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F17694801",
+  "name": "Ares Management Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001176948",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F17694802",
+  "name": "Ares Management Global Select Fund",
+  "cik": null,
+  "parent": "0001176948",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F17694803",
+  "name": "Ares Management Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001176948",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F17694804",
+  "name": "Ares Management Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001176948",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001284812",
+  "name": "COHEN & STEERS, INC.",
+  "cik": "0001284812",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481201",
+  "name": "Cohen Steers Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481202",
+  "name": "Cohen Steers Global Select Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481203",
+  "name": "Cohen Steers Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481204",
+  "name": "Cohen Steers Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481205",
+  "name": "Cohen Steers International Value Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F28481206",
+  "name": "Cohen Steers Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481207",
+  "name": "Cohen Steers Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F28481208",
+  "name": "Cohen Steers Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001284812",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000883237",
+  "name": "VIRTUS INVESTMENT PARTNERS, INC.",
+  "cik": "0000883237",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88323701",
+  "name": "Virtus Investment Partners Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000883237",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88323702",
+  "name": "Virtus Investment Partners Global Select Fund",
+  "cik": null,
+  "parent": "0000883237",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88323703",
+  "name": "Virtus Investment Partners Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000883237",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88323704",
+  "name": "Virtus Investment Partners Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000883237",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88323705",
+  "name": "Virtus Investment Partners International Value Fund",
+  "cik": null,
+  "parent": "0000883237",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0001056288",
+  "name": "FEDERATED HERMES, INC.",
+  "cik": "0001056288",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628801",
+  "name": "Federated Hermes Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628802",
+  "name": "Federated Hermes Global Select Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628803",
+  "name": "Federated Hermes Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628804",
+  "name": "Federated Hermes Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628805",
+  "name": "Federated Hermes International Value Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F05628806",
+  "name": "Federated Hermes Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628807",
+  "name": "Federated Hermes Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F05628808",
+  "name": "Federated Hermes Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001056288",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001517302",
+  "name": "Artisan Partners Asset Management Inc.",
+  "cik": "0001517302",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F51730201",
+  "name": "Artisan Partners Asset Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001517302",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F51730202",
+  "name": "Artisan Partners Asset Global Select Fund",
+  "cik": null,
+  "parent": "0001517302",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F51730203",
+  "name": "Artisan Partners Asset Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001517302",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F51730204",
+  "name": "Artisan Partners Asset Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001517302",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001570827",
+  "name": "Victory Capital Holdings, Inc.",
+  "cik": "0001570827",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082701",
+  "name": "Victory Capital Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082702",
+  "name": "Victory Capital Global Select Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082703",
+  "name": "Victory Capital Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082704",
+  "name": "Victory Capital Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082705",
+  "name": "Victory Capital International Value Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F57082706",
+  "name": "Victory Capital Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082707",
+  "name": "Victory Capital Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F57082708",
+  "name": "Victory Capital Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001570827",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000886982",
+  "name": "GOLDMAN SACHS GROUP INC",
+  "cik": "0000886982",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88698201",
+  "name": "Goldman Sachs Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000886982",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88698202",
+  "name": "Goldman Sachs Global Select Fund",
+  "cik": null,
+  "parent": "0000886982",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88698203",
+  "name": "Goldman Sachs Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000886982",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88698204",
+  "name": "Goldman Sachs Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000886982",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000895421",
+  "name": "MORGAN STANLEY",
+  "cik": "0000895421",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89542101",
+  "name": "Morgan Stanley Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000895421",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89542102",
+  "name": "Morgan Stanley Global Select Fund",
+  "cik": null,
+  "parent": "0000895421",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89542103",
+  "name": "Morgan Stanley Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000895421",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89542104",
+  "name": "Morgan Stanley Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000895421",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89542105",
+  "name": "Morgan Stanley International Value Fund",
+  "cik": null,
+  "parent": "0000895421",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F89542106",
+  "name": "Morgan Stanley Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000895421",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000019617",
+  "name": "JPMORGAN CHASE & CO",
+  "cik": "0000019617",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01961701",
+  "name": "Jpmorgan Chase Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000019617",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01961702",
+  "name": "Jpmorgan Chase Global Select Fund",
+  "cik": null,
+  "parent": "0000019617",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01961703",
+  "name": "Jpmorgan Chase Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000019617",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01961704",
+  "name": "Jpmorgan Chase Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000019617",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000070858",
+  "name": "BANK OF AMERICA CORP /DE/",
+  "cik": "0000070858",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085801",
+  "name": "BANK OF America Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085802",
+  "name": "BANK OF America Global Select Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085803",
+  "name": "BANK OF America Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085804",
+  "name": "BANK OF America Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085805",
+  "name": "BANK OF America International Value Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F07085806",
+  "name": "BANK OF America Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085807",
+  "name": "BANK OF America Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07085808",
+  "name": "BANK OF America Technology Leaders Fund",
+  "cik": null,
+  "parent": "0000070858",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000072971",
+  "name": "WELLS FARGO & COMPANY/MN",
+  "cik": "0000072971",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07297101",
+  "name": "Wells Fargo Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000072971",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07297102",
+  "name": "Wells Fargo Global Select Fund",
+  "cik": null,
+  "parent": "0000072971",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07297103",
+  "name": "Wells Fargo Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000072971",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07297104",
+  "name": "Wells Fargo Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000072971",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07297105",
+  "name": "Wells Fargo International Value Fund",
+  "cik": null,
+  "parent": "0000072971",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0000831001",
+  "name": "CITIGROUP INC",
+  "cik": "0000831001",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F83100101",
+  "name": "Citigroup Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000831001",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F83100102",
+  "name": "Citigroup Global Select Fund",
+  "cik": null,
+  "parent": "0000831001",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F83100103",
+  "name": "Citigroup Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000831001",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F83100104",
+  "name": "Citigroup Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000831001",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F83100105",
+  "name": "Citigroup International Value Fund",
+  "cik": null,
+  "parent": "0000831001",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0000073124",
+  "name": "NORTHERN TRUST CORP",
+  "cik": "0000073124",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312401",
+  "name": "Northern Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312402",
+  "name": "Northern Global Select Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312403",
+  "name": "Northern Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312404",
+  "name": "Northern Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312405",
+  "name": "Northern International Value Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F07312406",
+  "name": "Northern Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312407",
+  "name": "Northern Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F07312408",
+  "name": "Northern Technology Leaders Fund",
+  "cik": null,
+  "parent": "0000073124",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000093751",
+  "name": "STATE STREET CORP",
+  "cik": "0000093751",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09375101",
+  "name": "State Street Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09375102",
+  "name": "State Street Global Select Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09375103",
+  "name": "State Street Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09375104",
+  "name": "State Street Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09375105",
+  "name": "State Street International Value Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F09375106",
+  "name": "State Street Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09375107",
+  "name": "State Street Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000093751",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000720005",
+  "name": "RAYMOND JAMES FINANCIAL INC",
+  "cik": "0000720005",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72000501",
+  "name": "Raymond James Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000720005",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72000502",
+  "name": "Raymond James Financial Global Select Fund",
+  "cik": null,
+  "parent": "0000720005",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72000503",
+  "name": "Raymond James Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000720005",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72000504",
+  "name": "Raymond James Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000720005",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000720672",
+  "name": "STIFEL FINANCIAL CORP",
+  "cik": "0000720672",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067201",
+  "name": "Stifel Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067202",
+  "name": "Stifel Financial Global Select Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067203",
+  "name": "Stifel Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067204",
+  "name": "Stifel Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067205",
+  "name": "Stifel Financial International Value Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F72067206",
+  "name": "Stifel Financial Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067207",
+  "name": "Stifel Financial Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F72067208",
+  "name": "Stifel Financial Technology Leaders Fund",
+  "cik": null,
+  "parent": "0000720672",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000316709",
+  "name": "SCHWAB CHARLES CORP",
+  "cik": "0000316709",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31670901",
+  "name": "Schwab Charles Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000316709",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31670902",
+  "name": "Schwab Charles Global Select Fund",
+  "cik": null,
+  "parent": "0000316709",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31670903",
+  "name": "Schwab Charles Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000316709",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31670904",
+  "name": "Schwab Charles Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000316709",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31670905",
+  "name": "Schwab Charles International Value Fund",
+  "cik": null,
+  "parent": "0000316709",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0001397911",
+  "name": "LPL Financial Holdings Inc.",
+  "cik": "0001397911",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39791101",
+  "name": "LPL Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001397911",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39791102",
+  "name": "LPL Financial Global Select Fund",
+  "cik": null,
+  "parent": "0001397911",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39791103",
+  "name": "LPL Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001397911",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39791104",
+  "name": "LPL Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001397911",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F39791105",
+  "name": "LPL Financial International Value Fund",
+  "cik": null,
+  "parent": "0001397911",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F39791106",
+  "name": "LPL Financial Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001397911",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001067983",
+  "name": "BERKSHIRE HATHAWAY INC",
+  "cik": "0001067983",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06798301",
+  "name": "Berkshire Hathaway Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06798302",
+  "name": "Berkshire Hathaway Global Select Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06798303",
+  "name": "Berkshire Hathaway Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06798304",
+  "name": "Berkshire Hathaway Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06798305",
+  "name": "Berkshire Hathaway International Value Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F06798306",
+  "name": "Berkshire Hathaway Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06798307",
+  "name": "Berkshire Hathaway Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001067983",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001126328",
+  "name": "PRINCIPAL FINANCIAL GROUP INC",
+  "cik": "0001126328",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F12632801",
+  "name": "Principal Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001126328",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F12632802",
+  "name": "Principal Financial Global Select Fund",
+  "cik": null,
+  "parent": "0001126328",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F12632803",
+  "name": "Principal Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001126328",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F12632804",
+  "name": "Principal Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001126328",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F12632805",
+  "name": "Principal Financial International Value Fund",
+  "cik": null,
+  "parent": "0001126328",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0001137774",
+  "name": "PRUDENTIAL FINANCIAL INC",
+  "cik": "0001137774",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777401",
+  "name": "Prudential Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777402",
+  "name": "Prudential Financial Global Select Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777403",
+  "name": "Prudential Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777404",
+  "name": "Prudential Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777405",
+  "name": "Prudential Financial International Value Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F13777406",
+  "name": "Prudential Financial Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777407",
+  "name": "Prudential Financial Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F13777408",
+  "name": "Prudential Financial Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001137774",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001099219",
+  "name": "METLIFE INC",
+  "cik": "0001099219",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09921901",
+  "name": "Metlife Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001099219",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09921902",
+  "name": "Metlife Global Select Fund",
+  "cik": null,
+  "parent": "0001099219",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09921903",
+  "name": "Metlife Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001099219",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09921904",
+  "name": "Metlife Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001099219",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000899051",
+  "name": "ALLSTATE CORP",
+  "cik": "0000899051",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89905101",
+  "name": "Allstate Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000899051",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89905102",
+  "name": "Allstate Global Select Fund",
+  "cik": null,
+  "parent": "0000899051",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89905103",
+  "name": "Allstate Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000899051",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89905104",
+  "name": "Allstate Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000899051",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000086312",
+  "name": "TRAVELERS COMPANIES, INC.",
+  "cik": "0000086312",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08631201",
+  "name": "Travelers Companies Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000086312",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08631202",
+  "name": "Travelers Companies Global Select Fund",
+  "cik": null,
+  "parent": "0000086312",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08631203",
+  "name": "Travelers Companies Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000086312",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08631204",
+  "name": "Travelers Companies Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000086312",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000896159",
+  "name": "Chubb Ltd",
+  "cik": "0000896159",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615901",
+  "name": "Chubb Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615902",
+  "name": "Chubb Global Select Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615903",
+  "name": "Chubb Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615904",
+  "name": "Chubb Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615905",
+  "name": "Chubb International Value Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F89615906",
+  "name": "Chubb Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615907",
+  "name": "Chubb Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89615908",
+  "name": "Chubb Technology Leaders Fund",
+  "cik": null,
+  "parent": "0000896159",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000080661",
+  "name": "PROGRESSIVE CORP/OH/",
+  "cik": "0000080661",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08066101",
+  "name": "Progressive / Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08066102",
+  "name": "Progressive / Global Select Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08066103",
+  "name": "Progressive / Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08066104",
+  "name": "Progressive / Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08066105",
+  "name": "Progressive / International Value Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F08066106",
+  "name": "Progressive / Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F08066107",
+  "name": "Progressive / Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000080661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000005272",
+  "name": "AMERICAN INTERNATIONAL GROUP, INC.",
+  "cik": "0000005272",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00527201",
+  "name": "American International Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000005272",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00527202",
+  "name": "American International Global Select Fund",
+  "cik": null,
+  "parent": "0000005272",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00527203",
+  "name": "American International Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000005272",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00527204",
+  "name": "American International Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000005272",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F00527205",
+  "name": "American International International Value Fund",
+  "cik": null,
+  "parent": "0000005272",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0000874766",
+  "name": "HARTFORD INSURANCE GROUP, INC.",
+  "cik": "0000874766",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F87476601",
+  "name": "Hartford Insurance Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F87476602",
+  "name": "Hartford Insurance Global Select Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F87476603",
+  "name": "Hartford Insurance Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F87476604",
+  "name": "Hartford Insurance Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F87476605",
+  "name": "Hartford Insurance International Value Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F87476606",
+  "name": "Hartford Insurance Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F87476607",
+  "name": "Hartford Insurance Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000874766",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000060086",
+  "name": "LOEWS CORP",
+  "cik": "0000060086",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008601",
+  "name": "Loews Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008602",
+  "name": "Loews Global Select Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008603",
+  "name": "Loews Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008604",
+  "name": "Loews Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008605",
+  "name": "Loews International Value Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F06008606",
+  "name": "Loews Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008607",
+  "name": "Loews Dividend Focus Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F06008608",
+  "name": "Loews Technology Leaders Fund",
+  "cik": null,
+  "parent": "0000060086",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001096343",
+  "name": "MARKEL GROUP INC.",
+  "cik": "0001096343",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634301",
+  "name": "Markel Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634302",
+  "name": "Markel Global Select Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634303",
+  "name": "Markel Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634304",
+  "name": "Markel Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634305",
+  "name": "Markel International Value Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F09634306",
+  "name": "Markel Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634307",
+  "name": "Markel Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F09634308",
+  "name": "Markel Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001096343",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000011544",
+  "name": "BERKLEY W R CORP",
+  "cik": "0000011544",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01154401",
+  "name": "Berkley W R Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000011544",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01154402",
+  "name": "Berkley W R Global Select Fund",
+  "cik": null,
+  "parent": "0000011544",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01154403",
+  "name": "Berkley W R Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000011544",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01154404",
+  "name": "Berkley W R Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000011544",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F01154405",
+  "name": "Berkley W R International Value Fund",
+  "cik": null,
+  "parent": "0000011544",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F01154406",
+  "name": "Berkley W R Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000011544",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0000020286",
+  "name": "CINCINNATI FINANCIAL CORP",
+  "cik": "0000020286",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F02028601",
+  "name": "Cincinnati Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000020286",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F02028602",
+  "name": "Cincinnati Financial Global Select Fund",
+  "cik": null,
+  "parent": "0000020286",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F02028603",
+  "name": "Cincinnati Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000020286",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F02028604",
+  "name": "Cincinnati Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000020286",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F02028605",
+  "name": "Cincinnati Financial International Value Fund",
+  "cik": null,
+  "parent": "0000020286",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F02028606",
+  "name": "Cincinnati Financial Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000020286",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001535929",
+  "name": "Voya Financial, Inc.",
+  "cik": "0001535929",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F53592901",
+  "name": "Voya Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F53592902",
+  "name": "Voya Financial Global Select Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F53592903",
+  "name": "Voya Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F53592904",
+  "name": "Voya Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F53592905",
+  "name": "Voya Financial International Value Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F53592906",
+  "name": "Voya Financial Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F53592907",
+  "name": "Voya Financial Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001535929",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001333986",
+  "name": "Equitable Holdings, Inc.",
+  "cik": "0001333986",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F33398601",
+  "name": "Equitable Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001333986",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F33398602",
+  "name": "Equitable Global Select Fund",
+  "cik": null,
+  "parent": "0001333986",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F33398603",
+  "name": "Equitable Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001333986",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F33398604",
+  "name": "Equitable Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001333986",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001889539",
+  "name": "Corebridge Financial, Inc.",
+  "cik": "0001889539",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88953901",
+  "name": "Corebridge Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001889539",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88953902",
+  "name": "Corebridge Financial Global Select Fund",
+  "cik": null,
+  "parent": "0001889539",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88953903",
+  "name": "Corebridge Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001889539",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88953904",
+  "name": "Corebridge Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001889539",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001822993",
+  "name": "Jackson Financial Inc.",
+  "cik": "0001822993",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82299301",
+  "name": "Jackson Financial Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001822993",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82299302",
+  "name": "Jackson Financial Global Select Fund",
+  "cik": null,
+  "parent": "0001822993",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82299303",
+  "name": "Jackson Financial Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001822993",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82299304",
+  "name": "Jackson Financial Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001822993",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001796022",
+  "name": "StepStone Group Inc.",
+  "cik": "0001796022",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F79602201",
+  "name": "Stepstone Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001796022",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F79602202",
+  "name": "Stepstone Global Select Fund",
+  "cik": null,
+  "parent": "0001796022",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F79602203",
+  "name": "Stepstone Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001796022",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F79602204",
+  "name": "Stepstone Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001796022",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001433642",
+  "name": "Hamilton Lane INC",
+  "cik": "0001433642",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F43364201",
+  "name": "Hamilton Lane Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F43364202",
+  "name": "Hamilton Lane Global Select Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F43364203",
+  "name": "Hamilton Lane Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F43364204",
+  "name": "Hamilton Lane Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F43364205",
+  "name": "Hamilton Lane International Value Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F43364206",
+  "name": "Hamilton Lane Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F43364207",
+  "name": "Hamilton Lane Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001433642",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001880661",
+  "name": "TPG Inc.",
+  "cik": "0001880661",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066101",
+  "name": "TPG Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066102",
+  "name": "TPG Global Select Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066103",
+  "name": "TPG Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066104",
+  "name": "TPG Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066105",
+  "name": "TPG International Value Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F88066106",
+  "name": "TPG Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066107",
+  "name": "TPG Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F88066108",
+  "name": "TPG Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001880661",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001823945",
+  "name": "BLUE OWL CAPITAL INC.",
+  "cik": "0001823945",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394501",
+  "name": "BLUE OWL Capital Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394502",
+  "name": "BLUE OWL Capital Global Select Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394503",
+  "name": "BLUE OWL Capital Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394504",
+  "name": "BLUE OWL Capital Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394505",
+  "name": "BLUE OWL Capital International Value Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F82394506",
+  "name": "BLUE OWL Capital Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394507",
+  "name": "BLUE OWL Capital Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F82394508",
+  "name": "BLUE OWL Capital Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001823945",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001311370",
+  "name": "Lazard, Inc.",
+  "cik": "0001311370",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31137001",
+  "name": "Lazard Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31137002",
+  "name": "Lazard Global Select Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31137003",
+  "name": "Lazard Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31137004",
+  "name": "Lazard Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31137005",
+  "name": "Lazard International Value Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F31137006",
+  "name": "Lazard Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F31137007",
+  "name": "Lazard Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001311370",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001360901",
+  "name": "Evercore Inc.",
+  "cik": "0001360901",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F36090101",
+  "name": "Evercore Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001360901",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F36090102",
+  "name": "Evercore Global Select Fund",
+  "cik": null,
+  "parent": "0001360901",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F36090103",
+  "name": "Evercore Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001360901",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F36090104",
+  "name": "Evercore Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001360901",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001626115",
+  "name": "PJT Partners Inc.",
+  "cik": "0001626115",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611501",
+  "name": "PJT Partners Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611502",
+  "name": "PJT Partners Global Select Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611503",
+  "name": "PJT Partners Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611504",
+  "name": "PJT Partners Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611505",
+  "name": "PJT Partners International Value Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F62611506",
+  "name": "PJT Partners Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611507",
+  "name": "PJT Partners Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F62611508",
+  "name": "PJT Partners Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001626115",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0001302215",
+  "name": "HOULIHAN LOKEY, INC.",
+  "cik": "0001302215",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F30221501",
+  "name": "Houlihan Lokey Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001302215",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F30221502",
+  "name": "Houlihan Lokey Global Select Fund",
+  "cik": null,
+  "parent": "0001302215",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F30221503",
+  "name": "Houlihan Lokey Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001302215",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F30221504",
+  "name": "Houlihan Lokey Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001302215",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "0001596967",
+  "name": "Moelis & Co",
+  "cik": "0001596967",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696701",
+  "name": "Moelis Strategic Equity Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696702",
+  "name": "Moelis Global Select Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696703",
+  "name": "Moelis Income Opportunities Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696704",
+  "name": "Moelis Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696705",
+  "name": "Moelis International Value Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F59696706",
+  "name": "Moelis Total Return Bond Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696707",
+  "name": "Moelis Dividend Focus Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F59696708",
+  "name": "Moelis Technology Leaders Fund",
+  "cik": null,
+  "parent": "0001596967",
+  "jurisdiction": "LU"
+ },
+ {
+  "id": "0000350894",
+  "name": "SEI INVESTMENTS CO",
+  "cik": "0000350894",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F35089401",
+  "name": "SEI Investments Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000350894",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F35089402",
+  "name": "SEI Investments Global Select Fund",
+  "cik": null,
+  "parent": "0000350894",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F35089403",
+  "name": "SEI Investments Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000350894",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F35089404",
+  "name": "SEI Investments Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000350894",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F35089405",
+  "name": "SEI Investments International Value Fund",
+  "cik": null,
+  "parent": "0000350894",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0000776867",
+  "name": "WHITE MOUNTAINS INSURANCE GROUP LTD",
+  "cik": "0000776867",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F77686701",
+  "name": "White Mountains Insurance Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000776867",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F77686702",
+  "name": "White Mountains Insurance Global Select Fund",
+  "cik": null,
+  "parent": "0000776867",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F77686703",
+  "name": "White Mountains Insurance Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000776867",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F77686704",
+  "name": "White Mountains Insurance Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000776867",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F77686705",
+  "name": "White Mountains Insurance International Value Fund",
+  "cik": null,
+  "parent": "0000776867",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "0000898174",
+  "name": "REINSURANCE GROUP OF AMERICA INC",
+  "cik": "0000898174",
+  "parent": null,
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89817401",
+  "name": "Reinsurance OF America Strategic Equity Fund",
+  "cik": null,
+  "parent": "0000898174",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89817402",
+  "name": "Reinsurance OF America Global Select Fund",
+  "cik": null,
+  "parent": "0000898174",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89817403",
+  "name": "Reinsurance OF America Income Opportunities Fund",
+  "cik": null,
+  "parent": "0000898174",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89817404",
+  "name": "Reinsurance OF America Small Cap Growth Fund",
+  "cik": null,
+  "parent": "0000898174",
+  "jurisdiction": "US"
+ },
+ {
+  "id": "F89817405",
+  "name": "Reinsurance OF America International Value Fund",
+  "cik": null,
+  "parent": "0000898174",
+  "jurisdiction": "IE"
+ },
+ {
+  "id": "F89817406",
+  "name": "Reinsurance OF America Total Return Bond Fund",
+  "cik": null,
+  "parent": "0000898174",
+  "jurisdiction": "US"
+ }
+]
