@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+etl/build/
+etl/dist/
+*.egg-info/
+
+# Java
+api/target/
+*.class
+*.log
+
+# Node / Angular
+node_modules/
+explorer/dist/
+explorer/.angular/
+npm-debug.log*
+
+# Local
+.env
+.DS_Store
+.idea/
+.vscode/
+*.iml
+demo-output/
