@@ -66,7 +66,9 @@ class EdgarClient:
             if cik in seen:
                 continue
             seen.add(cik)
-            out.append(Entity(id=cik, name=row["title"], kind="ISSUER", cik=cik, ticker=row["ticker"]))
+            out.append(
+                Entity(id=cik, name=row["title"], kind="ISSUER", cik=cik, ticker=row["ticker"])
+            )
             if limit and len(out) >= limit:
                 break
         return out
@@ -83,7 +85,9 @@ class EdgarClient:
             strict=False,
         ):
             if ftype == form:
-                return Filing(accession=acc, form_type=form, filer=cik10(submissions["cik"]), period=period)
+                return Filing(
+                    accession=acc, form_type=form, filer=cik10(submissions["cik"]), period=period
+                )
         return None
 
     def filing_index(self, cik: str, accession: str) -> list[str]:
@@ -110,13 +114,13 @@ def parse_info_table(xml_text: str, filing: Filing, holder: str) -> list[Positio
     ns = {"n": root.tag.split("}")[0].strip("{")} if root.tag.startswith("{") else {}
     prefix = "n:" if ns else ""
     rows: list[Position] = []
+
+    def text(node: ET.Element, path: str) -> str:
+        el = node.find(prefix + path.replace("/", "/" + prefix), ns)
+        return (el.text or "").strip() if el is not None else ""
+
     for i, it in enumerate(root.findall(f".//{prefix}infoTable", ns)):
-
-        def text(path: str) -> str:
-            el = it.find(prefix + path.replace("/", "/" + prefix), ns)
-            return (el.text or "").strip() if el is not None else ""
-
-        put_call = text("putCall").upper()
+        put_call = text(it, "putCall").upper()
         cls = put_call if put_call in ("PUT", "CALL") else "COMMON"
         rows.append(
             Position(
@@ -124,12 +128,12 @@ def parse_info_table(xml_text: str, filing: Filing, holder: str) -> list[Positio
                 index=i,
                 holder=holder,
                 issuer="",
-                issuer_name=text("nameOfIssuer"),
+                issuer_name=text(it, "nameOfIssuer"),
                 instrument_class=cls,
-                cusip=text("cusip"),
+                cusip=text(it, "cusip"),
                 ticker=None,
-                quantity=float(text("shrsOrPrnAmt/sshPrnamt") or 0),
-                value=float(text("value") or 0),
+                quantity=float(text(it, "shrsOrPrnAmt/sshPrnamt") or 0),
+                value=float(text(it, "value") or 0),
                 as_of=filing.period,
             )
         )
@@ -141,9 +145,14 @@ _NORM = re.compile(r"[^A-Z0-9]+")
 
 def normalise(name: str) -> str:
     name = _NORM.sub(" ", name.upper()).strip()
-    for suffix in (" INC", " CORP", " CO", " LTD", " PLC", " LLC", " HOLDINGS", " NEW", " DEL"):
-        if name.endswith(suffix):
-            name = name[: -len(suffix)].strip()
+    suffixes = (" INC", " CORP", " CO", " LTD", " PLC", " LLC", " HOLDINGS", " NEW", " DE", " DEL")
+    stripped = True
+    while stripped:
+        stripped = False
+        for suffix in suffixes:
+            if name.endswith(suffix):
+                name = name[: -len(suffix)].strip()
+                stripped = True
     return name
 
 

@@ -5,7 +5,9 @@ from __future__ import annotations
 from collections import defaultdict
 from decimal import Decimal
 
-from rdflib import RDF, Dataset as RdfDataset, Graph, Literal, Namespace, URIRef
+from rdflib import RDF, Graph, Literal, Namespace, URIRef
+from rdflib import Dataset as RdfDataset
+from rdflib.graph import DATASET_DEFAULT_GRAPH_ID
 from rdflib.namespace import XSD
 
 from tradegraph_etl.model import Dataset, Entity, Filing, Position
@@ -50,9 +52,10 @@ def _decimal(value: float) -> Literal:
 def add_entity(g: Graph, e: Entity) -> None:
     s = entity_iri(e.id)
     g.add((s, RDF.type, TG.LegalEntity))
-    g.add((s, RDF.type, KIND_CLASS[e.kind]))
-    if e.kind in ("ISSUER", "FUND"):
-        g.add((s, RDF.type, TG.Counterparty))
+    for kind in (e.kind, *e.extra_kinds):
+        g.add((s, RDF.type, KIND_CLASS[kind]))
+        if kind in ("ISSUER", "FUND"):
+            g.add((s, RDF.type, TG.Counterparty))
     g.add((s, TG.name, _string(e.name)))
     if e.cik:
         g.add((s, TG.cik, _string(e.cik)))
@@ -154,6 +157,6 @@ def lineage_depths(ds: Dataset) -> dict[str, int]:
 def graph_sizes(store: RdfDataset) -> dict[str, int]:
     sizes: defaultdict[str, int] = defaultdict(int)
     for g in store.graphs():
-        if g.identifier != store.default_context.identifier:
+        if g.identifier != DATASET_DEFAULT_GRAPH_ID:
             sizes[str(g.identifier)] = len(g)
     return dict(sizes)

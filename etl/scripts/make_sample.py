@@ -21,11 +21,66 @@ AS_OF = "2024-06-30"
 ISSUER_COUNT = 3600
 SUBSIDIARY_PARENTS = 420
 MANAGER_TICKERS = [
-    "BLK", "TROW", "IVZ", "BEN", "AMP", "AMG", "JHG", "APO", "KKR", "BX", "CG", "ARES",
-    "CNS", "VRTS", "FHI", "APAM", "VCTR", "GS", "MS", "JPM", "BAC", "WFC", "C", "NTRS",
-    "STT", "BK", "RJF", "SF", "SCHW", "LPLA", "BRK-B", "PFG", "PRU", "MET", "ALL", "TRV",
-    "CB", "PGR", "AIG", "HIG", "L", "MKL", "WRB", "CINF", "VOYA", "EQH", "CRBG", "JXN",
-    "STEP", "HLNE", "TPG", "OWL", "LAZ", "EVR", "PJT", "HLI", "MC", "SEIC", "WTM", "RGA",
+    "BLK",
+    "TROW",
+    "IVZ",
+    "BEN",
+    "AMP",
+    "AMG",
+    "JHG",
+    "APO",
+    "KKR",
+    "BX",
+    "CG",
+    "ARES",
+    "CNS",
+    "VRTS",
+    "FHI",
+    "APAM",
+    "VCTR",
+    "GS",
+    "MS",
+    "JPM",
+    "BAC",
+    "WFC",
+    "C",
+    "NTRS",
+    "STT",
+    "BK",
+    "RJF",
+    "SF",
+    "SCHW",
+    "LPLA",
+    "BRK-B",
+    "PFG",
+    "PRU",
+    "MET",
+    "ALL",
+    "TRV",
+    "CB",
+    "PGR",
+    "AIG",
+    "HIG",
+    "L",
+    "MKL",
+    "WRB",
+    "CINF",
+    "VOYA",
+    "EQH",
+    "CRBG",
+    "JXN",
+    "STEP",
+    "HLNE",
+    "TPG",
+    "OWL",
+    "LAZ",
+    "EVR",
+    "PJT",
+    "HLI",
+    "MC",
+    "SEIC",
+    "WTM",
+    "RGA",
 ]
 FUND_TEMPLATES = [
     ("{base} Strategic Equity Fund", "US"),
@@ -98,7 +153,13 @@ def build(tickers_path: Path, out: Path) -> None:
     for m in managers:
         base = base_name(m["name"])
         funds.append(
-            {"id": m["cik"], "name": m["name"], "cik": m["cik"], "parent": None, "jurisdiction": "US"}
+            {
+                "id": m["cik"],
+                "name": m["name"],
+                "cik": m["cik"],
+                "parent": None,
+                "jurisdiction": "US",
+            }
         )
         for i, (tpl, jur) in enumerate(FUND_TEMPLATES[: rng.randint(4, 8)], start=1):
             funds.append(
@@ -146,14 +207,13 @@ def build(tickers_path: Path, out: Path) -> None:
     issuer_weights = [1.0 / (1 + i / 200.0) for i in range(len(issuers))]
 
     holdings: dict[str, list] = {}
-    seq = 0
-    for fund in funds:
+    for seq, fund in enumerate(funds, start=1):
         family = fund["parent"] or fund["id"]
         filer_cik = fund["cik"] or fund["parent"]
-        seq += 1
         accession = f"{filer_cik}-24-{seq:06d}"
         n = rng.randint(12, 45)
-        picked = rng.sample(range(len(issuers)), k=n, counts=[int(w * 100) for w in issuer_weights])
+        weights = [int(w * 100) for w in issuer_weights]
+        picked = rng.sample(range(len(issuers)), k=n, counts=weights)
         table = []
         for idx in picked:
             issuer = issuers[idx]
@@ -197,7 +257,9 @@ def build(tickers_path: Path, out: Path) -> None:
     (out / "holdings").mkdir(exist_ok=True)
     (out / "issuers.json").write_text(json.dumps(issuers, separators=(",", ":"), indent=0))
     (out / "funds.json").write_text(json.dumps(funds, indent=1))
-    (out / "subsidiaries.json").write_text(json.dumps(subsidiaries, separators=(",", ":"), indent=0))
+    (out / "subsidiaries.json").write_text(
+        json.dumps(subsidiaries, separators=(",", ":"), indent=0)
+    )
     for family, filings in holdings.items():
         (out / "holdings" / f"{family}.json").write_text(json.dumps(filings, separators=(",", ":")))
     positions = sum(len(f["infoTable"]) for fs in holdings.values() for f in fs)

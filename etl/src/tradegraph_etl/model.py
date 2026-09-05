@@ -7,12 +7,17 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class Entity:
-    """A legal entity. ``kind`` is one of ISSUER, FUND, SUBSIDIARY."""
+    """A legal entity. ``kind`` is one of ISSUER, FUND, SUBSIDIARY.
+
+    An asset manager that is listed and also files 13F is a FUND with
+    ``extra_kinds == ("ISSUER",)``.
+    """
 
     id: str
     name: str
     kind: str
     cik: str | None = None
+    extra_kinds: tuple[str, ...] = ()
     ticker: str | None = None
     lei: str | None = None
     parent: str | None = None
@@ -56,7 +61,8 @@ class Dataset:
     def counts(self) -> dict[str, int]:
         kinds: dict[str, int] = {}
         for e in self.entities:
-            kinds[e.kind] = kinds.get(e.kind, 0) + 1
+            for k in (e.kind, *e.extra_kinds):
+                kinds[k] = kinds.get(k, 0) + 1
         return {
             "entities": len(self.entities),
             "issuers": kinds.get("ISSUER", 0),

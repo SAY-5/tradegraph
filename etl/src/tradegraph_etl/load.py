@@ -14,7 +14,9 @@ from dataclasses import dataclass
 from urllib.parse import urlencode
 
 import httpx
-from rdflib import Dataset as RdfDataset, URIRef
+from rdflib import Dataset as RdfDataset
+from rdflib import URIRef
+from rdflib.graph import DATASET_DEFAULT_GRAPH_ID
 
 
 @dataclass(frozen=True)
@@ -47,14 +49,16 @@ class GraphStoreLoader:
 
     def put_graph(self, graph_iri: URIRef, ntriples: bytes) -> int:
         url = f"{self.endpoints.graph_store}?{urlencode({'graph': str(graph_iri)})}"
-        resp = self.client.put(url, content=ntriples, headers={"Content-Type": "application/n-triples"})
+        resp = self.client.put(
+            url, content=ntriples, headers={"Content-Type": "application/n-triples"}
+        )
         resp.raise_for_status()
         return resp.status_code
 
     def load(self, store: RdfDataset) -> dict[str, int]:
         loaded: dict[str, int] = {}
         for g in store.graphs():
-            if g.identifier == store.default_context.identifier or len(g) == 0:
+            if g.identifier == DATASET_DEFAULT_GRAPH_ID or len(g) == 0:
                 continue
             data = g.serialize(format="nt", encoding="utf-8")
             self.put_graph(URIRef(g.identifier), data)

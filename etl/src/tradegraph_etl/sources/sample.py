@@ -16,21 +16,24 @@ def read_sample(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dataset:
     funds = json.loads((sample_dir / "funds.json").read_text())
     subsidiaries = json.loads((sample_dir / "subsidiaries.json").read_text())
 
+    by_id: dict[str, Entity] = {}
     for r in issuers:
-        ds.entities.append(
-            Entity(id=r["cik"], name=r["name"], kind="ISSUER", cik=r["cik"], ticker=r["ticker"])
+        by_id[r["cik"]] = Entity(
+            id=r["cik"], name=r["name"], kind="ISSUER", cik=r["cik"], ticker=r["ticker"]
         )
     for r in funds:
-        ds.entities.append(
-            Entity(
-                id=r["id"],
-                name=r["name"],
-                kind="FUND",
-                cik=r["cik"],
-                parent=r["parent"],
-                jurisdiction=r["jurisdiction"],
-            )
+        listed = by_id.get(r["id"])
+        by_id[r["id"]] = Entity(
+            id=r["id"],
+            name=r["name"],
+            kind="FUND",
+            cik=r["cik"],
+            ticker=listed.ticker if listed else None,
+            parent=r["parent"],
+            jurisdiction=r["jurisdiction"],
+            extra_kinds=("ISSUER",) if listed else (),
         )
+    ds.entities.extend(by_id.values())
     seen_filings: set[str] = set()
     for r in subsidiaries:
         ds.entities.append(

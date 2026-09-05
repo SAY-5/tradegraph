@@ -8,7 +8,8 @@ import time
 from pathlib import Path
 
 import click
-from rdflib import Dataset as RdfDataset, URIRef
+from rdflib import Dataset as RdfDataset
+from rdflib import URIRef
 
 from tradegraph_etl import transform
 from tradegraph_etl.load import GraphStoreLoader, StoreEndpoints
@@ -33,11 +34,13 @@ def main() -> None:
 @click.option("--sample-dir", type=click.Path(path_type=Path), default=DEFAULT_SAMPLE_DIR)
 @click.option("--user-agent", envvar="SEC_USER_AGENT", default=None)
 @click.option("--funds", type=int, default=None, help="Live mode: number of default 13F filers.")
-@click.option("--fund-cik", "fund_ciks", multiple=True, help="Live mode: explicit 13F filer CIK.")
+@click.option("--fund-cik", "fund_ciks", multiple=True, help="Live mode: 13F filer CIK.")
 @click.option("--issuer-limit", type=int, default=None)
 @click.option("--ontology", type=click.Path(path_type=Path), default=ONTOLOGY_PATH)
 @click.option("--out", type=click.Path(path_type=Path), default=Path("build"))
-def build(use_sample, use_live, sample_dir, user_agent, funds, fund_ciks, issuer_limit, ontology, out):
+def build(
+    use_sample, use_live, sample_dir, user_agent, funds, fund_ciks, issuer_limit, ontology, out
+):
     """Transform source data to N-Triples files, one per named graph."""
     if use_sample == use_live:
         raise click.UsageError("choose exactly one of --sample or --live")
@@ -68,7 +71,9 @@ def build(use_sample, use_live, sample_dir, user_agent, funds, fund_ciks, issuer
 
 
 @main.command()
-@click.option("--endpoint", required=True, help="Dataset base URL, e.g. http://localhost:3030/tradegraph")
+@click.option(
+    "--endpoint", required=True, help="Dataset base URL, e.g. http://localhost:3030/tradegraph"
+)
 @click.option("--store", type=click.Choice(["fuseki", "stardog"]), default="fuseki")
 @click.option("--user", envvar="STORE_USER", default=None)
 @click.option("--password", envvar="STORE_PASSWORD", default=None)
