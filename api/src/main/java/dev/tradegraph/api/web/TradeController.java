@@ -20,7 +20,8 @@ public class TradeController {
     }
 
     @GetMapping("/trades")
-    public List<TradeRecord> trades(@RequestParam("entity") @Pattern(regexp = EntityController.ID_PATTERN) String entity,
+    public List<TradeRecord> trades(
+            @RequestParam("entity") @Pattern(regexp = EntityController.ID_PATTERN) String entity,
             @RequestParam(value = "limit", defaultValue = "50") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset) {
         return trades.forEntity(entity, limit, offset);

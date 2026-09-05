@@ -10,6 +10,9 @@ import org.springframework.cache.annotation.EnableCaching;
 @ConfigurationPropertiesScan
 public class TradeGraphApplication {
 
+    protected TradeGraphApplication() {
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(TradeGraphApplication.class, args);
     }
