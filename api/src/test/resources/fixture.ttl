@@ -1,0 +1,62 @@
+@prefix tg:  <https://tradegraph.dev/ontology#> .
+@prefix e:   <https://tradegraph.dev/entity/> .
+@prefix i:   <https://tradegraph.dev/instrument/> .
+@prefix p:   <https://tradegraph.dev/position/> .
+@prefix f:   <https://tradegraph.dev/filing/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+e:0000000001 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;
+    tg:name "Acme Corp" ; tg:cik "0000000001" ; tg:ticker "ACME" .
+e:S00000101 a tg:LegalEntity, tg:Subsidiary ;
+    tg:name "Acme Finance Corp." ; tg:jurisdiction "DE" ;
+    tg:subsidiaryOf e:0000000001 ; tg:filedIn f:0000000001-24-000001 .
+e:0000000001 tg:hasSubsidiary e:S00000101 .
+e:S0000010101 a tg:LegalEntity, tg:Subsidiary ;
+    tg:name "Acme Regional Unit 1 Ltd." ; tg:jurisdiction "GB" ;
+    tg:subsidiaryOf e:S00000101 ; tg:filedIn f:0000000001-24-000001 .
+e:S00000101 tg:hasSubsidiary e:S0000010101 .
+
+e:0000000002 a tg:LegalEntity, tg:Counterparty, tg:Fund, tg:Issuer ;
+    tg:name "Bigfund Inc" ; tg:cik "0000000002" ; tg:ticker "BIGF" .
+e:F00000201 a tg:LegalEntity, tg:Counterparty, tg:Fund ;
+    tg:name "Bigfund Growth Fund" ; tg:jurisdiction "US" ; tg:subsidiaryOf e:0000000002 .
+e:0000000002 tg:hasSubsidiary e:F00000201 .
+
+e:0000000003 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;
+    tg:name "Other Holdings plc" ; tg:cik "0000000003" ; tg:ticker "OTHR" .
+
+f:0000000001-24-000001 a tg:Filing ; tg:accessionNumber "0000000001-24-000001" ; tg:formType "10-K" ;
+    tg:filedBy e:0000000001 ; tg:periodOfReport "2023-12-31"^^xsd:date .
+f:0000000002-24-000001 a tg:Filing ; tg:accessionNumber "0000000002-24-000001" ; tg:formType "13F-HR" ;
+    tg:filedBy e:0000000002 ; tg:periodOfReport "2024-06-30"^^xsd:date .
+f:0000000002-24-000002 a tg:Filing ; tg:accessionNumber "0000000002-24-000002" ; tg:formType "13F-HR" ;
+    tg:filedBy e:F00000201 ; tg:periodOfReport "2024-06-30"^^xsd:date .
+
+i:900000001 a tg:Instrument ; tg:cusip "900000001" ; tg:instrumentClass "COMMON" ; tg:ticker "ACME" ;
+    tg:issuedBy e:0000000001 ; tg:name "Acme Corp COMMON" .
+i:900000002 a tg:Instrument ; tg:cusip "900000002" ; tg:instrumentClass "DEBT" ;
+    tg:issuedBy e:S00000101 ; tg:name "Acme Finance Corp. DEBT" .
+i:900000003 a tg:Instrument ; tg:cusip "900000003" ; tg:instrumentClass "DEBT" ;
+    tg:issuedBy e:S0000010101 ; tg:name "Acme Regional Unit 1 Ltd. DEBT" .
+i:900000004 a tg:Instrument ; tg:cusip "900000004" ; tg:instrumentClass "COMMON" ; tg:ticker "OTHR" ;
+    tg:issuedBy e:0000000003 ; tg:name "Other Holdings plc COMMON" .
+
+p:0000000002-24-000001/0 a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:0000000001 ;
+    tg:instrument i:900000001 ; tg:quantity 100 ; tg:value 1000.0 ; tg:asOf "2024-06-30"^^xsd:date ;
+    tg:filedIn f:0000000002-24-000001 .
+e:0000000002 tg:holds p:0000000002-24-000001/0 .
+p:0000000002-24-000001/1 a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:S0000010101 ;
+    tg:instrument i:900000003 ; tg:quantity 250 ; tg:value 250.0 ; tg:asOf "2024-06-30"^^xsd:date ;
+    tg:filedIn f:0000000002-24-000001 .
+e:0000000002 tg:holds p:0000000002-24-000001/1 .
+p:0000000002-24-000001/2 a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:0000000003 ;
+    tg:instrument i:900000004 ; tg:quantity 7 ; tg:value 777.0 ; tg:asOf "2024-06-30"^^xsd:date ;
+    tg:filedIn f:0000000002-24-000001 .
+e:0000000002 tg:holds p:0000000002-24-000001/2 .
+p:0000000002-24-000002/0 a tg:Position ; tg:heldBy e:F00000201 ; tg:issuer e:S00000101 ;
+    tg:instrument i:900000002 ; tg:quantity 50000 ; tg:value 49000.5 ; tg:asOf "2024-06-30"^^xsd:date ;
+    tg:filedIn f:0000000002-24-000002 .
+e:F00000201 tg:holds p:0000000002-24-000002/0 .
+
+e:0000000002 tg:counterpartyOf e:0000000001, e:S0000010101, e:0000000003 .
+e:F00000201 tg:counterpartyOf e:S00000101 .
