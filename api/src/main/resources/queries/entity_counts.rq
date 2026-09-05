@@ -1,0 +1,8 @@
+SELECT ?subsidiaries ?positionsHeld ?positionsIssued ?valueHeld ?valueIssued
+WHERE {
+  { SELECT (COUNT(?s) AS ?subsidiaries) WHERE { ?s tg:subsidiaryOf ${iri} } }
+  { SELECT (COUNT(?p) AS ?positionsHeld) (COALESCE(SUM(?v), 0) AS ?valueHeld)
+    WHERE { ${iri} tg:holds ?p . ?p tg:value ?v } }
+  { SELECT (COUNT(?q) AS ?positionsIssued) (COALESCE(SUM(?w), 0) AS ?valueIssued)
+    WHERE { ?q tg:issuer ${iri} ; tg:value ?w } }
+}

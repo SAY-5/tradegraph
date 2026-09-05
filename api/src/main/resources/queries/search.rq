@@ -1,0 +1,11 @@
+SELECT ?e ?name ?ticker ?cik (GROUP_CONCAT(DISTINCT ?t; separator=",") AS ?types)
+WHERE {
+  ?e a tg:LegalEntity ; tg:name ?name ; a ?t .
+  OPTIONAL { ?e tg:ticker ?ticker }
+  OPTIONAL { ?e tg:cik ?cik }
+  FILTER(?t != tg:LegalEntity && ?t != tg:Counterparty)
+  FILTER(CONTAINS(LCASE(?name), ${qLower}) || LCASE(?ticker) = ${qLower} || ?cik = ${q})
+}
+GROUP BY ?e ?name ?ticker ?cik
+ORDER BY (LCASE(?ticker) != ${qLower}) STRLEN(?name) ?name
+LIMIT ${limit}

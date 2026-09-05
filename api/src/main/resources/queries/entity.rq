@@ -1,0 +1,12 @@
+SELECT ?name ?ticker ?cik ?lei ?jurisdiction ?parent ?parentName
+       (GROUP_CONCAT(DISTINCT ?t; separator=",") AS ?types)
+WHERE {
+  ${iri} a tg:LegalEntity ; tg:name ?name ; a ?t .
+  FILTER(?t != tg:LegalEntity && ?t != tg:Counterparty)
+  OPTIONAL { ${iri} tg:ticker ?ticker }
+  OPTIONAL { ${iri} tg:cik ?cik }
+  OPTIONAL { ${iri} tg:lei ?lei }
+  OPTIONAL { ${iri} tg:jurisdiction ?jurisdiction }
+  OPTIONAL { ${iri} tg:subsidiaryOf ?parent . ?parent tg:name ?parentName }
+}
+GROUP BY ?name ?ticker ?cik ?lei ?jurisdiction ?parent ?parentName

@@ -1,0 +1,18 @@
+# Exposure of ${fund} to ${issuer}: positions held by the fund (and, when
+# enabled, every fund in the same corporate family) on instruments issued by
+# the issuer (and, when enabled, by its subsidiaries up to ${depth} levels).
+SELECT ?holder ?holderName ?issuerEntity ?issuerEntityName ?instrument ?cusip ?class ?ticker
+       (SUM(?v) AS ?value) (SUM(?q) AS ?quantity) (COUNT(?pos) AS ?positions) (MAX(?d) AS ?asOf)
+WHERE {
+  ${holderClause}
+  ${issuerClause}
+  ?holder tg:holds ?pos .
+  ?pos tg:issuer ?issuerEntity ; tg:instrument ?instrument ;
+       tg:value ?v ; tg:quantity ?q ; tg:asOf ?d .
+  ?holder tg:name ?holderName .
+  ?issuerEntity tg:name ?issuerEntityName .
+  ?instrument tg:cusip ?cusip ; tg:instrumentClass ?class .
+  OPTIONAL { ?instrument tg:ticker ?ticker }
+}
+GROUP BY ?holder ?holderName ?issuerEntity ?issuerEntityName ?instrument ?cusip ?class ?ticker
+ORDER BY DESC(?value)

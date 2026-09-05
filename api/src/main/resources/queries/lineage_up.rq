@@ -1,0 +1,9 @@
+# Edges on the ancestor chain of ${iri}, at most ${depth} levels up.
+SELECT ?child ?parent ?parentName (GROUP_CONCAT(DISTINCT ?t; separator=",") AS ?parentTypes)
+WHERE {
+  { BIND(${iri} AS ?child) } ${moreChildren}
+  ?child tg:subsidiaryOf ?parent .
+  ?parent tg:name ?parentName ; a ?t .
+  FILTER(?t != tg:LegalEntity && ?t != tg:Counterparty)
+}
+GROUP BY ?child ?parent ?parentName

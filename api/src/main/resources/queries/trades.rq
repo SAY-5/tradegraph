@@ -1,0 +1,15 @@
+SELECT ?pos ?holder ?holderName ?issuer ?issuerName ?cusip ?class ?ticker
+       ?quantity ?value ?asOf ?accession ?form
+WHERE {
+  { ${iri} tg:holds ?pos } UNION { ?pos tg:issuer ${iri} }
+  ?pos tg:heldBy ?holder ; tg:issuer ?issuer ; tg:instrument ?inst ;
+       tg:quantity ?quantity ; tg:value ?value ; tg:asOf ?asOf ; tg:filedIn ?filing .
+  ?holder tg:name ?holderName .
+  ?issuer tg:name ?issuerName .
+  ?inst tg:cusip ?cusip ; tg:instrumentClass ?class .
+  OPTIONAL { ?inst tg:ticker ?ticker }
+  ?filing tg:accessionNumber ?accession ; tg:formType ?form .
+}
+ORDER BY DESC(?value) ?pos
+LIMIT ${limit}
+OFFSET ${offset}

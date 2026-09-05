@@ -1,0 +1,7 @@
+# Apache Jena Fuseki (deploy/docker-compose.yml). The dataset has
+# tdb:unionDefaultGraph enabled, so patterns without GRAPH see every named graph.
+tradegraph:
+  store:
+    kind: fuseki
+    query-url: ${TRADEGRAPH_STORE_QUERY_URL:http://localhost:3030/ds/sparql}
+    reasoning: false

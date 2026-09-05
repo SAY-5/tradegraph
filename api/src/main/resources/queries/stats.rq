@@ -1,0 +1,11 @@
+SELECT ?entities ?issuers ?funds ?subsidiaries ?positions ?filings ?lineageEdges ?triples
+WHERE {
+  { SELECT (COUNT(DISTINCT ?e) AS ?entities) WHERE { ?e a tg:LegalEntity } }
+  { SELECT (COUNT(DISTINCT ?i) AS ?issuers) WHERE { ?i a tg:Issuer } }
+  { SELECT (COUNT(DISTINCT ?f) AS ?funds) WHERE { ?f a tg:Fund } }
+  { SELECT (COUNT(DISTINCT ?s) AS ?subsidiaries) WHERE { ?s a tg:Subsidiary } }
+  { SELECT (COUNT(DISTINCT ?p) AS ?positions) WHERE { ?p a tg:Position } }
+  { SELECT (COUNT(DISTINCT ?g) AS ?filings) WHERE { ?g a tg:Filing } }
+  { SELECT (COUNT(*) AS ?lineageEdges) WHERE { ?a tg:subsidiaryOf ?b } }
+  { SELECT (COUNT(*) AS ?triples) WHERE { ?x ?y ?z } }
+}

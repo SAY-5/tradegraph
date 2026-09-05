@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: tradegraph-api
+  profiles:
+    default: fuseki
+  cache:
+    type: caffeine
+    cache-names: search,entity,lineage,ancestors,exposure,trades,neighbors,stats
+    caffeine:
+      spec: maximumSize=5000,expireAfterWrite=10m
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,caches,metrics
+  endpoint:
+    health:
+      show-details: always
+
+tradegraph:
+  store:
+    kind: fuseki
+    query-url: http://localhost:3030/ds/sparql
+    username:
+    password:
+    reasoning: false
+    connect-timeout: 5s
+    read-timeout: 60s
+  lineage:
+    max-depth: 5
+  exposure:
+    max-depth: 4
+  search:
+    default-limit: 20
+    max-limit: 100
+  cors:
+    allowed-origins: http://localhost:4200

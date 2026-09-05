@@ -1,0 +1,19 @@
+# Stardog (deploy/docker-compose.stardog.yml).
+#
+# * query-url is the database query endpoint: http://host:5820/{db}/query
+# * Stardog queries the union of all named graphs by default
+#   (query.all.graphs=true), which the ETL relies on because it writes to
+#   https://tradegraph.dev/graph/entities and /positions.
+# * reasoning=true sends `reasoning=true` with every query. The ontology
+#   declares tg:subsidiaryOf transitive and tg:hasSubsidiary as its inverse, so
+#   with reasoning on, Stardog materialises the lineage closure at query time.
+#   The API still uses explicit property paths, so results are identical with
+#   reasoning off; enable it to also answer over tg:hasParent (declared
+#   equivalent to tg:subsidiaryOf).
+tradegraph:
+  store:
+    kind: stardog
+    query-url: ${TRADEGRAPH_STORE_QUERY_URL:http://localhost:5820/tradegraph/query}
+    username: ${TRADEGRAPH_STORE_USERNAME:admin}
+    password: ${TRADEGRAPH_STORE_PASSWORD:admin}
+    reasoning: ${TRADEGRAPH_STORE_REASONING:false}
