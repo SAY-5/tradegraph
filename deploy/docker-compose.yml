@@ -1,0 +1,47 @@
+# Development and demo stack: Apache Jena Fuseki + API + explorer.
+# Tests, CI and `make demo` run against this stack. See docker-compose.stardog.yml
+# for the Stardog target.
+services:
+  fuseki:
+    image: secoresearch/fuseki:5.6.0
+    container_name: tradegraph-fuseki
+    environment:
+      ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD:-admin}
+      ENABLE_DATA_WRITE: "true"
+      ENABLE_UPDATE: "true"
+      ENABLE_UPLOAD: "true"
+      QUERY_TIMEOUT: "60000"
+      JVM_ARGS: "-Xmx1g"
+    ports:
+      - "3030:3030"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3030/$$/ping || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    container_name: tradegraph-api
+    depends_on:
+      fuseki:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: fuseki
+      TRADEGRAPH_STORE_QUERY_URL: http://fuseki:3030/ds/sparql
+    ports:
+      - "8080:8080"
+    profiles: ["app"]
+
+  explorer:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.explorer
+    container_name: tradegraph-explorer
+    depends_on:
+      - api
+    ports:
+      - "4200:80"
+    profiles: ["app"]

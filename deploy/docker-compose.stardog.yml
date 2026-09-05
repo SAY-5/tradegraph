@@ -1,0 +1,60 @@
+# Production style stack: Stardog + API + explorer.
+#
+# Stardog requires a license. Obtain one from https://www.stardog.com and point
+# STARDOG_LICENSE at the file before starting:
+#
+#   export STARDOG_LICENSE=$HOME/stardog-license-key.bin
+#   docker compose -f deploy/docker-compose.stardog.yml up -d
+#   docker compose -f deploy/docker-compose.stardog.yml exec stardog \
+#       /opt/stardog/bin/stardog-admin db create -n tradegraph
+#   cd etl && uv run tradegraph-etl load --endpoint http://localhost:5820/tradegraph \
+#       --store stardog --user admin --password admin
+#
+# The API uses the same SPARQL as the Fuseki profile; only the endpoint URL,
+# credentials and the optional reasoning flag change (application-stardog.yml).
+services:
+  stardog:
+    image: stardog/stardog:latest
+    container_name: tradegraph-stardog
+    environment:
+      STARDOG_SERVER_JAVA_ARGS: "-Xmx2g -Xms2g -XX:MaxDirectMemorySize=1g"
+    volumes:
+      - ${STARDOG_LICENSE:?set STARDOG_LICENSE to your license file}:/var/opt/stardog/stardog-license-key.bin:ro
+      - stardog-data:/var/opt/stardog
+    ports:
+      - "5820:5820"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5820/admin/healthcheck || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    container_name: tradegraph-api
+    depends_on:
+      stardog:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: stardog
+      TRADEGRAPH_STORE_QUERY_URL: http://stardog:5820/tradegraph/query
+      TRADEGRAPH_STORE_USERNAME: ${STARDOG_USER:-admin}
+      TRADEGRAPH_STORE_PASSWORD: ${STARDOG_PASSWORD:-admin}
+      TRADEGRAPH_STORE_REASONING: "false"
+    ports:
+      - "8080:8080"
+
+  explorer:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.explorer
+    container_name: tradegraph-explorer
+    depends_on:
+      - api
+    ports:
+      - "4200:80"
+
+volumes:
+  stardog-data:
