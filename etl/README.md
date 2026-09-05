@@ -8,8 +8,8 @@ Protocol.
 uv sync
 uv run tradegraph-etl build --sample                 # writes build/*.nt
 uv run tradegraph-etl build --live --funds 25        # pulls from data.sec.gov
-uv run tradegraph-etl load --endpoint http://localhost:3030/tradegraph
-uv run tradegraph-etl stats --endpoint http://localhost:3030/tradegraph
+uv run tradegraph-etl load --endpoint http://localhost:3030/ds
+uv run tradegraph-etl stats --endpoint http://localhost:3030/ds
 uv run pytest
 ```
 

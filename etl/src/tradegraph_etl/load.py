@@ -3,7 +3,7 @@
 The same code path works for Stardog and Fuseki; only the URL shape differs:
 
     Fuseki  http://host:3030/{dataset}/data?graph=IRI      (GSP)
-            http://host:3030/{dataset}/query                (SPARQL)
+            http://host:3030/{dataset}/sparql               (SPARQL)
     Stardog http://host:5820/{db}?graph=IRI                 (GSP)
             http://host:5820/{db}/query                     (SPARQL)
 """
@@ -28,7 +28,7 @@ class StoreEndpoints:
     def for_store(cls, base: str, store: str) -> StoreEndpoints:
         base = base.rstrip("/")
         if store == "fuseki":
-            return cls(graph_store=f"{base}/data", query=f"{base}/query")
+            return cls(graph_store=f"{base}/data", query=f"{base}/sparql")
         if store == "stardog":
             return cls(graph_store=base, query=f"{base}/query")
         raise ValueError(f"unknown store {store!r}")

@@ -70,7 +70,7 @@ def fake_server():
 
 def test_store_endpoints_shapes():
     f = StoreEndpoints.for_store("http://h:3030/ds/", "fuseki")
-    assert (f.graph_store, f.query) == ("http://h:3030/ds/data", "http://h:3030/ds/query")
+    assert (f.graph_store, f.query) == ("http://h:3030/ds/data", "http://h:3030/ds/sparql")
     s = StoreEndpoints.for_store("http://h:5820/db", "stardog")
     assert (s.graph_store, s.query) == ("http://h:5820/db", "http://h:5820/db/query")
     with pytest.raises(ValueError):

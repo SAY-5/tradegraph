@@ -5,7 +5,7 @@ UV        ?= uv
 MVN       ?= mvn
 NPM       ?= npm
 COMPOSE   ?= docker compose
-FUSEKI_URL ?= http://localhost:3030/tradegraph
+FUSEKI_URL ?= http://localhost:3030/ds
 API_URL    ?= http://localhost:8080
 ETL_BUILD  := etl/build
 
@@ -37,7 +37,7 @@ etl-load: ## Load etl/build into the Fuseki dataset
 
 fuseki-up: ## Start Fuseki from deploy/docker-compose.yml
 	$(COMPOSE) -f deploy/docker-compose.yml up -d fuseki
-	@scripts/wait-for.sh $(FUSEKI_URL)/query 60
+	@scripts/wait-for.sh $(FUSEKI_URL)/sparql 60
 
 fuseki-down: ## Stop the Fuseki container started by fuseki-up
 	$(COMPOSE) -f deploy/docker-compose.yml stop fuseki

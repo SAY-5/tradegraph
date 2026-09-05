@@ -72,7 +72,7 @@ def build(
 
 @main.command()
 @click.option(
-    "--endpoint", required=True, help="Dataset base URL, e.g. http://localhost:3030/tradegraph"
+    "--endpoint", required=True, help="Dataset base URL, e.g. http://localhost:3030/ds"
 )
 @click.option("--store", type=click.Choice(["fuseki", "stardog"]), default="fuseki")
 @click.option("--user", envvar="STORE_USER", default=None)
