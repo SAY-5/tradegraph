@@ -14,7 +14,7 @@ numbers and subsidiary names are synthetic and derived from a fixed seed.
 Only issuer identities (CIK, ticker, name) and fund manager identities come
 from SEC data. Do not treat the values as real market data.
 
-Regenerate with:
+Rebuild with:
 
 ```
 curl -A "TradeGraph ETL you@example.com" -o /tmp/company_tickers.json \

@@ -1,0 +1,33 @@
+TradeGraph demo summary
+=======================
+store            : fuseki (http://localhost:3030/ds/sparql)
+entities loaded  : 6,100 (issuers 3,600, funds 410, subsidiaries 2,148)
+positions        : 12,941 in 829 filings
+lineage edges    : 2,500
+triples          : 213,862
+stats query      : 274 ms
+
+Lineage (subsidiaryOf property paths, depth limited to 5)
+  Apple Inc.: 6 descendants, deepest level 2, 66 ms
+  JPMORGAN CHASE & CO: 9 descendants, deepest level 1, 49 ms
+  Invesco Ltd.: 7 descendants, deepest level 1, 38 ms
+
+Exposure (fund family to issuer, through affiliates and subsidiaries, 72 queries)
+  STATE STREET CORP -> JOHNSON & JOHNSON
+    total $1,857,008,421  direct $0  via subsidiaries $0  via affiliates $1,857,008,421
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 110 ms
+    longest path: STATE STREET CORP, whose subsidiary State Street Income Opportunities Fund holds COMMON JNJ issued by JOHNSON & JOHNSON
+  BlackRock, Inc. -> NVIDIA CORP
+    total $918,222,078  direct $651,873,149  via subsidiaries $0  via affiliates $266,348,929
+    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 66 ms
+    longest path: BlackRock, Inc., whose subsidiary Blackrock Technology Leaders Fund holds COMMON NVDA issued by NVIDIA CORP
+  Invesco Ltd. -> UNITEDHEALTH GROUP INC
+    total $635,426,513  direct $0  via subsidiaries $0  via affiliates $635,426,513
+    2 positions across 2 instrument lines, 2 holders, longest path 3 hops, 46 ms
+    longest path: Invesco Ltd., whose subsidiary Invesco Income Opportunities Fund holds DEBT issued by Unitedhealth Finance Corp. is a subsidiary of UNITEDHEALTH GROUP INC
+  largest exposure through an issuer subsidiary: PRICE T ROWE GROUP INC -> Apple Inc.
+    $3,583,831 of total $3,583,831 is issued by subsidiaries, 3 hops, 52 ms
+    path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Total Return Bond Fund holds DEBT issued by Apple Finance Corp. is a subsidiary of Apple Inc.
+  31/72 pairs have exposure; latency p50 44 ms, max 110 ms (uncached, Fuseki)
+  repeated query served from cache in 2 ms
+

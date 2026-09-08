@@ -176,63 +176,63 @@
  },
  {
   "id": "0000038777",
-  "name": "FRANKLIN RESOURCES INC",
+  "name": "FRANKLIN TEMPLETON INC",
   "cik": "0000038777",
   "parent": null,
   "jurisdiction": "US"
  },
  {
   "id": "F03877701",
-  "name": "Franklin Resources Strategic Equity Fund",
+  "name": "Franklin Templeton Strategic Equity Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "US"
  },
  {
   "id": "F03877702",
-  "name": "Franklin Resources Global Select Fund",
+  "name": "Franklin Templeton Global Select Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "US"
  },
  {
   "id": "F03877703",
-  "name": "Franklin Resources Income Opportunities Fund",
+  "name": "Franklin Templeton Income Opportunities Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "US"
  },
  {
   "id": "F03877704",
-  "name": "Franklin Resources Small Cap Growth Fund",
+  "name": "Franklin Templeton Small Cap Growth Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "US"
  },
  {
   "id": "F03877705",
-  "name": "Franklin Resources International Value Fund",
+  "name": "Franklin Templeton International Value Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "IE"
  },
  {
   "id": "F03877706",
-  "name": "Franklin Resources Total Return Bond Fund",
+  "name": "Franklin Templeton Total Return Bond Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "US"
  },
  {
   "id": "F03877707",
-  "name": "Franklin Resources Dividend Focus Fund",
+  "name": "Franklin Templeton Dividend Focus Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "US"
  },
  {
   "id": "F03877708",
-  "name": "Franklin Resources Technology Leaders Fund",
+  "name": "Franklin Templeton Technology Leaders Fund",
   "cik": null,
   "parent": "0000038777",
   "jurisdiction": "LU"

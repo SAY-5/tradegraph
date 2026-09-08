@@ -31,7 +31,7 @@ scripts/    demo.sh, demo_queries.py, wait-for.sh
   integration test in `ApiIT` against the fixture in
   `api/src/test/resources/fixture.ttl`. Extend the fixture rather than mocking
   the store.
-- The sample dataset is regenerated, not hand edited: change
+- The sample dataset is rebuilt by script, not hand edited: change
   `etl/scripts/make_sample.py` and rerun it with the SEC ticker snapshot
   (see `etl/sample/README.md`). Keep the seed so the output stays
   deterministic, and keep it above 5,000 entities.
