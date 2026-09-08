@@ -1,6 +1,8 @@
 # Development and demo stack: Apache Jena Fuseki + API + explorer.
 # Tests, CI and `make demo` run against this stack. See docker-compose.stardog.yml
 # for the Stardog target.
+name: tradegraph
+
 services:
   fuseki:
     image: secoresearch/fuseki:5.6.0

@@ -1,0 +1,33 @@
+TradeGraph demo summary
+=======================
+store            : fuseki (http://localhost:3030/ds/sparql)
+entities loaded  : 6,100 (issuers 3,600, funds 410, subsidiaries 2,148)
+positions        : 12,373 in 829 filings
+lineage edges    : 2,500
+triples          : 207,095
+stats query      : 552 ms
+
+Lineage (subsidiaryOf property paths, depth limited to 5)
+  Apple Inc.: 6 descendants, deepest level 2, 79 ms
+  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 51 ms
+  Invesco Ltd.: 7 descendants, deepest level 1, 57 ms
+
+Exposure (fund family to issuer, through affiliates and subsidiaries, 72 queries)
+  PRICE T ROWE GROUP INC -> Apple Inc.
+    total $2,475,300,433  direct $0  via subsidiaries $0  via affiliates $2,475,300,433
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 64 ms
+    longest path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Global Select Fund holds COMMON AAPL issued by Apple Inc.
+  BlackRock, Inc. -> Meta Platforms, Inc.
+    total $1,980,265,856  direct $0  via subsidiaries $0  via affiliates $1,980,265,856
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 56 ms
+    longest path: BlackRock, Inc., whose subsidiary Blackrock International Value Fund holds PUT META issued by Meta Platforms, Inc.
+  Invesco Ltd. -> Apple Inc.
+    total $1,523,775,489  direct $0  via subsidiaries $0  via affiliates $1,523,775,489
+    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 193 ms
+    longest path: Invesco Ltd., whose subsidiary Invesco Dividend Focus Fund holds COMMON AAPL issued by Apple Inc.
+  exposure through an issuer subsidiary: TPG Inc. -> Nu Holdings Ltd.
+    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 43 ms
+    path: TPG Inc., whose subsidiary TPG Global Select Fund holds DEBT issued by Nu Finance Corp. is a subsidiary of Nu Holdings Ltd.
+  26/72 pairs have exposure; latency p50 64 ms, max 1411 ms (uncached, Fuseki)
+  repeated query served from cache in 2 ms
+

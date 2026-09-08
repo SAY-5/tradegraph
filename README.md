@@ -55,33 +55,33 @@ TradeGraph demo summary
 =======================
 store            : fuseki (http://localhost:3030/ds/sparql)
 entities loaded  : 6,100 (issuers 3,600, funds 410, subsidiaries 2,148)
-positions        : 12,941 in 829 filings
+positions        : 12,373 in 829 filings
 lineage edges    : 2,500
-triples          : 213,862
-stats query      : 274 ms
+triples          : 207,095
+stats query      : 552 ms
 
 Lineage (subsidiaryOf property paths, depth limited to 5)
-  Apple Inc.: 6 descendants, deepest level 2, 66 ms
-  JPMORGAN CHASE & CO: 9 descendants, deepest level 1, 49 ms
-  Invesco Ltd.: 7 descendants, deepest level 1, 38 ms
+  Apple Inc.: 6 descendants, deepest level 2, 79 ms
+  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 51 ms
+  Invesco Ltd.: 7 descendants, deepest level 1, 57 ms
 
 Exposure (fund family to issuer, through affiliates and subsidiaries, 72 queries)
-  STATE STREET CORP -> JOHNSON & JOHNSON
-    total $1,857,008,421  direct $0  via subsidiaries $0  via affiliates $1,857,008,421
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 110 ms
-    longest path: STATE STREET CORP, whose subsidiary State Street Income Opportunities Fund holds COMMON JNJ issued by JOHNSON & JOHNSON
-  BlackRock, Inc. -> NVIDIA CORP
-    total $918,222,078  direct $651,873,149  via subsidiaries $0  via affiliates $266,348,929
-    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 66 ms
-    longest path: BlackRock, Inc., whose subsidiary Blackrock Technology Leaders Fund holds COMMON NVDA issued by NVIDIA CORP
-  Invesco Ltd. -> UNITEDHEALTH GROUP INC
-    total $635,426,513  direct $0  via subsidiaries $0  via affiliates $635,426,513
-    2 positions across 2 instrument lines, 2 holders, longest path 3 hops, 46 ms
-    longest path: Invesco Ltd., whose subsidiary Invesco Income Opportunities Fund holds DEBT issued by Unitedhealth Finance Corp. is a subsidiary of UNITEDHEALTH GROUP INC
-  largest exposure through an issuer subsidiary: PRICE T ROWE GROUP INC -> Apple Inc.
-    $3,583,831 of total $3,583,831 is issued by subsidiaries, 3 hops, 52 ms
-    path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Total Return Bond Fund holds DEBT issued by Apple Finance Corp. is a subsidiary of Apple Inc.
-  31/72 pairs have exposure; latency p50 44 ms, max 110 ms (uncached, Fuseki)
+  PRICE T ROWE GROUP INC -> Apple Inc.
+    total $2,475,300,433  direct $0  via subsidiaries $0  via affiliates $2,475,300,433
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 64 ms
+    longest path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Global Select Fund holds COMMON AAPL issued by Apple Inc.
+  BlackRock, Inc. -> Meta Platforms, Inc.
+    total $1,980,265,856  direct $0  via subsidiaries $0  via affiliates $1,980,265,856
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 56 ms
+    longest path: BlackRock, Inc., whose subsidiary Blackrock International Value Fund holds PUT META issued by Meta Platforms, Inc.
+  Invesco Ltd. -> Apple Inc.
+    total $1,523,775,489  direct $0  via subsidiaries $0  via affiliates $1,523,775,489
+    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 193 ms
+    longest path: Invesco Ltd., whose subsidiary Invesco Dividend Focus Fund holds COMMON AAPL issued by Apple Inc.
+  exposure through an issuer subsidiary: TPG Inc. -> Nu Holdings Ltd.
+    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 43 ms
+    path: TPG Inc., whose subsidiary TPG Global Select Fund holds DEBT issued by Nu Finance Corp. is a subsidiary of Nu Holdings Ltd.
+  26/72 pairs have exposure; latency p50 64 ms, max 1411 ms (uncached, Fuseki)
   repeated query served from cache in 2 ms
 ```
 
@@ -148,7 +148,7 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 ## Tests
 
 - `etl/`: 20 pytest tests covering RDF mapping, sample size (>= 5,000 entities), dangling references, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 30 unit tests (SPARQL escaping and id validation, bounded property paths, template rendering, lineage ordering, exposure path building) and 12 integration tests with Testcontainers Fuseki, including `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms).
+- `api/`: 30 unit tests (SPARQL escaping and id validation, bounded property paths, template rendering, lineage ordering, exposure path building) and 12 integration tests with Testcontainers Fuseki, including `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
 - `explorer/`: 7 vitest specs (API client URLs, graph merging, exposure panel rendering, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.

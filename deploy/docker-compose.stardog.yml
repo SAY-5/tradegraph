@@ -12,6 +12,8 @@
 #
 # The API uses the same SPARQL as the Fuseki profile; only the endpoint URL,
 # credentials and the optional reasoning flag change (application-stardog.yml).
+name: tradegraph
+
 services:
   stardog:
     image: stardog/stardog:latest

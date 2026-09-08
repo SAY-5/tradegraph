@@ -39,6 +39,31 @@ def first(q: str, kind: str | None = None):
     return rows[0]
 
 
+def subsidiary_example():
+    """Find a debt-issuing subsidiary with a holder, then measure its family's exposure to the parent."""
+    subs, _ = get("/entities", q="Finance Corp.", limit=40)
+    best = None
+    for sub in (s for s in subs if "Subsidiary" in s["kinds"]):
+        trades, _ = get("/trades", entity=sub["id"], limit=1)
+        if not trades:
+            continue
+        holder = trades[0]["holder"]
+        lineage, _ = get(f"/entities/{holder['id']}/lineage")
+        root = lineage["ultimateParent"]
+        detail, _ = get(f"/entities/{sub['id']}")
+        issuer = detail["parent"]
+        r, ms = get(f"/entities/{root['id']}/exposure", issuer=issuer["id"])
+        lines = [x for x in r["byInstrument"] if x["viaSubsidiary"]]
+        if not lines:
+            continue
+        line = max(lines, key=lambda x: x["value"])
+        if best is None or line["pathLength"] > best[4]["pathLength"]:
+            best = (root, issuer, r, ms, line)
+        if best[4]["pathLength"] >= 3:
+            break
+    return best
+
+
 def money(v) -> str:
     return f"${float(v):,.0f}"
 
@@ -81,15 +106,11 @@ def main() -> None:
               f"{len(r['byHolder'])} holders, longest path {r['longestPath']} hops, {ms:.0f} ms")
         longest = max(r["byInstrument"], key=lambda line: line["pathLength"])
         print(f"    longest path: {longest['explanation']}")
-    def through_subsidiary(answer):
-        return sum(x["value"] for x in answer[2]["byInstrument"] if x["viaSubsidiary"])
-
-    via_sub = max(answers, key=through_subsidiary)
-    if through_subsidiary(via_sub) > 0:
-        fund, issuer, r, ms = via_sub
-        line = max((x for x in r["byInstrument"] if x["viaSubsidiary"]), key=lambda x: x["value"])
-        print(f"  largest exposure through an issuer subsidiary: {fund['name']} -> {issuer['name']}")
-        print(f"    {money(through_subsidiary(via_sub))} of total {money(r['totalValue'])} is issued by subsidiaries, "
+    example = subsidiary_example()
+    if example:
+        fund, issuer, r, ms, line = example
+        print(f"  exposure through an issuer subsidiary: {fund['name']} -> {issuer['name']}")
+        print(f"    {money(line['value'])} of total {money(r['totalValue'])} is issued by {line['issuerEntity']['name']}, "
               f"{line['pathLength']} hops, {ms:.0f} ms")
         print(f"    path: {line['explanation']}")
     non_zero = sum(1 for a in answers if a[2]["totalValue"] > 0)
