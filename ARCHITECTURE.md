@@ -1,0 +1,158 @@
+# Architecture
+
+## Ontology design
+
+`ontology/tradegraph.ttl` is deliberately small. FIBO models a legal entity,
+its control relationships and the instruments it issues with dozens of
+classes; TradeGraph keeps the same shape with six classes and a handful of
+properties so that every SPARQL query in the API fits on one screen.
+
+- `tg:LegalEntity` is the root. `tg:Counterparty` (entities that appear on a
+  side of a position) has the subclasses `tg:Issuer` and `tg:Fund`.
+  `tg:Subsidiary` is a legal entity that only exists because an Exhibit 21
+  style disclosure lists it under a parent. An asset manager that is listed
+  and files 13F is typed as both `tg:Fund` and `tg:Issuer`.
+- `tg:subsidiaryOf` points from child to direct parent and is declared
+  `owl:TransitiveProperty`; `tg:hasSubsidiary` is its inverse and
+  `tg:hasParent` an equivalent name. The ETL materialises both directions of
+  the direct edge so that stores without reasoning can traverse either way.
+- `tg:Position` links a holder (`tg:heldBy` / `tg:holds`), an instrument
+  (`tg:instrument`), a denormalised `tg:issuer`, `tg:quantity`, `tg:value`,
+  `tg:asOf` and the `tg:Filing` it came from (`tg:filedIn`). `tg:Trade` is a
+  subclass reserved for discrete transactions.
+- `tg:Instrument` carries `tg:cusip`, `tg:instrumentClass` (COMMON, PREFERRED,
+  DEBT, PUT, CALL), optional `tg:ticker` and `tg:issuedBy`.
+- `tg:Filing` records accession number, form type, filer and period. Positions
+  and subsidiary assertions both link to a filing, which is the provenance
+  trail for every triple that matters.
+
+Data lives in three named graphs (`.../graph/entities`, `.../graph/positions`,
+`.../graph/ontology`). The ETL replaces a whole graph with one Graph Store
+Protocol `PUT`, so a reload is idempotent and the ontology can be updated
+without touching data.
+
+## ETL mapping
+
+`etl/src/tradegraph_etl` is split into sources, a transform and a loader.
+
+- `sources/sample.py` reads the committed sample: 3,600 issuers from the SEC
+  `company_tickers.json` snapshot, 58 listed managers with synthetic sub-funds,
+  synthetic Exhibit 21 style subsidiaries for the first 420 issuers (two levels
+  deep for half of them) and synthetic 13F-HR information tables. Finance and
+  capital markets subsidiaries issue DEBT instruments, which is what makes the
+  "through the issuer's subsidiaries" leg of exposure non-trivial.
+- `sources/edgar.py` is the live path: `EdgarClient` enforces the SEC
+  User-Agent and rate limit, reads `submissions/CIK*.json` to find the latest
+  13F-HR, downloads the information table XML and resolves issuers by
+  normalised name against the ticker list (EDGAR has no public CUSIP to CIK
+  map).
+- `transform.py` maps `Entity`, `Filing` and `Position` records to RDF with
+  rdflib. IRIs are deterministic (`entity/{id}`, `instrument/{cusip}`,
+  `position/{accession}/{index}`, `filing/{accession}`), so rebuilding the
+  sample yields byte-identical N-Triples up to ordering. `validate()` refuses
+  to emit a dataset with dangling parents, holders or issuers.
+- `load.py` speaks the Graph Store Protocol. `StoreEndpoints.for_store`
+  captures the only difference between the two stores: Fuseki exposes
+  `/{ds}/data` and `/{ds}/sparql`, Stardog `/{db}` and `/{db}/query`.
+
+## Query design
+
+All SPARQL lives in `api/src/main/resources/queries/*.rq` as templates with
+`${name}` placeholders. `QueryTemplates` refuses to render a template with an
+unresolved placeholder, and every value that reaches a template is produced by
+`SparqlValues` (identifiers validated against `[A-Za-z0-9_-]{1,64}`, string
+literals escaped per the SPARQL grammar) or `SparqlPaths`. The API therefore
+never concatenates raw user input into a query.
+
+### Depth limited property paths
+
+SPARQL 1.1 has no bounded repetition, and the extensions Jena and Stardog
+offer differ. `SparqlPaths.bounded("tg:subsidiaryOf", 1, 3)` expands to
+`(tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf/tg:subsidiaryOf)`,
+which every store evaluates identically. Depth is capped by configuration
+(`tradegraph.lineage.max-depth`, `tradegraph.exposure.max-depth`).
+
+### Lineage
+
+`lineage_up.rq` returns the parent edges reachable from an entity within the
+depth budget, `lineage_down.rq` the child edges. SPARQL cannot report the
+position of a node on a path, so `LineageService` orders the edges into a
+chain (ancestors nearest first) and a tree (descendants) in Java. Ancestor
+chains are cached separately (`ancestors` cache) because the exposure service
+reuses them for path explanations.
+
+### Exposure
+
+`exposure.rq` is a single aggregate query:
+
+1. Find the fund's ultimate parent: `{ BIND(<fund> AS ?root) } UNION { <fund> P ?root }`
+   followed by `FILTER NOT EXISTS { ?root tg:subsidiaryOf ?above }`.
+2. Holders are the funds in that family: `?holder a tg:Fund . FILTER(?holder = ?root || EXISTS { ?holder P ?root })`.
+   This is a FILTER rather than a `BIND` inside a UNION branch on purpose:
+   SPARQL evaluates group patterns bottom-up, so a `BIND(?root AS ?holder)`
+   in its own group would see `?root` unbound and match every holder.
+3. Issuer entities are the issuer plus its subsidiaries within depth:
+   `{ BIND(<issuer> AS ?issuerEntity) } UNION { ?issuerEntity P <issuer> }`.
+4. Join positions, group by holder, issuer entity and instrument, sum value
+   and quantity, order by value.
+
+`includeAffiliates=false` collapses step 2 to `BIND(<fund> AS ?holder)`;
+`includeSubsidiaries=false` collapses step 3 the same way.
+
+For every result line `ExposureService.buildPath` assembles the explanation
+`fund -(parent)*-> root -(subsidiary)*-> holder -(holds)-> issuerEntity -(parent)*-> issuer`
+from cached ancestor chains, reports `pathLength` (hops) and renders a
+sentence. Totals are partitioned into direct, via subsidiaries (held by the
+fund itself on a subsidiary's instrument) and via affiliates (held by another
+fund in the family).
+
+### Explorer graph
+
+`neighbors.rq` unions four subqueries (parent, subsidiaries, top holdings by
+value, top holders by value) and the explorer merges expansions client side
+(`mergeGraphs`), keeping the original centre.
+
+## Caching
+
+Spring's cache abstraction with Caffeine (`maximumSize=5000, expireAfterWrite=10m`)
+fronts every service method: `search`, `entity`, `lineage`, `ancestors`,
+`exposure`, `trades`, `neighbors`, `stats`. The demo shows the effect: an
+exposure answer that costs 40 to 110 ms uncached is served in 2 to 3 ms when
+repeated. `ExposurePerformanceIT` runs with `spring.cache.type=none` so it
+measures the store, not the cache.
+
+## Store configuration
+
+### Fuseki (tests, CI, demo)
+
+`deploy/docker-compose.yml` runs `secoresearch/fuseki` with data write and
+update enabled. The bundled dataset `ds` has `tdb:unionDefaultGraph true`, so
+patterns without a `GRAPH` clause see every named graph. Integration tests
+start the same image through Testcontainers and load either the small fixture
+(`api/src/test/resources/fixture.ttl`) or the full sample from `etl/build`.
+
+### Stardog (target)
+
+`deploy/docker-compose.stardog.yml` mounts the license from `STARDOG_LICENSE`
+into `stardog/stardog` and starts the API with `SPRING_PROFILES_ACTIVE=stardog`.
+Stardog specifics, all in `application-stardog.yml`:
+
+- query endpoint `http://host:5820/{db}/query`, basic auth credentials;
+- Stardog queries the union of all named graphs by default
+  (`query.all.graphs=true`), matching the Fuseki setup;
+- `tradegraph.store.reasoning=true` adds `reasoning=true` to every request.
+  With the ontology loaded into its own named graph, Stardog then treats
+  `tg:subsidiaryOf` as transitive, `tg:hasSubsidiary` as its inverse and
+  `tg:hasParent` as equivalent, so ad hoc queries can use any of the three.
+  The API keeps using explicit paths and produces the same answers with
+  reasoning off.
+
+Loading is the same command with `--store stardog`:
+
+```
+uv run tradegraph-etl load --endpoint http://localhost:5820/tradegraph --store stardog \
+    --user admin --password admin
+```
+
+The Stardog stack is provided as configuration; the test results and demo
+numbers in this repository were produced against Fuseki.
