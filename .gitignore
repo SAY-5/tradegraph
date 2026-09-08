@@ -26,3 +26,5 @@ npm-debug.log*
 .vscode/
 *.iml
 demo-output/
+demo-summary.txt
+*.log
