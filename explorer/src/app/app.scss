@@ -1,0 +1,104 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  display: grid;
+  grid-template-columns: 260px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--fund), #1f6feb);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.stats {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+}
+
+.error {
+  color: var(--danger);
+}
+
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 420px;
+  gap: 12px;
+  padding: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+main.loading {
+  opacity: 0.7;
+}
+
+.left,
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.center {
+  display: flex;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.center tg-graph-view {
+  flex: 1;
+  display: block;
+}
+
+.empty {
+  margin: auto;
+  max-width: 420px;
+  text-align: center;
+}
+
+@media (max-width: 1200px) {
+  main {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  header {
+    grid-template-columns: 1fr;
+  }
+}
