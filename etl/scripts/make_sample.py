@@ -270,7 +270,7 @@ def build(tickers_path: Path, out: Path) -> None:
         accession = f"{filer_cik}-24-{seq:06d}"
         n = rng.randint(12, 45)
         weights = [int(w * 100) for w in issuer_weights]
-        picked = rng.sample(range(len(issuers)), k=n, counts=weights)
+        picked = dict.fromkeys(rng.sample(range(len(issuers)), k=n, counts=weights))
         table = []
         for idx in picked:
             issuer = issuers[idx]

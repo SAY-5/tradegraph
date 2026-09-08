@@ -8,6 +8,7 @@ import { TradeRecord } from '../models';
   template: `
     <h2>Positions</h2>
     @if (trades().length) {
+      <div class="scroll">
       <table>
         <thead>
           <tr>
@@ -32,9 +33,14 @@ import { TradeRecord } from '../models';
           }
         </tbody>
       </table>
+      </div>
     } @else {
       <p class="muted">No positions on either side.</p>
     }
+  `,
+  styles: `
+    .scroll { overflow-x: auto; }
+    td, th { white-space: nowrap; }
   `,
 })
 export class TradesTable {

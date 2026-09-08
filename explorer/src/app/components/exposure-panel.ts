@@ -56,6 +56,7 @@ import { SearchBar } from './search-bar';
         <span class="mono">{{ r.queryMillis }} ms</span>
       </p>
       @if (r.byInstrument.length) {
+        <div class="scroll">
         <table>
           <thead>
             <tr>
@@ -101,6 +102,7 @@ import { SearchBar } from './search-bar';
             }
           </tbody>
         </table>
+        </div>
       } @else {
         <p class="muted">No exposure found for this pair.</p>
       }
@@ -113,9 +115,10 @@ import { SearchBar } from './search-bar';
     .opts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .opts label { display: flex; gap: 4px; align-items: center; color: var(--muted); }
     .opts input[type='number'] { width: 56px; padding: 3px 6px; }
-    .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .total { display: flex; flex-direction: column; background: var(--panel-2); border-radius: 6px; padding: 8px 10px; }
     .total strong { font-size: 16px; }
+    .total span, .total strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .summary { margin: 8px 0; font-size: 12px; }
     tbody tr { cursor: pointer; }
     tbody tr.active td { background: var(--panel-2); }
@@ -124,6 +127,7 @@ import { SearchBar } from './search-bar';
     .hop { font-size: 11px; border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; }
     .small { font-size: 12px; margin: 4px 0 0; }
     .error { color: var(--danger); }
+    .scroll { overflow-x: auto; }
   `,
 })
 export class ExposurePanel {
