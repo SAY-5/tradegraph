@@ -39,7 +39,7 @@ etl-load: ## Load etl/build into the Fuseki dataset
 
 fuseki-up: ## Start Fuseki from deploy/docker-compose.yml
 	$(COMPOSE) -f deploy/docker-compose.yml up -d fuseki
-	@scripts/wait-for.sh $(FUSEKI_URL)/sparql 60
+	@scripts/wait-for.sh '$(FUSEKI_URL)/sparql?query=ASK%7B%7D' 60
 
 fuseki-down: ## Stop the Fuseki container started by fuseki-up
 	$(COMPOSE) -f deploy/docker-compose.yml stop fuseki

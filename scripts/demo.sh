@@ -27,11 +27,12 @@ step() { printf '\n==> %s\n' "$*"; }
 
 step "Starting Fuseki (deploy/docker-compose.yml)"
 $COMPOSE -f deploy/docker-compose.yml up -d fuseki >/dev/null
-scripts/wait-for.sh "$FUSEKI_URL/sparql" 90
+scripts/wait-for.sh "${FUSEKI_URL%/*}/\$/ping" 90
+scripts/wait-for.sh "$FUSEKI_URL/sparql?query=ASK%7B%7D" 30
 
 step "Building the sample with the ETL"
 (cd etl && uv run tradegraph-etl build --sample --out build) > "$OUT/etl-build.json"
-tail -n +1 "$OUT/etl-build.json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(f"entities={d[\"entities\"]} positions={d[\"positions\"]} triples={d[\"triples\"]} seconds={d[\"seconds\"]}")'
+python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("entities=%s positions=%s triples=%s seconds=%s" % (d["entities"], d["positions"], d["triples"], d["seconds"]))' "$OUT/etl-build.json"
 
 step "Loading into Fuseki over the Graph Store Protocol"
 (cd etl && uv run tradegraph-etl load --endpoint "$FUSEKI_URL" --store fuseki --build-dir build) | tee "$OUT/etl-load.txt" | tail -1
