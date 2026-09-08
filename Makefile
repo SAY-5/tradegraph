@@ -8,6 +8,8 @@ COMPOSE   ?= docker compose
 FUSEKI_URL ?= http://localhost:3030/ds
 API_URL    ?= http://localhost:8080
 ETL_BUILD  := etl/build
+# Ryuk cannot bind mount the Docker socket on Colima; containers are stopped by a JVM shutdown hook instead.
+export TESTCONTAINERS_RYUK_DISABLED ?= true
 
 .PHONY: help setup lint test demo etl-sample etl-load api explorer fuseki-up fuseki-down clean
 
@@ -24,10 +26,10 @@ lint: ## Lint every component
 	cd api && $(MVN) -B -q checkstyle:check
 	cd explorer && $(NPM) run lint
 
-test: ## Run every test suite (ETL pytest, API mvn verify with Testcontainers, explorer lint + build)
+test: etl-sample ## Run every test suite (ETL pytest, API mvn verify with Testcontainers, explorer tests + build)
 	cd etl && $(UV) run pytest
 	cd api && $(MVN) -B verify
-	cd explorer && $(NPM) run lint && $(NPM) run build
+	cd explorer && $(NPM) run lint && $(NPM) test -- --watch=false && $(NPM) run build
 
 etl-sample: ## Transform the committed sample to N-Triples under etl/build
 	cd etl && $(UV) run tradegraph-etl build --sample --out build
