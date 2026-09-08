@@ -21,6 +21,7 @@
     <java.version>21</java.version>
     <fuseki.image>secoresearch/fuseki:5.6.0</fuseki.image>
     <checkstyle.version>10.26.1</checkstyle.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 
   <dependencies>

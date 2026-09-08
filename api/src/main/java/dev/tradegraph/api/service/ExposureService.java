@@ -100,10 +100,13 @@ public class ExposureService {
         if (!includeAffiliates) {
             return "BIND(" + fundIri + " AS ?holder)";
         }
+        // The zero hop case is a FILTER rather than a BIND inside a UNION branch: a group
+        // pattern cannot see ?root (bottom-up evaluation), so BIND(?root AS ?holder) would be unbound.
         return "{ BIND(" + fundIri + " AS ?root) } " + SparqlPaths.unionHops(fundIri, "?root", 1, depth) + "\n"
                 + "  FILTER NOT EXISTS { ?root tg:subsidiaryOf ?above }\n"
-                + "  { BIND(?root AS ?holder) } " + SparqlPaths.unionHops("?holder", "?root", 1, depth) + "\n"
-                + "  ?holder a tg:Fund .";
+                + "  ?holder a tg:Fund .\n"
+                + "  FILTER(?holder = ?root || EXISTS { ?holder "
+                + SparqlPaths.bounded(SparqlPaths.SUBSIDIARY_OF, 1, depth) + " ?root })";
     }
 
     static String issuerClause(String issuerIri, boolean includeSubsidiaries, int depth) {
@@ -141,11 +144,13 @@ public class ExposureService {
                     break;
                 }
             }
-            int rootIndex = indexOf(holderUp, root);
-            for (int i = rootIndex - 1; i >= 0; i--) {
-                path.add(new PathStep(holderUp.get(i).id(), holderUp.get(i).name(), PathStep.SUBSIDIARY));
+            if (!holder.id().equals(root)) {
+                int rootIndex = indexOf(holderUp, root);
+                for (int i = rootIndex - 1; i >= 0; i--) {
+                    path.add(new PathStep(holderUp.get(i).id(), holderUp.get(i).name(), PathStep.SUBSIDIARY));
+                }
+                path.add(new PathStep(holder.id(), holder.name(), PathStep.SUBSIDIARY));
             }
-            path.add(new PathStep(holder.id(), holder.name(), PathStep.SUBSIDIARY));
         }
         path.add(new PathStep(issuerEntity.id(), issuerEntity.name(), PathStep.HOLDS));
         if (!issuerEntity.id().equals(issuer.id())) {

@@ -33,16 +33,15 @@ class ExposurePerformanceIT {
     static final int PAIRS = 12;
 
     private static final Path SAMPLE = FusekiSupport.sampleBuildDir();
-    private static GenericContainer<?> fuseki;
+    private static final GenericContainer<?> FUSEKI = SAMPLE == null ? null : FusekiSupport.start();
 
     @Autowired
     private TestRestTemplate rest;
 
     @DynamicPropertySource
     static void storeProperties(DynamicPropertyRegistry registry) {
-        if (SAMPLE != null) {
-            fuseki = FusekiSupport.start();
-            registry.add("tradegraph.store.query-url", () -> FusekiSupport.queryUrl(fuseki));
+        if (FUSEKI != null) {
+            registry.add("tradegraph.store.query-url", () -> FusekiSupport.queryUrl(FUSEKI));
         } else {
             registry.add("tradegraph.store.query-url", () -> "http://localhost:1/none");
         }
@@ -50,10 +49,10 @@ class ExposurePerformanceIT {
 
     @BeforeAll
     static void loadSample() {
-        if (SAMPLE != null) {
-            FusekiSupport.putGraph(fuseki, FusekiSupport.GRAPH_ENTITIES, SAMPLE.resolve("entities.nt"),
+        if (FUSEKI != null) {
+            FusekiSupport.putGraph(FUSEKI, FusekiSupport.GRAPH_ENTITIES, SAMPLE.resolve("entities.nt"),
                     "application/n-triples");
-            FusekiSupport.putGraph(fuseki, FusekiSupport.GRAPH_POSITIONS, SAMPLE.resolve("positions.nt"),
+            FusekiSupport.putGraph(FUSEKI, FusekiSupport.GRAPH_POSITIONS, SAMPLE.resolve("positions.nt"),
                     "application/n-triples");
         }
     }
@@ -64,10 +63,10 @@ class ExposurePerformanceIT {
         Stats stats = rest.getForObject("/stats", Stats.class);
         assertThat(stats.entities()).isGreaterThanOrEqualTo(5000);
 
-        List<EntitySummary> funds = list("/entities?q=Strategic%20Equity%20Fund&limit=" + PAIRS);
+        List<EntitySummary> funds = list("/entities?q={q}&limit={limit}", "Strategic Equity Fund", PAIRS);
         List<EntitySummary> issuers = new ArrayList<>();
         for (String ticker : List.of("AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "JPM")) {
-            issuers.addAll(list("/entities?q=" + ticker + "&limit=1"));
+            issuers.addAll(list("/entities?q={q}&limit=1", ticker));
         }
         assertThat(funds).hasSizeGreaterThanOrEqualTo(PAIRS / 2);
         assertThat(issuers).hasSizeGreaterThanOrEqualTo(3);
@@ -97,8 +96,8 @@ class ExposurePerformanceIT {
         assertThat(max).isLessThan(BUDGET_MILLIS);
     }
 
-    private List<EntitySummary> list(String url) {
+    private List<EntitySummary> list(String url, Object... vars) {
         return rest.exchange(url, HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<EntitySummary>>() { }).getBody();
+                new ParameterizedTypeReference<List<EntitySummary>>() { }, vars).getBody();
     }
 }

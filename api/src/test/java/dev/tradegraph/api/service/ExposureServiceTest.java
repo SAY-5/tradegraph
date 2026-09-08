@@ -34,9 +34,11 @@ class ExposureServiceTest {
     @Test
     void holderClauseWalksToRootAndBackDownWithAffiliates() {
         String clause = ExposureService.holderClause("<f>", true, 2);
-        assertThat(clause).contains("{ BIND(<f> AS ?root) } UNION { <f> (tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf) ?root }");
+        String twoHops = "(tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf)";
+        assertThat(clause).contains("{ BIND(<f> AS ?root) } UNION { <f> " + twoHops + " ?root }");
         assertThat(clause).contains("FILTER NOT EXISTS { ?root tg:subsidiaryOf ?above }");
-        assertThat(clause).contains("{ BIND(?root AS ?holder) } UNION { ?holder (tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf) ?root }");
+        assertThat(clause).contains("?holder a tg:Fund .");
+        assertThat(clause).contains("FILTER(?holder = ?root || EXISTS { ?holder " + twoHops + " ?root })");
         assertThat(clause).contains("?holder a tg:Fund .");
     }
 

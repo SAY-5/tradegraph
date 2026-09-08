@@ -7,5 +7,5 @@ WHERE {
   FILTER(CONTAINS(LCASE(?name), ${qLower}) || LCASE(?ticker) = ${qLower} || ?cik = ${q})
 }
 GROUP BY ?e ?name ?ticker ?cik
-ORDER BY (LCASE(?ticker) != ${qLower}) STRLEN(?name) ?name
+ORDER BY DESC(COALESCE(LCASE(?ticker) = ${qLower}, false)) STRLEN(?name) ?name
 LIMIT ${limit}

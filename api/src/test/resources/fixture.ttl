@@ -41,22 +41,22 @@ i:900000003 a tg:Instrument ; tg:cusip "900000003" ; tg:instrumentClass "DEBT" ;
 i:900000004 a tg:Instrument ; tg:cusip "900000004" ; tg:instrumentClass "COMMON" ; tg:ticker "OTHR" ;
     tg:issuedBy e:0000000003 ; tg:name "Other Holdings plc COMMON" .
 
-p:0000000002-24-000001/0 a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:0000000001 ;
+<https://tradegraph.dev/position/0000000002-24-000001/0> a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:0000000001 ;
     tg:instrument i:900000001 ; tg:quantity 100 ; tg:value 1000.0 ; tg:asOf "2024-06-30"^^xsd:date ;
     tg:filedIn f:0000000002-24-000001 .
-e:0000000002 tg:holds p:0000000002-24-000001/0 .
-p:0000000002-24-000001/1 a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:S0000010101 ;
+e:0000000002 tg:holds <https://tradegraph.dev/position/0000000002-24-000001/0> .
+<https://tradegraph.dev/position/0000000002-24-000001/1> a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:S0000010101 ;
     tg:instrument i:900000003 ; tg:quantity 250 ; tg:value 250.0 ; tg:asOf "2024-06-30"^^xsd:date ;
     tg:filedIn f:0000000002-24-000001 .
-e:0000000002 tg:holds p:0000000002-24-000001/1 .
-p:0000000002-24-000001/2 a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:0000000003 ;
+e:0000000002 tg:holds <https://tradegraph.dev/position/0000000002-24-000001/1> .
+<https://tradegraph.dev/position/0000000002-24-000001/2> a tg:Position ; tg:heldBy e:0000000002 ; tg:issuer e:0000000003 ;
     tg:instrument i:900000004 ; tg:quantity 7 ; tg:value 777.0 ; tg:asOf "2024-06-30"^^xsd:date ;
     tg:filedIn f:0000000002-24-000001 .
-e:0000000002 tg:holds p:0000000002-24-000001/2 .
-p:0000000002-24-000002/0 a tg:Position ; tg:heldBy e:F00000201 ; tg:issuer e:S00000101 ;
+e:0000000002 tg:holds <https://tradegraph.dev/position/0000000002-24-000001/2> .
+<https://tradegraph.dev/position/0000000002-24-000002/0> a tg:Position ; tg:heldBy e:F00000201 ; tg:issuer e:S00000101 ;
     tg:instrument i:900000002 ; tg:quantity 50000 ; tg:value 49000.5 ; tg:asOf "2024-06-30"^^xsd:date ;
     tg:filedIn f:0000000002-24-000002 .
-e:F00000201 tg:holds p:0000000002-24-000002/0 .
+e:F00000201 tg:holds <https://tradegraph.dev/position/0000000002-24-000002/0> .
 
 e:0000000002 tg:counterpartyOf e:0000000001, e:S0000010101, e:0000000003 .
 e:F00000201 tg:counterpartyOf e:S00000101 .

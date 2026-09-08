@@ -67,21 +67,23 @@ class ApiIT {
 
     @Test
     void searchMatchesNameTickerAndCik() {
-        List<EntitySummary> byName = list("/entities?q=acme");
+        List<EntitySummary> byName = list("/entities?q={q}", "acme");
         assertThat(byName).extracting(EntitySummary::name)
                 .containsExactly("Acme Corp", "Acme Finance Corp.", "Acme Regional Unit 1 Ltd.");
         assertThat(byName.get(0).kinds()).containsExactly("Issuer");
 
-        assertThat(list("/entities?q=bigf")).extracting(EntitySummary::id).containsExactly("0000000002");
-        assertThat(list("/entities?q=0000000003")).extracting(EntitySummary::ticker).containsExactly("OTHR");
-        assertThat(list("/entities?q=zzz")).isEmpty();
+        assertThat(list("/entities?q={q}", "bigf")).extracting(EntitySummary::id)
+                .containsExactly("0000000002", "F00000201");
+        assertThat(list("/entities?q={q}", "0000000003")).extracting(EntitySummary::ticker).containsExactly("OTHR");
+        assertThat(list("/entities?q={q}", "zzz")).isEmpty();
     }
 
     @Test
     void searchRejectsShortQueryAndEscapesQuotes() {
         assertThat(rest.getForEntity("/entities?q=a", String.class).getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(list("/entities?q=%22%29%20%7D%20%3Fs%20%3Fp%20%3Fo")).isEmpty();
+        assertThat(list("/entities?q={q}", "\") } ?s ?p ?o . FILTER(\"")).isEmpty();
+        assertThat(list("/entities?q={q}", "Acme Fin")).extracting(EntitySummary::id).containsExactly("S00000101");
     }
 
     @Test
@@ -201,9 +203,9 @@ class ApiIT {
                 ExposureResponse.class);
     }
 
-    private List<EntitySummary> list(String url) {
+    private List<EntitySummary> list(String url, Object... vars) {
         ResponseEntity<List<EntitySummary>> resp = rest.exchange(url, HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<EntitySummary>>() { });
+                new ParameterizedTypeReference<List<EntitySummary>>() { }, vars);
         return resp.getBody();
     }
 }
