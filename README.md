@@ -153,6 +153,14 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.
 
+## Releases
+
+Tagged releases, newest last. `CHANGELOG.md` has the detail.
+
+| Version | Date | What it added |
+|---|---|---|
+| [v1.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v1.0.0) | 2026-09-10 | Baseline: ETL, SPARQL API, Angular explorer, Fuseki and Stardog stacks |
+
 ## License
 
 MIT
