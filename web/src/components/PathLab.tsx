@@ -232,13 +232,13 @@ export function PathLab({ reduced }: { reduced: boolean }) {
         <div className="grid grid--2" style={{ marginTop: 16 }}>
           <div>
             <p className="control-label">{`api/src/main/resources/queries/${query.file}, rendered`}</p>
-            <pre style={{ maxHeight: 420 }} tabIndex={0} aria-label={`rendered SPARQL for ${query.file}`}>
+            <pre className="wrap" style={{ maxHeight: 460 }} tabIndex={0} aria-label={`rendered SPARQL for ${query.file}`}>
               {highlightAlternative(sparql, path, step)}
             </pre>
           </div>
           <div>
             <p className="control-label">{`web/src/graph/queries.ts, ${query.fn}()`}</p>
-            <pre style={{ maxHeight: 420 }} tabIndex={0} aria-label={`in-browser equivalent, ${query.fn}`}>
+            <pre className="wrap" style={{ maxHeight: 460 }} tabIndex={0} aria-label={`in-browser equivalent, ${query.fn}`}>
               {source}
             </pre>
           </div>

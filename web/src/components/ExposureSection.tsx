@@ -231,6 +231,19 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
                 No positions connect this family to this issuer under the current options.
               </p>
             )}
+            {result.byHolder.length > 0 ? (
+              <>
+                <p className="control-label" style={{ marginTop: 20 }}>by holder</p>
+                <ul className="holder-list">
+                  {result.byHolder.map((holder) => (
+                    <li key={holder.holder.id}>
+                      <span>{holder.holder.name}</span>
+                      <span className="num">{money(holder.value)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
           </div>
         </div>
 
@@ -256,8 +269,7 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
                     <td>
                       <button
                         type="button"
-                        className="result-btn"
-                        style={{ padding: 0 }}
+                        className="link-btn"
                         aria-current={index === lineIndex}
                         onClick={() => setLineIndex(index)}
                       >

@@ -13,8 +13,10 @@ import { compactMoney } from '../lib/format';
  * a node from its old place to its new one when an expansion changes the layout.
  */
 
-const WIDTH = 680;
-const HEIGHT = 430;
+const WIDTH = 760;
+const HEIGHT = 500;
+/** Room kept at the sides for a label that reads outward from its node. */
+const LABEL_ROOM = 108;
 const TICKS = 320;
 
 interface SimNode extends NeighborNode {
@@ -70,22 +72,24 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
     const simulation = forceSimulation<SimNode>(nodes)
       .force('link', forceLink<SimNode, SimLink>(links)
         .id((d) => d.id)
-        .distance((l) => (l.rel === 'subsidiaryOf' ? 62 : 118))
-        .strength(0.45))
-      .force('charge', forceManyBody<SimNode>().strength(-280).distanceMax(340))
+        .distance((l) => (l.rel === 'subsidiaryOf' ? 74 : 148))
+        .strength(0.35))
+      .force('charge', forceManyBody<SimNode>().strength(-420).distanceMax(420))
       .force('centre', forceCenter(WIDTH / 2, HEIGHT / 2))
-      .force('collide', forceCollide<SimNode>().radius((d) => radiusFor(d, d.id === data.center) + 14))
+      .force('collide', forceCollide<SimNode>().radius((d) => radiusFor(d, d.id === data.center) + 22))
       .stop();
     simulation.tick(TICKS);
 
-    const margin = 26;
     for (const node of nodes) {
-      node.x = Math.max(margin, Math.min(WIDTH - margin, node.x));
-      node.y = Math.max(margin, Math.min(HEIGHT - margin, node.y));
+      node.x = Math.max(LABEL_ROOM, Math.min(WIDTH - LABEL_ROOM, node.x));
+      node.y = Math.max(30, Math.min(HEIGHT - 30, node.y));
     }
     const at = new Map(nodes.map((node) => [node.id, node]));
-    return { nodes, links, at };
+    const centre = at.get(data.center) ?? { x: WIDTH / 2, y: HEIGHT / 2 };
+    return { nodes, links, at, centre };
   }, [data]);
+
+  const centre = layout.centre;
 
   return (
     <div className="canvas">
@@ -118,6 +122,13 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
           {layout.nodes.map((node) => {
             const isCentre = node.id === data.center;
             const colours = classFor(node);
+            const radius = radiusFor(node, isCentre);
+            // Labels sit on the spoke away from the centre, which keeps a hub and its ring
+            // of neighbours legible where centred labels would pile up on each other.
+            const dx = node.x - centre.x;
+            const dy = node.y - centre.y;
+            const length = Math.hypot(dx, dy) || 1;
+            const label = node.name.length > 17 ? `${node.name.slice(0, 15)}...` : node.name;
             return (
               <g
                 key={node.id}
@@ -141,8 +152,13 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
                 {expanded.has(node.id) && !isCentre ? (
                   <circle r={radiusFor(node, false) + 4} fill="none" stroke="var(--accent-line)" strokeDasharray="2 2" />
                 ) : null}
-                <text className="node-label" y={radiusFor(node, isCentre) + 11} textAnchor="middle">
-                  {node.name.length > 26 ? `${node.name.slice(0, 24)}...` : node.name}
+                <text
+                  className="node-label"
+                  x={isCentre ? 0 : (dx / length) * (radius + 7)}
+                  y={isCentre ? radius + 13 : (dy / length) * (radius + 7) + 3}
+                  textAnchor={isCentre ? 'middle' : (dx >= 0 ? 'start' : 'end')}
+                >
+                  {label}
                 </text>
               </g>
             );

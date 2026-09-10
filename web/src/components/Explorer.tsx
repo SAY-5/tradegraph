@@ -32,7 +32,7 @@ export function Explorer({ reduced }: { reduced: boolean }) {
     let combined = neighborhood.value;
     for (const id of expansions) {
       if (id === selected) continue;
-      combined = mergeGraphs(combined, graph.neighbors(id, 24).value);
+      combined = mergeGraphs(combined, graph.neighbors(id, 20).value);
     }
     return combined;
   }, [neighborhood.value, expansions, selected]);

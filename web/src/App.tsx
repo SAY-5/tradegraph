@@ -12,7 +12,7 @@ const SECTIONS = [
   ['#explorer', 'explorer'],
   ['#exposure', 'exposure'],
   ['#paths', 'paths'],
-  ['#run', 'full run'],
+  ['#run', 'run'],
 ];
 
 export function App() {

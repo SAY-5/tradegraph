@@ -25,7 +25,8 @@ function label(text: string): string {
 }
 
 function ms(value: number): string {
-  return `${value.toFixed(0)} ms`;
+  // Everything here is sub-millisecond on a warm store; two decimals keep that honest.
+  return `${value >= 10 ? value.toFixed(0) : value.toFixed(2)} ms`;
 }
 
 function median(values: number[]): number {
@@ -129,8 +130,11 @@ function runDemo(api: GraphApi): string {
   }
 
   const nonZero = answers.filter((answer) => answer.result.totalValue > 0).length;
+  const gridMillis = latencies.reduce((total, value) => total + value, 0);
   out.push(`  ${nonZero}/${answers.length} pairs have exposure; latency p50 ${ms(median(latencies))}, `
     + `max ${ms(Math.max(...latencies))} (uncached, in-browser)`);
+  out.push(`  ${answers.length} uncached queries in ${gridMillis.toFixed(2)} ms; performance.now() steps in `
+    + `0.1 ms here, so a single query rounds to zero`);
   const topPair = top[0];
   const topFund = families.find((family) => family.name === topPair.fund) ?? families[0];
   const topIssuer = issuers.find((issuer) => issuer.name === topPair.issuer) ?? issuers[0];

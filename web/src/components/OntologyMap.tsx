@@ -115,7 +115,7 @@ export function OntologyMap() {
     <section className="section" id="ontology" aria-labelledby="ontology-title">
       <div className="shell">
         <p className="eyebrow">01 / ontology</p>
-        <h2 id="ontology-title">Six classes, a handful of properties</h2>
+        <h2 id="ontology-title">A vocabulary you can hold in your head</h2>
         <p className="section__lede">
           FIBO models control relationships and issuance with dozens of classes. TradeGraph
           keeps the same shape in nine, so every query in the API fits on one screen. Hover

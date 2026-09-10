@@ -121,7 +121,7 @@ a:hover { text-decoration-thickness: 2px; }
 
 /* ----------------------------------------------------------------- section */
 
-.section { padding: 64px 0; border-top: 1px solid var(--line); }
+.section { padding: 64px 0; border-top: 1px solid var(--line); scroll-margin-top: 64px; }
 .section:first-of-type { border-top: 0; }
 
 .eyebrow {
@@ -159,10 +159,14 @@ a:hover { text-decoration-thickness: 2px; }
 
 /* -------------------------------------------------------------------- hero */
 
-.hero { padding: clamp(48px, 9vw, 96px) 0 56px; }
+.hero {
+  padding-top: clamp(44px, 8vw, 88px);
+  padding-bottom: 56px;
+  scroll-margin-top: 64px;
+}
 .hero h1 {
-  font-size: clamp(30px, 6.4vw, 50px);
-  max-width: 20ch;
+  font-size: clamp(30px, 6vw, 48px);
+  max-width: 24ch;
   letter-spacing: -0.025em;
 }
 .hero p {
@@ -277,7 +281,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   white-space: nowrap;
 }
 .badge--hit { border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft); }
-.badge--kind { text-transform: lowercase; }
+.badge--kind { letter-spacing: 0.01em; }
 
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
@@ -469,3 +473,35 @@ code { font-family: var(--mono); font-size: 0.94em; }
   stroke-linejoin: round;
 }
 .ontology-node text { paint-order: stroke; stroke: none; }
+
+/* Grid and flex children must be allowed to shrink, or a wide <pre> or table pushes the
+   whole page sideways instead of scrolling inside its own box. */
+.grid > * { min-width: 0; }
+.masthead__inner > * { min-width: 0; }
+
+/* An inline text button for table cells, where a full width block would read as a bar. */
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+.link-btn:hover { border-bottom-color: var(--accent-line); }
+.link-btn[aria-current="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Query text wraps rather than scrolls, so the highlighted path stays on screen. */
+pre.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.holder-list { list-style: none; margin: 12px 0 0; padding: 0; font-size: 13px; }
+.holder-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+}
+.holder-list li:last-child { border-bottom: 0; }
