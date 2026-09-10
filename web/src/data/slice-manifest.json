@@ -1,0 +1,30 @@
+{
+  "file": "slice.json",
+  "sha256": "31f4e5d79676b2c24160774120f7c150a3d0d423c3c09235fc47538e306ad3a1",
+  "bytes": 402008,
+  "source": "etl/sample",
+  "topIssuers": 300,
+  "maxDepth": 5,
+  "counts": {
+    "entities": 1766,
+    "issuers": 342,
+    "funds": 410,
+    "subsidiaries": 1072,
+    "positions": 4092,
+    "filings": 620,
+    "instruments": 884,
+    "lineageEdges": 1424,
+    "ontologyTriples": 140,
+    "triples": 65552
+  },
+  "full": {
+    "entities": 6100,
+    "issuers": 3600,
+    "funds": 410,
+    "subsidiaries": 2148,
+    "positions": 12373,
+    "filings": 829,
+    "lineageEdges": 2500,
+    "triples": 207095
+  }
+}
