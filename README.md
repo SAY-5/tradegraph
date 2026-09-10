@@ -90,6 +90,15 @@ Issuer and fund manager identities in the sample are real (SEC
 deterministic. See `etl/sample/README.md`. The `--live` ETL mode pulls real
 13F-HR information tables from `data.sec.gov` with a compliant User-Agent.
 
+## Browser demo
+
+`web/` is a static page that answers the same lineage and exposure questions with no API
+and no store: the ontology triples, the query semantics and the SPARQL templates are the
+ones in this repository, running over a 393 KiB slice of `etl/sample` (1,766 of 6,100
+entities, 4,092 of 12,373 positions). The four exposure pairs above reproduce to the
+dollar and `npm run selfcheck` asserts it; the milliseconds do not carry over, because
+the demo times function calls rather than an API and a store. See `web/README.md`.
+
 ## Components
 
 | Directory | Stack | What it does |
@@ -99,6 +108,7 @@ deterministic. See `etl/sample/README.md`. The `--live` ETL mode pulls real
 | `api/` | Java 21, Spring Boot 3.5, Caffeine, Testcontainers | SPARQL client, query templates, lineage and exposure services, REST endpoints, store health indicator |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
 | `deploy/` | Docker Compose | Fuseki stack, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
+| `web/` | Vite, React 18, TypeScript, d3 7 | Static browser demo over a committed slice of the sample, no backend |
 
 ## API
 
