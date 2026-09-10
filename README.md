@@ -95,7 +95,7 @@ deterministic. See `etl/sample/README.md`. The `--live` ETL mode pulls real
 | Directory | Stack | What it does |
 |---|---|---|
 | `ontology/` | OWL / Turtle | `tradegraph.ttl`: LegalEntity, Counterparty, Issuer, Fund, Subsidiary, Position, Trade, Instrument, Filing; `subsidiaryOf` (transitive), `hasSubsidiary`, `counterpartyOf`, `holds`, `issuer`, `filedIn`, `cik`, `lei`, `ticker`, `name` |
-| `etl/` | Python 3.12, rdflib, httpx, click | `tradegraph-etl build --sample|--live`, `load --endpoint URL --store fuseki|stardog`, `stats`; emits one N-Triples file per named graph |
+| `etl/` | Python 3.12, rdflib, httpx, click | `tradegraph-etl build --sample|--live`, `load --endpoint URL --store fuseki|stardog`, `stats`; normalises reported periods and emits one N-Triples file per named graph |
 | `api/` | Java 21, Spring Boot 3.5, Caffeine, Testcontainers | SPARQL client, query templates, lineage and exposure services, REST endpoints, store health indicator |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
 | `deploy/` | Docker Compose | Fuseki stack, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
@@ -111,14 +111,23 @@ Entity ids are the SEC CIK (ten digits) for issuers and 13F filers, and
 | `GET /entities?q=&limit=` | Search by name (substring), ticker or CIK; ticker matches first |
 | `GET /entities/{id}` | Detail: identifiers, parent, counts and values of positions held and issued |
 | `GET /entities/{id}/lineage?depth=` | Ancestors nearest first, ultimate parent, descendant tree (depth limited, default 5) |
-| `GET /entities/{id}/exposure?issuer=&includeAffiliates=&includeSubsidiaries=&depth=` | Aggregate value of positions held by the fund (and the funds in its family) on instruments issued by the issuer (and its subsidiaries), grouped by instrument and holder, each line with `lineagePath`, `pathLength` and `explanation` |
-| `GET /trades?entity=&limit=&offset=` | Positions where the entity is holder or issuer, largest first |
+| `GET /entities/{id}/exposure?issuer=&includeAffiliates=&includeSubsidiaries=&depth=&as_of=` | Aggregate value of positions held by the fund (and the funds in its family) on instruments issued by the issuer (and its subsidiaries), grouped by instrument and holder, each line with `lineagePath`, `pathLength` and `explanation` |
+| `GET /trades?entity=&limit=&offset=&as_of=` | Positions where the entity is holder or issuer, largest first |
+| `GET /periods` | Reporting periods held in the store, newest first |
+| `GET /positions/delta?entity=&from=&to=` | Lines the entity opened, closed and moved between two reporting periods |
 | `GET /graph/neighbors/{id}?limit=` | Parent, subsidiaries and strongest holding links for the explorer |
 | `GET /stats` | Entity, position, filing, lineage edge and triple counts |
 | `GET /actuator/health` | Includes a `store` component that runs `ASK {}` against the store |
 
-Errors use RFC 9457 problem details: 400 for malformed ids or short queries,
-404 for unknown entities, 502 when the store fails.
+Errors use RFC 9457 problem details: 400 for malformed ids, short queries or a
+malformed date, 404 for unknown entities, 502 when the store fails.
+
+A 13F-HR reports a quarter end, so every position carries the period of the
+filing it came from and a query that did not pin a period would sum the same
+holding once per quarter. Exposure, `/trades` and the delta report therefore
+answer over exactly one period: `as_of` selects the latest period on or before
+the given date, and without it the latest period of all is used. `as_of` before
+the first filed period returns an empty answer with a null `asOf`.
 
 Exposure buckets partition the total: `directValue` is the fund holding the
 issuer itself, `viaSubsidiariesValue` is the fund holding an instrument issued
@@ -147,9 +156,9 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 
 ## Tests
 
-- `etl/`: 20 pytest tests covering RDF mapping, sample size (>= 5,000 entities), dangling references, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 30 unit tests (SPARQL escaping and id validation, bounded property paths, template rendering, lineage ordering, exposure path building) and 12 integration tests with Testcontainers Fuseki, including `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
-- `explorer/`: 7 vitest specs (API client URLs, graph merging, exposure panel rendering, app shell) plus ESLint and a production build.
+- `etl/`: 30 pytest tests covering RDF mapping, period parsing, sample size (>= 5,000 entities), the two reporting periods in the sample, dangling references, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
+- `api/`: 35 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, lineage ordering, exposure path building, position delta matching) and 19 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
+- `explorer/`: 8 vitest specs (API client URLs, graph merging, exposure panel rendering, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.
 
@@ -160,6 +169,7 @@ Tagged releases, newest last. `CHANGELOG.md` has the detail.
 | Version | Date | What it added |
 |---|---|---|
 | [v1.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v1.0.0) | 2026-09-10 | Baseline: ETL, SPARQL API, Angular explorer, Fuseki and Stardog stacks |
+| [v2.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v2.0.0) | 2026-09-10 | Temporal filings: reporting periods on positions, `as_of` queries, `/positions/delta`, period selector |
 
 ## License
 

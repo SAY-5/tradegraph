@@ -22,7 +22,7 @@
     a owl:Ontology ;
     rdfs:label "TradeGraph ontology" ;
     dct:description "Counterparties, legal entities, positions and SEC filings." ;
-    owl:versionInfo "1.0.0" .
+    owl:versionInfo "2.0.0" .
 
 #################################################################
 # Classes
