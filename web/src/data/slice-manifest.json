@@ -1,7 +1,7 @@
 {
   "file": "slice.json",
-  "sha256": "31f4e5d79676b2c24160774120f7c150a3d0d423c3c09235fc47538e306ad3a1",
-  "bytes": 402008,
+  "sha256": "2d65306662ad083572542c9e676f1265ef0e56674c9d98b68a7f5fb0a03a2954",
+  "bytes": 402366,
   "source": "etl/sample",
   "topIssuers": 300,
   "maxDepth": 5,
@@ -15,7 +15,7 @@
     "instruments": 884,
     "lineageEdges": 1424,
     "ontologyTriples": 140,
-    "triples": 65552
+    "triples": 65550
   },
   "full": {
     "entities": 6100,
