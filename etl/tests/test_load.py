@@ -1,13 +1,17 @@
 """Idempotent loading against a minimal in-process Graph Store Protocol server."""
 
+import os
 import threading
+from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+from click.testing import CliRunner
 from rdflib import Dataset as RdfDataset
 from rdflib import Graph
 
+from tradegraph_etl.cli import main
 from tradegraph_etl.load import GraphStoreLoader, StoreEndpoints
 from tradegraph_etl.transform import GRAPH_ENTITIES, GRAPH_POSITIONS, to_rdf
 
@@ -101,4 +105,47 @@ def test_load_skips_empty_graphs(fake_server):
     store, base = fake_server
     loader = GraphStoreLoader(StoreEndpoints.for_store(base, "fuseki"))
     assert loader.load(RdfDataset()) == {}
+    assert store.puts == 0
+
+
+def write_build_dir(build_dir, tiny_dataset):
+    rdf = to_rdf(tiny_dataset)
+    for graph_iri, name in ((GRAPH_ENTITIES, "entities.nt"), (GRAPH_POSITIONS, "positions.nt")):
+        data = rdf.graph(graph_iri).serialize(format="nt", encoding="utf-8")
+        (build_dir / name).write_bytes(data)
+
+
+def test_load_since_only_pushes_the_graphs_that_moved(fake_server, tiny_dataset, tmp_path):
+    store, base = fake_server
+    write_build_dir(tmp_path, tiny_dataset)
+    runner = CliRunner()
+
+    full = runner.invoke(main, ["load", "--endpoint", base, "--build-dir", str(tmp_path)])
+    assert full.exit_code == 0, full.output
+    assert store.puts == 2
+
+    stale = (datetime.now() - timedelta(hours=1)).timestamp()
+    os.utime(tmp_path / "entities.nt", (stale, stale))
+    since = (datetime.now() - timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%S")
+
+    incremental = runner.invoke(
+        main, ["load", "--endpoint", base, "--build-dir", str(tmp_path), "--since", since]
+    )
+
+    assert incremental.exit_code == 0, incremental.output
+    assert store.puts == 3
+    assert "skipped entities.nt" in incremental.output
+    assert "loaded positions.nt" in incremental.output
+
+
+def test_load_since_after_every_file_pushes_nothing(fake_server, tiny_dataset, tmp_path):
+    store, base = fake_server
+    write_build_dir(tmp_path, tiny_dataset)
+    later = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+
+    result = CliRunner().invoke(
+        main, ["load", "--endpoint", base, "--build-dir", str(tmp_path), "--since", later]
+    )
+
+    assert result.exit_code == 0, result.output
     assert store.puts == 0

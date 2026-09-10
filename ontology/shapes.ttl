@@ -1,0 +1,117 @@
+@prefix tg:   <https://tradegraph.dev/ontology#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# SHACL shapes for the TradeGraph ontology, checked by `tradegraph-etl validate`.
+# They constrain what the ETL is allowed to emit: cardinality, datatypes and the
+# small closed vocabularies. Lineage cycles and dangling references are not
+# expressible here and are reported by the same command from the dataset itself.
+
+tg:LegalEntityShape a sh:NodeShape ;
+    sh:targetClass tg:LegalEntity ;
+    sh:property [
+        sh:path tg:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:cik ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+        sh:pattern "^[0-9]{10}$" ;
+    ] ;
+    sh:property [
+        sh:path tg:subsidiaryOf ;
+        sh:nodeKind sh:IRI ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:ownershipFraction ;
+        sh:datatype xsd:decimal ;
+        sh:maxCount 1 ;
+        sh:minInclusive 0 ;
+        sh:maxInclusive 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:ownershipAssumed ;
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1 ;
+    ] .
+
+tg:PositionShape a sh:NodeShape ;
+    sh:targetClass tg:Position ;
+    sh:property [
+        sh:path tg:value ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minInclusive 0 ;
+    ] ;
+    sh:property [
+        sh:path tg:quantity ;
+        sh:datatype xsd:decimal ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:asOf ;
+        sh:datatype xsd:date ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:issuer ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:instrument ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+tg:InstrumentShape a sh:NodeShape ;
+    sh:targetClass tg:Instrument ;
+    sh:property [
+        sh:path tg:cusip ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:instrumentClass ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ("COMMON"^^xsd:string "PREFERRED"^^xsd:string "DEBT"^^xsd:string
+               "PUT"^^xsd:string "CALL"^^xsd:string) ;
+    ] ;
+    sh:property [
+        sh:path tg:issuedBy ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ;
+    ] .
+
+tg:FilingShape a sh:NodeShape ;
+    sh:targetClass tg:Filing ;
+    sh:property [
+        sh:path tg:accessionNumber ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:formType ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path tg:periodOfReport ;
+        sh:datatype xsd:date ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .

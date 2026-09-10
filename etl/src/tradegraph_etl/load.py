@@ -10,7 +10,10 @@ The same code path works for Stardog and Fuseki; only the URL shape differs:
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 from urllib.parse import urlencode
 
 import httpx
@@ -83,3 +86,15 @@ class GraphStoreLoader:
         resp.raise_for_status()
         bindings = resp.json()["results"]["bindings"]
         return int(bindings[0]["n"]["value"]) if bindings else 0
+
+
+def changed_since(paths: Iterable[Path], since: datetime | None) -> list[Path]:
+    """Files modified at or after ``since``, which is read as local time when naive.
+
+    This is what makes ``load --since`` incremental: the build writes one file per
+    named graph, so a graph whose file did not move does not need to be pushed again.
+    """
+    if since is None:
+        return list(paths)
+    cut_off = since if since.tzinfo else since.astimezone()
+    return [p for p in paths if datetime.fromtimestamp(p.stat().st_mtime, tz=UTC) >= cut_off]

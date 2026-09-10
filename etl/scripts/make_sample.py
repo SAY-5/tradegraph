@@ -316,7 +316,9 @@ def build(tickers_path: Path, out: Path) -> None:
     for seq, fund in enumerate(funds, start=1):
         family = fund["parent"] or fund["id"]
         filer_cik = fund["cik"] or fund["parent"]
-        accession = f"{filer_cik}-24-{seq:06d}"
+        # 13F sequences start at 1000 so they cannot collide with the Exhibit 21
+        # accession a listed manager also files under its own CIK.
+        accession = f"{filer_cik}-24-{seq + 1000:06d}"
         n = rng.randint(12, 45)
         weights = [int(w * 100) for w in issuer_weights]
         picked = dict.fromkeys(rng.sample(range(len(issuers)), k=n, counts=weights))
@@ -360,7 +362,7 @@ def build(tickers_path: Path, out: Path) -> None:
         )
         holdings[family].append(
             {
-                "accessionNumber": f"{filer_cik}-24-{seq + 500:06d}",
+                "accessionNumber": f"{filer_cik}-24-{seq + 2000:06d}",
                 "formType": "13F-HR",
                 "filerId": fund["id"],
                 "periodOfReport": PRIOR_AS_OF,

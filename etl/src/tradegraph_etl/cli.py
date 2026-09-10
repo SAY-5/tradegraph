@@ -11,11 +11,12 @@ import click
 from rdflib import Dataset as RdfDataset
 from rdflib import URIRef
 
-from tradegraph_etl import transform
-from tradegraph_etl.load import GraphStoreLoader, StoreEndpoints
+from tradegraph_etl import quality, transform
+from tradegraph_etl.load import GraphStoreLoader, StoreEndpoints, changed_since
 from tradegraph_etl.sources.sample import DEFAULT_SAMPLE_DIR, read_sample
 
 ONTOLOGY_PATH = Path(__file__).resolve().parents[3] / "ontology" / "tradegraph.ttl"
+QUALITY_FILE = "quality.json"
 GRAPH_FILES = {
     transform.GRAPH_ENTITIES: "entities.nt",
     transform.GRAPH_POSITIONS: "positions.nt",
@@ -76,26 +77,65 @@ def build(
 @click.option("--user", envvar="STORE_USER", default=None)
 @click.option("--password", envvar="STORE_PASSWORD", default=None)
 @click.option("--build-dir", type=click.Path(path_type=Path), default=Path("build"))
-def load(endpoint, store, user, password, build_dir):
-    """PUT every named graph from the build directory into the store."""
+@click.option(
+    "--since",
+    type=click.DateTime(formats=["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S"]),
+    default=None,
+    help="Only push graph files modified at or after this time.",
+)
+def load(endpoint, store, user, password, build_dir, since):
+    """PUT the named graphs from the build directory into the store."""
     auth = (user, password) if user else None
     loader = GraphStoreLoader(StoreEndpoints.for_store(endpoint, store), auth=auth)
     started = time.monotonic()
-    for graph_iri, filename in GRAPH_FILES.items():
-        path = build_dir / filename
-        if not path.exists():
+    present = {build_dir / f: iri for iri, f in GRAPH_FILES.items() if (build_dir / f).exists()}
+    due = set(changed_since(present, since))
+    loaded, skipped = [], []
+    for path, graph_iri in present.items():
+        if path not in due:
+            skipped.append(path.name)
             continue
         loader.put_graph(URIRef(graph_iri), path.read_bytes())
-        click.echo(f"loaded {filename} -> {graph_iri}")
+        loaded.append(path.name)
+        click.echo(f"loaded {path.name} -> {graph_iri}")
+    for name in skipped:
+        click.echo(f"unchanged since {since:%Y-%m-%dT%H:%M:%S}, skipped {name}")
     click.echo(
         json.dumps(
             {
+                "loaded": loaded,
+                "skipped": skipped,
                 "entities": loader.count_entities(),
                 "triples": loader.count_triples(),
                 "seconds": round(time.monotonic() - started, 2),
             }
         )
     )
+
+
+@main.command()
+@click.option("--sample", "use_sample", is_flag=True, help="Check the committed sample dataset.")
+@click.option("--sample-dir", type=click.Path(path_type=Path), default=DEFAULT_SAMPLE_DIR)
+@click.option("--shapes", type=click.Path(path_type=Path), default=None)
+@click.option("--ontology", type=click.Path(path_type=Path), default=ONTOLOGY_PATH)
+@click.option("--out", type=click.Path(path_type=Path), default=Path("build"))
+@click.option(
+    "--fail-on-violation", is_flag=True, help="Exit non zero when the report is not clean."
+)
+def validate(use_sample, sample_dir, shapes, ontology, out, fail_on_violation):
+    """Check the dataset against the SHACL shapes and write the quality report."""
+    if not use_sample:
+        raise click.UsageError("--sample is the only source this command reads")
+    ds = read_sample(sample_dir)
+    store = transform.to_rdf(ds, ontology.read_text() if ontology.exists() else None)
+    shapes_path = shapes or quality.default_shapes_path()
+    report = quality.report(ds, store, shapes_path.read_text() if shapes_path.exists() else None)
+    out.mkdir(parents=True, exist_ok=True)
+    payload = report.to_json()
+    (out / QUALITY_FILE).write_text(json.dumps(payload, indent=2))
+    click.echo(json.dumps(payload, indent=2))
+    if fail_on_violation and not report.conforms:
+        sys.exit(1)
 
 
 @main.command()

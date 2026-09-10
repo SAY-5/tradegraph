@@ -10,6 +10,7 @@ dependencies = [
     "rdflib>=7.0",
     "httpx>=0.27",
     "click>=8.1",
+    "pyshacl>=0.26",
 ]
 
 [project.scripts]

@@ -154,7 +154,9 @@ def lineage_depths(ds: Dataset) -> dict[str, int]:
     depths: dict[str, int] = {}
     for eid in parent:
         d, cur = 0, eid
-        while parent.get(cur):
+        # Bounded rather than open ended: a subsidiaryOf cycle would not terminate,
+        # and quality.subsidiary_cycles is what reports that.
+        while parent.get(cur) and d < len(parent):
             cur = parent[cur]
             d += 1
         depths[eid] = d
