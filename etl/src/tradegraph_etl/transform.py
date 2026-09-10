@@ -24,6 +24,10 @@ GRAPH_ONTOLOGY = URIRef("https://tradegraph.dev/graph/ontology")
 
 KIND_CLASS = {"ISSUER": TG.Issuer, "FUND": TG.Fund, "SUBSIDIARY": TG.Subsidiary}
 
+# Exhibit 21 lists often omit the percentage owned; a listed subsidiary is then
+# treated as wholly owned and flagged with tg:ownershipAssumed.
+DEFAULT_OWNERSHIP = 1.0
+
 
 def entity_iri(entity_id: str) -> URIRef:
     return ENTITY[entity_id]
@@ -70,6 +74,9 @@ def add_entity(g: Graph, e: Entity) -> None:
     if e.parent:
         g.add((s, TG.subsidiaryOf, entity_iri(e.parent)))
         g.add((entity_iri(e.parent), TG.hasSubsidiary, s))
+        owned = DEFAULT_OWNERSHIP if e.ownership is None else e.ownership
+        g.add((s, TG.ownershipFraction, _decimal(owned)))
+        g.add((s, TG.ownershipAssumed, Literal(e.ownership is None)))
     if e.filing:
         g.add((s, TG.filedIn, filing_iri(e.filing)))
 

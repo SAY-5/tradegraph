@@ -49,3 +49,11 @@ def test_sample_positions_span_two_reporting_periods(sample_dataset):
     assert by_period["2024-06-30"] > by_period["2024-03-31"] > 5000
     thirteen_f = {f.period for f in sample_dataset.filings if f.form_type == "13F-HR"}
     assert thirteen_f == set(periods)
+
+
+def test_sample_subsidiaries_carry_stated_and_unstated_ownership(sample_dataset):
+    subsidiaries = [e for e in sample_dataset.entities if e.kind == "SUBSIDIARY"]
+    stated = [e for e in subsidiaries if e.ownership is not None]
+    assert len(stated) > 1000
+    assert len(subsidiaries) - len(stated) > 100
+    assert {e.ownership for e in stated} == {0.51, 0.6, 0.75, 0.8, 0.9, 1.0}

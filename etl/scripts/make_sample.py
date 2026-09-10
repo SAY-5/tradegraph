@@ -93,6 +93,9 @@ FUND_TEMPLATES = [
     ("{base} Dividend Focus Fund", "US"),
     ("{base} Technology Leaders Fund", "LU"),
 ]
+# Percentage owned as an Exhibit 21 style list would state it. ``None`` stands for
+# a line with no percentage, which the ETL treats as wholly owned and flags.
+OWNERSHIP = (None, 1.0, 0.8, 0.6, None, 0.51, 1.0, 0.75, None, 0.9)
 SUBSIDIARY_TEMPLATES = [
     ("{base} Holdings LLC", "DE"),
     ("{base} International B.V.", "NL"),
@@ -188,6 +191,13 @@ def cik10(cik: int | str) -> str:
     return f"{int(cik):010d}"
 
 
+def owned(subsidiary_id: str) -> dict:
+    """The stated percentage owned for a subsidiary, or nothing when the list gave none."""
+    digest = hashlib.sha1(subsidiary_id.encode()).hexdigest()
+    stated = OWNERSHIP[int(digest[:8], 16) % len(OWNERSHIP)]
+    return {} if stated is None else {"ownership": stated}
+
+
 def prior_table(table: list[dict], seq: int, issuers: list[dict], prices: dict) -> list[dict]:
     """The previous quarter of a 13F table.
 
@@ -280,19 +290,22 @@ def build(tickers_path: Path, out: Path) -> None:
                     "jurisdiction": jur,
                     "filing": f"{issuer['cik']}-24-000001",
                 }
+                | owned(sid)
             )
             first_level.append(sid)
         if rng.random() < 0.5:
             parent_sid = rng.choice(first_level)
             for j in range(1, rng.randint(1, 3) + 1):
+                unit_sid = f"{parent_sid}{j:02d}"
                 subsidiaries.append(
                     {
-                        "id": f"{parent_sid}{j:02d}",
+                        "id": unit_sid,
                         "name": f"{base} Regional Unit {j} Ltd.",
                         "parent": parent_sid,
                         "jurisdiction": rng.choice(["GB", "DE", "FR", "AU", "BR", "IN"]),
                         "filing": f"{issuer['cik']}-24-000001",
                     }
+                    | owned(unit_sid)
                 )
 
     debt_issuers = [s for s in subsidiaries if "Finance" in s["name"] or "Capital" in s["name"]]

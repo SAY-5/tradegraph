@@ -79,6 +79,18 @@ tg:subsidiaryOf a owl:ObjectProperty, owl:TransitiveProperty ;
     rdfs:range tg:LegalEntity ;
     rdfs:comment "Points from a subsidiary to its direct parent. Declared transitive so Stardog reasoning can materialise the closure; the API uses property paths so it works without reasoning." .
 
+tg:ownershipFraction a owl:DatatypeProperty ;
+    rdfs:label "ownership fraction" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range xsd:decimal ;
+    rdfs:comment "Fraction of this entity owned by the parent it is a tg:subsidiaryOf, as disclosed in an Exhibit 21 style list. An entity has at most one parent in this dataset, so the fraction sits on the subsidiary instead of on a reified edge." .
+
+tg:ownershipAssumed a owl:DatatypeProperty ;
+    rdfs:label "ownership assumed" ;
+    rdfs:domain tg:LegalEntity ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "True when the disclosure carried no percentage and tg:ownershipFraction defaulted to 1.0." .
+
 tg:hasParent a owl:ObjectProperty ;
     owl:equivalentProperty tg:subsidiaryOf ;
     rdfs:label "has parent" .

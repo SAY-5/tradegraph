@@ -21,6 +21,7 @@ class Entity:
     ticker: str | None = None
     lei: str | None = None
     parent: str | None = None
+    ownership: float | None = None
     jurisdiction: str | None = None
     sic: str | None = None
     filing: str | None = None

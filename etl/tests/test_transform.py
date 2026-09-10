@@ -67,6 +67,17 @@ def test_filing_mapping(tiny_dataset):
     assert (f, TG.periodOfReport, Literal("2024-06-30", datatype=XSD.date)) in g
 
 
+def test_ownership_fraction_defaults_to_whole_and_says_so(tiny_dataset):
+    g = to_rdf(tiny_dataset).graph(GRAPH_ENTITIES)
+    stated = entity_iri("S00000101")
+    assert (stated, TG.ownershipFraction, Literal(Decimal("0.8"), datatype=XSD.decimal)) in g
+    assert (stated, TG.ownershipAssumed, Literal(False)) in g
+    unstated = entity_iri("S0000010101")
+    assert (unstated, TG.ownershipFraction, Literal(Decimal("1.0"), datatype=XSD.decimal)) in g
+    assert (unstated, TG.ownershipAssumed, Literal(True)) in g
+    assert list(g.objects(entity_iri("0000000001"), TG.ownershipFraction)) == []
+
+
 def test_ontology_graph_is_loaded(tiny_dataset, ontology_ttl):
     store = to_rdf(tiny_dataset, ontology_ttl)
     onto = store.graph(GRAPH_ONTOLOGY)

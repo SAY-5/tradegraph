@@ -29,6 +29,7 @@ def tiny_dataset() -> Dataset:
             name="Acme Finance Corp.",
             kind="SUBSIDIARY",
             parent="0000000001",
+            ownership=0.8,
             jurisdiction="DE",
             filing="0000000001-24-000001",
         ),

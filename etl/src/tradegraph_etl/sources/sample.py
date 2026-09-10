@@ -43,6 +43,7 @@ def read_sample(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dataset:
                 name=r["name"],
                 kind="SUBSIDIARY",
                 parent=r["parent"],
+                ownership=r.get("ownership"),
                 jurisdiction=r["jurisdiction"],
                 filing=r["filing"],
             )
