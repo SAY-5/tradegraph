@@ -56,34 +56,41 @@ TradeGraph demo summary
 =======================
 store            : fuseki (http://localhost:3030/ds/sparql)
 entities loaded  : 6,100 (issuers 3,600, funds 410, subsidiaries 2,148)
-positions        : 12,373 in 829 filings
+positions        : 24,336 in 1,240 filings
 lineage edges    : 2,500
-triples          : 207,095
-stats query      : 552 ms
+triples          : 323,173
+stats query      : 205 ms
 
 Lineage (subsidiaryOf property paths, depth limited to 5)
-  Apple Inc.: 6 descendants, deepest level 2, 79 ms
-  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 51 ms
-  Invesco Ltd.: 7 descendants, deepest level 1, 57 ms
+  Apple Inc.: 6 descendants, deepest level 2, 51 ms
+  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 28 ms
+  Invesco Ltd.: 7 descendants, deepest level 1, 26 ms
 
 Exposure (fund family to issuer, through affiliates and subsidiaries, 72 queries)
   PRICE T ROWE GROUP INC -> Apple Inc.
     total $2,475,300,433  direct $0  via subsidiaries $0  via affiliates $2,475,300,433
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 64 ms
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 65 ms
     longest path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Global Select Fund holds COMMON AAPL issued by Apple Inc.
   BlackRock, Inc. -> Meta Platforms, Inc.
     total $1,980,265,856  direct $0  via subsidiaries $0  via affiliates $1,980,265,856
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 56 ms
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 69 ms
     longest path: BlackRock, Inc., whose subsidiary Blackrock International Value Fund holds PUT META issued by Meta Platforms, Inc.
   Invesco Ltd. -> Apple Inc.
     total $1,523,775,489  direct $0  via subsidiaries $0  via affiliates $1,523,775,489
-    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 193 ms
+    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 69 ms
     longest path: Invesco Ltd., whose subsidiary Invesco Dividend Focus Fund holds COMMON AAPL issued by Apple Inc.
   exposure through an issuer subsidiary: TPG Inc. -> Nu Holdings Ltd.
-    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 43 ms
+    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 59 ms
     path: TPG Inc., whose subsidiary TPG Global Select Fund holds DEBT issued by Nu Finance Corp. is a subsidiary of Nu Holdings Ltd.
-  26/72 pairs have exposure; latency p50 64 ms, max 1411 ms (uncached, Fuseki)
+  26/72 pairs have exposure; latency p50 57 ms, max 110 ms (uncached, Fuseki)
   repeated query served from cache in 2 ms
+
+Operations (/ops/overview)
+  store          : fuseki reasoning=false, 323,173 triples, exposure depth <= 4, lineage depth <= 5
+  cache          : 33 hits, 139 misses, hit ratio 0.19, 139 entries across 11 caches
+  slowest queries: search 50 ms, periods 33 ms, periods 29 ms, periods 28 ms, periods 28 ms
+  data quality   : conforms=true, dangling 0, cycles 0, missing identifiers 0, shape violations 0 (checked 2026-09-10T10:10:29Z)
+  cost guard     : depth=9 answered 422
 ```
 
 Issuer and fund manager identities in the sample are real (SEC
@@ -107,9 +114,9 @@ rather than an API and a store. See `web/README.md`.
 |---|---|---|
 | `ontology/` | OWL / Turtle | `tradegraph.ttl` and `shapes.ttl` (SHACL): LegalEntity, Counterparty, Issuer, Fund, Subsidiary, Position, Trade, Instrument, Filing; `subsidiaryOf` (transitive), `hasSubsidiary`, `ownershipFraction`, `counterpartyOf`, `holds`, `issuer`, `filedIn`, `cik`, `lei`, `ticker`, `name` |
 | `etl/` | Python 3.12, rdflib, pyshacl, httpx, click | `tradegraph-etl build --sample|--live`, `load --endpoint URL --store fuseki|stardog [--since]`, `validate`, `stats`; normalises reported periods and emits one N-Triples file per named graph |
-| `api/` | Java 21, Spring Boot 3.5, Caffeine, Testcontainers | SPARQL client, query templates, lineage and exposure services, REST endpoints, store health indicator |
+| `api/` | Java 21, Spring Boot 3.5, Caffeine, Micrometer, Testcontainers | SPARQL client, query templates, cost guard, lineage and exposure services, REST endpoints, store health indicator and ops overview |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
-| `deploy/` | Docker Compose | Fuseki stack, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
+| `deploy/` | Docker Compose | Fuseki stack, Fuseki inference profile, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
 | `web/` | Vite, React 18, TypeScript, d3 7 | Static browser demo over a committed slice of the sample, no backend |
 
 ## API
@@ -131,10 +138,15 @@ Entity ids are the SEC CIK (ten digits) for issuers and 13F filers, and
 | `GET /graph/neighbors/{id}?limit=` | Parent, subsidiaries and strongest holding links for the explorer |
 | `GET /stats` | Entity, position, filing, lineage edge and triple counts |
 | `GET /quality` | The report `tradegraph-etl validate` wrote for the data that was last loaded |
+| `GET /ops/overview` | Store, triple count, cache hit ratio, the slowest recent queries and the last quality summary |
 | `GET /actuator/health` | Includes a `store` component that runs `ASK {}` against the store |
+| `GET /actuator/metrics/tradegraph.sparql` | Query latency by template |
 
 Errors use RFC 9457 problem details: 400 for malformed ids, short queries or a
-malformed date, 404 for unknown entities, 502 when the store fails.
+malformed date, 404 for unknown entities, 422 when a request costs more than
+the configuration allows, 502 when the store fails. The two depth limits are
+separate: `tradegraph.exposure.max-depth` is 4 and `tradegraph.lineage.max-depth`
+is 5, and asking for more is a 422 rather than a silent clamp.
 
 A 13F-HR reports a quarter end, so every position carries the period of the
 filing it came from and a query that did not pin a period would sum the same
@@ -174,6 +186,32 @@ number with its own first 13F, so the sample now numbers 13F filings from 1000.
 or after that time, so reloading after a build that touched one graph replaces
 one graph instead of all three.
 
+## Operations
+
+`GET /ops/overview` answers what an operator asks first: which store is behind
+the API and how many triples it holds, the Caffeine hit ratio across the
+caches, the slowest queries still in a 200 entry ring buffer, the two depth
+limits and the headline of the last `tradegraph-etl validate` run. Query latency
+is also a Micrometer timer tagged with the template name, at
+`/actuator/metrics/tradegraph.sparql`.
+
+Stardog answers with `reasoning=true`; `deploy/fuseki/assembler-inference.ttl`
+and `deploy/fuseki/tradegraph.rules` give Fuseki the same two entailments the
+API depends on, the transitive closure of `subsidiaryOf` and the inverse
+`hasSubsidiary`, through a Jena generic rule reasoner on a second read only
+service at `/ds-inf`:
+
+```
+docker compose -f deploy/docker-compose.yml --profile inference up -d fuseki-inference
+```
+
+With `tradegraph.store.reasoning=true` the exposure and concentration clauses
+ask for one hop instead of the bounded alternation, and the lineage queries add
+a filter so the chain walk still sees only direct parents. `ReasoningParityIT`
+loads the fixture into that service and asserts the exposure total is the same
+with reasoning on as with the explicit property path, and that the two hop
+`subsidiaryOf` and `hasSubsidiary` edges exist only on the reasoning service.
+
 ## Ontology summary
 
 ```
@@ -197,7 +235,7 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 ## Tests
 
 - `etl/`: 40 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 45 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 22 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
+- `api/`: 56 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, the cost guard, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 27 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
 - `explorer/`: 9 vitest specs (API client URLs, graph merging, exposure panel rendering, weighted values, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.
@@ -212,6 +250,7 @@ Tagged releases, newest last. `CHANGELOG.md` has the detail.
 | [v2.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v2.0.0) | 2026-09-10 | Temporal filings: reporting periods on positions, `as_of` queries, `/positions/delta`, period selector |
 | [v3.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v3.0.0) | 2026-09-10 | Ownership weighting: fractions on `subsidiaryOf` edges, weighted exposure, `/exposure/concentration` |
 | [v4.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v4.0.0) | 2026-09-10 | Data quality: SHACL shapes, `tradegraph-etl validate`, `/quality`, incremental `load --since` |
+| [v5.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v5.0.0) | 2026-09-10 | Operations: `/ops/overview`, query cost guard, Micrometer timers, Fuseki inference profile |
 
 ## License
 

@@ -3,6 +3,19 @@
 All notable changes to TradeGraph are recorded here. Versions follow semantic
 versioning and each one is tagged `vN.0.0`.
 
+## [5.0.0] - 2026-09-10
+
+Operations. What the API is doing and what it will refuse to do are both
+visible now, and Fuseki can be made to reason the way Stardog does.
+
+- `GET /ops/overview`: store and triple count, Caffeine hit ratio across the caches, the slowest queries in a 200 entry ring buffer, both depth limits and the headline of the last quality run.
+- A cost guard answers 422 instead of running an unbounded property path or a walk deeper than the configuration allows; `tradegraph.exposure.max-depth` (4) and `tradegraph.lineage.max-depth` (5) are separate limits.
+- Micrometer times every query by template at `/actuator/metrics/tradegraph.sparql`, and the caches now record statistics.
+- `deploy/fuseki/assembler-inference.ttl` and `tradegraph.rules` add a read only `/ds-inf` service backed by a Jena generic rule reasoner that materialises the transitive closure of `subsidiaryOf` and the inverse `hasSubsidiary`; with `tradegraph.store.reasoning=true` the exposure clauses ask for one hop instead of the bounded alternation.
+- `ReasoningParityIT` asserts the exposure total is identical with reasoning on and with the explicit property path.
+- The demo script prints the operations overview, and the demo no longer hardcodes the API version in the jar name.
+- Tests: 40 ETL pytest, 56 API unit and 27 Testcontainers integration, 9 explorer specs.
+
 ## [4.0.0] - 2026-09-10
 
 Data quality. The ETL now says whether what it produced is well formed, and the

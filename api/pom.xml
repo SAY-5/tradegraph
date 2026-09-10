@@ -13,7 +13,7 @@
 
   <groupId>dev.tradegraph</groupId>
   <artifactId>tradegraph-api</artifactId>
-  <version>4.0.0</version>
+  <version>5.0.0</version>
   <name>tradegraph-api</name>
   <description>SPARQL backed counterparty graph API with lineage and exposure queries</description>
 

@@ -46,7 +46,8 @@ API_VERSION=$(python3 -c 'import re; print(re.search(r"</parent>.*?<version>([^<
 API_JAR="api/target/tradegraph-api-$API_VERSION.jar"
 [[ -f "$API_JAR" ]] || (cd api && mvn -B -q -DskipTests -Dcheckstyle.skip package)
 java -jar "$API_JAR" --spring.profiles.active=fuseki \
-    --tradegraph.store.query-url="$FUSEKI_URL/sparql" > "$OUT/api.log" 2>&1 &
+    --tradegraph.store.query-url="$FUSEKI_URL/sparql" \
+    --tradegraph.quality.report-path=etl/build/quality.json > "$OUT/api.log" 2>&1 &
 API_PID=$!
 scripts/wait-for.sh "$API_URL/actuator/health" 90
 

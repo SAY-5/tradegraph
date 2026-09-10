@@ -21,7 +21,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 
 /**
- * Query budget over the full sample (6,100 entities, 12,373 positions). Requires
+ * Query budget over the full sample (6,100 entities, 24,336 positions over two periods). Requires
  * {@code make etl-sample} to have produced {@code etl/build/*.nt}; skipped otherwise.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

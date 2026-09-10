@@ -72,6 +72,30 @@ offer differ. `SparqlPaths.bounded("tg:subsidiaryOf", 1, 3)` expands to
 which every store evaluates identically. Depth is capped by configuration
 (`tradegraph.lineage.max-depth`, `tradegraph.exposure.max-depth`).
 
+### Cost guard and metrics
+
+Every rendered query passes `QueryGuard.rejectUnboundedPaths` before it reaches
+the store: a `*` or `+` property path walks the whole lineage closure and none
+of the templates render one, so a match is a defect rather than a request to
+serve. A requested depth above the configured maximum is a 422 rather than a
+silent clamp, and the two maxima are separate: `tradegraph.exposure.max-depth`
+is 4 and `tradegraph.lineage.max-depth` is 5. `SparqlClient` times every query
+and hands the result to `QueryMetrics`, which keeps a Micrometer timer tagged
+with the template name and a ring buffer of the last 200 timings; both are
+visible through `/actuator/metrics/tradegraph.sparql` and `/ops/overview`.
+
+### Reasoning
+
+`tg:subsidiaryOf` is an `owl:TransitiveProperty` and `tg:hasSubsidiary` its
+inverse, so a store that reasons already holds every ancestor edge. With
+`tradegraph.store.reasoning=true` the exposure and concentration clauses ask
+for one hop instead of the bounded alternation, and the lineage queries add a
+`FILTER NOT EXISTS` so the chain walk still sees only direct parents.
+`deploy/fuseki/assembler-inference.ttl` and `tradegraph.rules` give Fuseki the
+same two entailments through a Jena generic rule reasoner on a second read only
+service at `/ds-inf`; `ReasoningParityIT` loads the fixture and asserts the
+exposure total is the same either way.
+
 ### Lineage
 
 `lineage_up.rq` returns the parent edges reachable from an entity within the
