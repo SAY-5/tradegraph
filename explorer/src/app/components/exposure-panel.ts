@@ -1,12 +1,12 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe, PercentPipe } from '@angular/common';
 import { ApiService } from '../api.service';
 import { EntityRef, EntitySummary, ExposureLine, ExposureOptions, ExposureResponse } from '../models';
 import { SearchBar } from './search-bar';
 
 @Component({
   selector: 'tg-exposure-panel',
-  imports: [CurrencyPipe, DecimalPipe, SearchBar],
+  imports: [CurrencyPipe, DecimalPipe, PercentPipe, SearchBar],
   template: `
     <h2>Exposure</h2>
     <div class="pick">
@@ -22,6 +22,7 @@ import { SearchBar } from './search-bar';
       <div class="opts">
         <label><input type="checkbox" [checked]="includeAffiliates()" (change)="toggle('affiliates')" /> affiliates</label>
         <label><input type="checkbox" [checked]="includeSubsidiaries()" (change)="toggle('subsidiaries')" /> subsidiaries</label>
+        <label><input type="checkbox" [checked]="weighted()" (change)="toggle('weighted')" /> weighted</label>
         <label>depth <input type="number" min="1" max="6" [value]="depth()" (change)="setDepth($any($event.target).value)" /></label>
         <label>period
           <select [value]="asOf()" (change)="setPeriod($any($event.target).value)">
@@ -90,7 +91,12 @@ import { SearchBar } from './search-bar';
                     {{ line.holder.name }}
                   </button>
                 </td>
-                <td class="num">{{ line.value | currency: 'USD' : 'symbol' : '1.0-0' }}</td>
+                <td class="num">
+                  {{ (line.weightedValue ?? line.value) | currency: 'USD' : 'symbol' : '1.0-0' }}
+                  @if (line.weight !== undefined) {
+                    <div class="muted small">{{ line.weight | percent: '1.0-1' }} owned</div>
+                  }
+                </td>
                 <td class="num">{{ line.pathLength }}</td>
               </tr>
               @if (line === selected()) {
@@ -150,6 +156,7 @@ export class ExposurePanel {
   readonly includeAffiliates = signal(true);
   readonly includeSubsidiaries = signal(true);
   readonly depth = signal(4);
+  readonly weighted = signal(false);
   readonly periods = signal<string[]>([]);
   readonly asOf = signal('');
   readonly result = signal<ExposureResponse | null>(null);
@@ -161,6 +168,7 @@ export class ExposurePanel {
     includeSubsidiaries: this.includeSubsidiaries(),
     depth: this.depth(),
     asOf: this.asOf() || undefined,
+    weighted: this.weighted(),
   }));
 
   constructor() {
@@ -172,11 +180,14 @@ export class ExposurePanel {
     this.run();
   }
 
-  toggle(which: 'affiliates' | 'subsidiaries'): void {
+  toggle(which: 'affiliates' | 'subsidiaries' | 'weighted'): void {
     if (which === 'affiliates') {
       this.includeAffiliates.update((v) => !v);
-    } else {
+    } else if (which === 'subsidiaries') {
       this.includeSubsidiaries.update((v) => !v);
+    } else {
+      this.weighted.update((v) => !v);
+      this.run();
     }
   }
 

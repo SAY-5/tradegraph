@@ -74,6 +74,8 @@ export interface ExposureLine {
   pathLength: number;
   lineagePath: PathStep[];
   explanation: string;
+  weight?: number;
+  weightedValue?: number;
 }
 
 export interface HolderTotal {
@@ -93,6 +95,7 @@ export interface ExposureResponse {
   positions: number;
   includeAffiliates: boolean;
   includeSubsidiaries: boolean;
+  weighted: boolean;
   maxDepth: number;
   longestPath: number;
   byInstrument: ExposureLine[];
@@ -149,6 +152,7 @@ export interface ExposureOptions {
   includeSubsidiaries?: boolean;
   depth?: number;
   asOf?: string;
+  weighted?: boolean;
 }
 
 /** Merge a neighbour expansion into an existing graph without duplicating nodes or links. */

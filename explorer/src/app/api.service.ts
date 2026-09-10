@@ -49,6 +49,9 @@ export class ApiService {
     if (options.asOf) {
       params = params.set('as_of', options.asOf);
     }
+    if (options.weighted !== undefined) {
+      params = params.set('weighted', options.weighted);
+    }
     return this.http.get<ExposureResponse>(`${this.base}/entities/${encodeURIComponent(fundId)}/exposure`, {
       params,
     });

@@ -13,12 +13,15 @@ import dev.tradegraph.api.sparql.SparqlClient;
 import dev.tradegraph.api.sparql.SparqlPaths;
 import dev.tradegraph.api.sparql.SparqlValues;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -35,15 +38,18 @@ public class ExposureService {
     private final EntityService entities;
     private final LineageService lineage;
     private final PeriodService periods;
+    private final OwnershipService ownership;
     private final TradeGraphProperties properties;
 
     public ExposureService(SparqlClient sparql, QueryTemplates templates, EntityService entities,
-            LineageService lineage, PeriodService periods, TradeGraphProperties properties) {
+            LineageService lineage, PeriodService periods, OwnershipService ownership,
+            TradeGraphProperties properties) {
         this.sparql = sparql;
         this.templates = templates;
         this.entities = entities;
         this.lineage = lineage;
         this.periods = periods;
+        this.ownership = ownership;
         this.properties = properties;
     }
 
@@ -54,7 +60,7 @@ public class ExposureService {
 
     @Cacheable("exposure")
     public ExposureResponse exposure(String fundId, String issuerId, boolean includeAffiliates,
-            boolean includeSubsidiaries, int depth, LocalDate asOf) {
+            boolean includeSubsidiaries, boolean weighted, int depth, LocalDate asOf) {
         long started = System.nanoTime();
         EntityRef fund = entities.ref(fundId);
         EntityRef issuer = entities.ref(issuerId);
@@ -71,6 +77,13 @@ public class ExposureService {
                 "issuerClause", issuerClause(issuerIri, includeSubsidiaries, depth)));
 
         List<ExposureLine> lines = new ArrayList<>();
+        for (Row r : sparql.select(query)) {
+            lines.add(toLine(r, fund, issuer, depth));
+        }
+        if (weighted) {
+            lines = weigh(lines);
+        }
+
         Map<String, HolderTotal> byHolder = new LinkedHashMap<>();
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal direct = BigDecimal.ZERO;
@@ -78,28 +91,41 @@ public class ExposureService {
         BigDecimal viaAffiliates = BigDecimal.ZERO;
         long positions = 0;
         int longest = 0;
-        for (Row r : sparql.select(query)) {
-            ExposureLine line = toLine(r, fund, issuer, depth);
-            lines.add(line);
-            total = total.add(line.value());
+        for (ExposureLine line : lines) {
+            BigDecimal value = weighted ? line.weightedValue() : line.value();
+            total = total.add(value);
             positions += line.positions();
             longest = Math.max(longest, line.pathLength());
             if (line.direct()) {
-                direct = direct.add(line.value());
+                direct = direct.add(value);
             } else if (line.viaSubsidiary() && !line.viaAffiliate()) {
-                viaSubs = viaSubs.add(line.value());
+                viaSubs = viaSubs.add(value);
             } else {
-                viaAffiliates = viaAffiliates.add(line.value());
+                viaAffiliates = viaAffiliates.add(value);
             }
-            byHolder.merge(line.holder().id(), new HolderTotal(line.holder(), line.value(), line.positions()),
+            byHolder.merge(line.holder().id(), new HolderTotal(line.holder(), value, line.positions()),
                     (a, b) -> new HolderTotal(a.holder(), a.value().add(b.value()), a.positions() + b.positions()));
         }
         List<HolderTotal> holders = byHolder.values().stream()
                 .sorted((a, b) -> b.value().compareTo(a.value()))
                 .toList();
         return new ExposureResponse(fund, issuer, period.orElse(null), total, direct, viaSubs, viaAffiliates, positions,
-                includeAffiliates, includeSubsidiaries, depth, longest, lines, holders,
+                includeAffiliates, includeSubsidiaries, weighted, depth, longest, lines, holders,
                 (System.nanoTime() - started) / 1_000_000);
+    }
+
+    /** Multiplies every line by the ownership along its path and reorders by what is left. */
+    private List<ExposureLine> weigh(List<ExposureLine> lines) {
+        Set<String> owned = new LinkedHashSet<>();
+        lines.forEach(l -> owned.addAll(OwnershipService.ownedOn(l.lineagePath())));
+        Map<String, BigDecimal> fractions = ownership.fractions(owned);
+        return lines.stream()
+                .map(l -> {
+                    BigDecimal weight = OwnershipService.weight(l.lineagePath(), fractions);
+                    return l.weighted(weight, l.value().multiply(weight).setScale(2, RoundingMode.HALF_UP));
+                })
+                .sorted((a, b) -> b.weightedValue().compareTo(a.weightedValue()))
+                .toList();
     }
 
     static String holderClause(String fundIri, boolean includeAffiliates, int depth) {
@@ -132,7 +158,7 @@ public class ExposureService {
         List<PathStep> path = buildPath(fund, holder, issuerEntity, issuer, depth);
         return new ExposureLine(instrument, holder, issuerEntity, r.decimal("value"), r.decimal("quantity"),
                 r.asLong("positions"), r.date("asOf"), !viaAffiliate && !viaSubsidiary, viaAffiliate,
-                viaSubsidiary, path.size() - 1, path, explain(path, instrument));
+                viaSubsidiary, path.size() - 1, path, explain(path, instrument), null, null);
     }
 
     /** fund -(parent)*-> root -(subsidiary)*-> holder -(holds)-> issuerEntity -(parent)*-> issuer. */

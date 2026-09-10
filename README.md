@@ -103,7 +103,7 @@ the demo times function calls rather than an API and a store. See `web/README.md
 
 | Directory | Stack | What it does |
 |---|---|---|
-| `ontology/` | OWL / Turtle | `tradegraph.ttl`: LegalEntity, Counterparty, Issuer, Fund, Subsidiary, Position, Trade, Instrument, Filing; `subsidiaryOf` (transitive), `hasSubsidiary`, `counterpartyOf`, `holds`, `issuer`, `filedIn`, `cik`, `lei`, `ticker`, `name` |
+| `ontology/` | OWL / Turtle | `tradegraph.ttl`: LegalEntity, Counterparty, Issuer, Fund, Subsidiary, Position, Trade, Instrument, Filing; `subsidiaryOf` (transitive), `hasSubsidiary`, `ownershipFraction`, `counterpartyOf`, `holds`, `issuer`, `filedIn`, `cik`, `lei`, `ticker`, `name` |
 | `etl/` | Python 3.12, rdflib, httpx, click | `tradegraph-etl build --sample|--live`, `load --endpoint URL --store fuseki|stardog`, `stats`; normalises reported periods and emits one N-Triples file per named graph |
 | `api/` | Java 21, Spring Boot 3.5, Caffeine, Testcontainers | SPARQL client, query templates, lineage and exposure services, REST endpoints, store health indicator |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
@@ -121,7 +121,8 @@ Entity ids are the SEC CIK (ten digits) for issuers and 13F filers, and
 | `GET /entities?q=&limit=` | Search by name (substring), ticker or CIK; ticker matches first |
 | `GET /entities/{id}` | Detail: identifiers, parent, counts and values of positions held and issued |
 | `GET /entities/{id}/lineage?depth=` | Ancestors nearest first, ultimate parent, descendant tree (depth limited, default 5) |
-| `GET /entities/{id}/exposure?issuer=&includeAffiliates=&includeSubsidiaries=&depth=&as_of=` | Aggregate value of positions held by the fund (and the funds in its family) on instruments issued by the issuer (and its subsidiaries), grouped by instrument and holder, each line with `lineagePath`, `pathLength` and `explanation` |
+| `GET /entities/{id}/exposure?issuer=&includeAffiliates=&includeSubsidiaries=&weighted=&depth=&as_of=` | Aggregate value of positions held by the fund (and the funds in its family) on instruments issued by the issuer (and its subsidiaries), grouped by instrument and holder, each line with `lineagePath`, `pathLength` and `explanation` |
+| `GET /exposure/concentration?entity=&limit=&min_share=&as_of=` | Issuers that make up at least `min_share` of what the fund family holds, largest first |
 | `GET /trades?entity=&limit=&offset=&as_of=` | Positions where the entity is holder or issuer, largest first |
 | `GET /periods` | Reporting periods held in the store, newest first |
 | `GET /positions/delta?entity=&from=&to=` | Lines the entity opened, closed and moved between two reporting periods |
@@ -139,6 +140,14 @@ answer over exactly one period: `as_of` selects the latest period on or before
 the given date, and without it the latest period of all is used. `as_of` before
 the first filed period returns an empty answer with a null `asOf`.
 
+`weighted=true` multiplies every line by the ownership along its lineage path.
+An Exhibit 21 line states how much of a subsidiary its parent owns, so a
+position on an entity two hops below an issuer, owned 75 percent by its parent
+which is in turn owned 80 percent, counts 0.6 towards exposure to that issuer.
+A hop with no disclosed percentage is treated as wholly owned and carries
+`tg:ownershipAssumed true`. Unweighted answers are unchanged and omit `weight`
+and `weightedValue`.
+
 Exposure buckets partition the total: `directValue` is the fund holding the
 issuer itself, `viaSubsidiariesValue` is the fund holding an instrument issued
 by one of the issuer's subsidiaries, and `viaAffiliatesValue` is anything held
@@ -155,6 +164,7 @@ tg:LegalEntity
 tg:Position (tg:Trade subclass)  tg:Instrument  tg:Filing
 
 tg:subsidiaryOf (transitive)  tg:hasSubsidiary (inverse)  tg:hasParent (equivalent)
+tg:ownershipFraction, tg:ownershipAssumed
 tg:counterpartyOf (symmetric)
 tg:holds / tg:heldBy, tg:instrument, tg:issuedBy, tg:issuer, tg:quantity, tg:value, tg:asOf
 tg:filedIn, tg:filedBy, tg:formType, tg:accessionNumber, tg:periodOfReport
@@ -166,9 +176,9 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 
 ## Tests
 
-- `etl/`: 30 pytest tests covering RDF mapping, period parsing, sample size (>= 5,000 entities), the two reporting periods in the sample, dangling references, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 35 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, lineage ordering, exposure path building, position delta matching) and 19 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
-- `explorer/`: 8 vitest specs (API client URLs, graph merging, exposure panel rendering, the period selector, app shell) plus ESLint and a production build.
+- `etl/`: 32 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, dangling references, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
+- `api/`: 43 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking) and 21 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
+- `explorer/`: 9 vitest specs (API client URLs, graph merging, exposure panel rendering, weighted values, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.
 
@@ -180,6 +190,7 @@ Tagged releases, newest last. `CHANGELOG.md` has the detail.
 |---|---|---|
 | [v1.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v1.0.0) | 2026-09-10 | Baseline: ETL, SPARQL API, Angular explorer, Fuseki and Stardog stacks |
 | [v2.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v2.0.0) | 2026-09-10 | Temporal filings: reporting periods on positions, `as_of` queries, `/positions/delta`, period selector |
+| [v3.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v3.0.0) | 2026-09-10 | Ownership weighting: fractions on `subsidiaryOf` edges, weighted exposure, `/exposure/concentration` |
 
 ## License
 

@@ -3,6 +3,7 @@ package dev.tradegraph.api.it;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import dev.tradegraph.api.model.ConcentrationResponse;
 import dev.tradegraph.api.model.EntityDetail;
 import dev.tradegraph.api.model.EntitySummary;
 import dev.tradegraph.api.model.ExposureResponse;
@@ -167,6 +168,51 @@ class ApiIT {
         assertThat(direct.directValue()).isEqualByComparingTo(new BigDecimal("1000.0"));
         assertThat(direct.byInstrument()).filteredOn(l -> l.direct()).singleElement()
                 .satisfies(l -> assertThat(l.pathLength()).isEqualTo(1));
+    }
+
+    @Test
+    void weightedExposureMultipliesOwnershipAlongThePath() {
+        ExposureResponse plain = exposure("F00000201", "0000000001", "weighted=false");
+        assertThat(plain.weighted()).isFalse();
+        assertThat(plain.totalValue()).isEqualByComparingTo(new BigDecimal("50250.5"));
+        assertThat(plain.byInstrument()).allSatisfy(l -> assertThat(l.weightedValue()).isNull());
+
+        ExposureResponse weighted = exposure("F00000201", "0000000001", "weighted=true");
+        assertThat(weighted.weighted()).isTrue();
+        assertThat(weighted.totalValue()).isEqualByComparingTo(new BigDecimal("40350.40"));
+        assertThat(weighted.viaSubsidiariesValue()).isEqualByComparingTo(new BigDecimal("39200.40"));
+        assertThat(weighted.viaAffiliatesValue()).isEqualByComparingTo(new BigDecimal("1150.00"));
+        assertThat(weighted.byInstrument()).filteredOn(l -> l.pathLength() == 4).singleElement()
+                .satisfies(l -> {
+                    assertThat(l.value()).isEqualByComparingTo(new BigDecimal("250.0"));
+                    assertThat(l.weight()).isEqualByComparingTo(new BigDecimal("0.6"));
+                    assertThat(l.weightedValue()).isEqualByComparingTo(new BigDecimal("150.00"));
+                });
+    }
+
+    @Test
+    void concentrationRanksIssuersAndHonoursTheShareThreshold() {
+        ConcentrationResponse defaults = rest.getForObject(
+                "/exposure/concentration?entity=0000000002", ConcentrationResponse.class);
+        assertThat(defaults.totalValue()).isEqualByComparingTo(new BigDecimal("51027.5"));
+        assertThat(defaults.minShare()).isEqualByComparingTo(new BigDecimal("0.01"));
+        assertThat(defaults.issuers()).extracting(l -> l.issuer().id())
+                .containsExactly("S00000101", "0000000001", "0000000003");
+        assertThat(defaults.issuers().get(0).share())
+                .isBetween(new BigDecimal("0.9602"), new BigDecimal("0.9603"));
+        assertThat(defaults.issuersAboveShare()).isEqualTo(3);
+
+        ConcentrationResponse strict = rest.getForObject(
+                "/exposure/concentration?entity=0000000002&min_share=0.5", ConcentrationResponse.class);
+        assertThat(strict.issuers()).extracting(l -> l.issuer().id()).containsExactly("S00000101");
+
+        ConcentrationResponse capped = rest.getForObject(
+                "/exposure/concentration?entity=0000000002&limit=1", ConcentrationResponse.class);
+        assertThat(capped.issuers()).hasSize(1);
+        assertThat(capped.issuersAboveShare()).isEqualTo(3);
+
+        assertThat(rest.getForEntity("/exposure/concentration?entity=0000000002&min_share=2", String.class)
+                .getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test

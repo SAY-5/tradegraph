@@ -15,6 +15,7 @@ const RESPONSE: ExposureResponse = {
   positions: 3,
   includeAffiliates: true,
   includeSubsidiaries: true,
+  weighted: false,
   maxDepth: 4,
   longestPath: 4,
   byInstrument: [
@@ -83,6 +84,33 @@ describe('ExposurePanel', () => {
     fixture.componentInstance.pickIssuer({ id: '0000000001', name: 'Acme Corp', kinds: ['Issuer'] });
     TestBed.inject(HttpTestingController).expectNone((r) => r.url.includes('/exposure'));
     expect(fixture.componentInstance.result()).toBeNull();
+  });
+
+  it('asks for weighted values and shows the ownership behind each line', async () => {
+    const fixture = TestBed.createComponent(ExposurePanel);
+    fixture.componentRef.setInput('fund', { id: 'F00000201', name: 'Bigfund Growth Fund', kinds: ['Fund'] });
+    await fixture.whenStable();
+    flushPeriods();
+
+    fixture.componentInstance.pickIssuer({ id: '0000000001', name: 'Acme Corp', kinds: ['Issuer'] });
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne((r) => r.url.includes('/exposure')).flush(RESPONSE);
+
+    fixture.componentInstance.toggle('weighted');
+    const req = http.expectOne((r) => r.url.includes('/exposure'));
+    expect(req.request.params.get('weighted')).toBe('true');
+    const line = RESPONSE.byInstrument[0];
+    req.flush({
+      ...RESPONSE,
+      weighted: true,
+      totalValue: 39200.4,
+      byInstrument: [{ ...line, weight: 0.8, weightedValue: 39200.4 }],
+    });
+    await fixture.whenStable();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('tbody tr td.num')?.textContent).toContain('$39,200');
+    expect(el.textContent).toContain('80% owned');
   });
 
   it('offers the filed periods and pins the query to the one that is picked', async () => {

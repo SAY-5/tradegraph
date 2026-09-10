@@ -3,6 +3,19 @@
 All notable changes to TradeGraph are recorded here. Versions follow semantic
 versioning and each one is tagged `vN.0.0`.
 
+## [3.0.0] - 2026-09-10
+
+Ownership weighting. Lineage edges carry how much of a subsidiary its parent
+owns, and exposure can be read through that ownership instead of counting every
+position at face value.
+
+- `tg:ownershipFraction` and `tg:ownershipAssumed` on every entity that has a parent; an Exhibit 21 line without a percentage defaults to 1.0 and is flagged.
+- The sample states a percentage for 1,552 of its 2,148 subsidiaries and leaves the rest to the default.
+- `weighted=true` on exposure multiplies each line by the product of the fractions along its path and reorders by what is left; unweighted answers are unchanged.
+- `GET /exposure/concentration?entity=&limit=&min_share=` lists the issuers that make up at least a share of what a fund family holds, largest first, with `tradegraph.exposure.min-share` as the default threshold.
+- The explorer exposure panel gains a weighted toggle and shows the ownership behind each line.
+- Tests: 32 ETL pytest, 43 API unit and 21 Testcontainers integration, 9 explorer specs.
+
 ## [2.0.0] - 2026-09-10
 
 Temporal filings. Positions carry the reporting period of the filing they came

@@ -57,10 +57,11 @@ public class EntityController {
             @RequestParam("issuer") @Pattern(regexp = ID_PATTERN) String issuer,
             @RequestParam(value = "includeAffiliates", defaultValue = "true") boolean includeAffiliates,
             @RequestParam(value = "includeSubsidiaries", defaultValue = "true") boolean includeSubsidiaries,
+            @RequestParam(value = "weighted", defaultValue = "false") boolean weighted,
             @RequestParam(value = "depth", required = false) Integer depth,
             @RequestParam(value = "as_of", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
-        return exposure.exposure(id, issuer, includeAffiliates, includeSubsidiaries, exposure.clampDepth(depth),
-                asOf);
+        return exposure.exposure(id, issuer, includeAffiliates, includeSubsidiaries, weighted,
+                exposure.clampDepth(depth), asOf);
     }
 }

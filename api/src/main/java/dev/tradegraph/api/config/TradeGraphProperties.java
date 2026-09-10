@@ -1,5 +1,6 @@
 package dev.tradegraph.api.config;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -30,7 +31,7 @@ public record TradeGraphProperties(Store store, Lineage lineage, Exposure exposu
     public record Lineage(@DefaultValue("5") int maxDepth) {
     }
 
-    public record Exposure(@DefaultValue("4") int maxDepth) {
+    public record Exposure(@DefaultValue("4") int maxDepth, @DefaultValue("0.01") BigDecimal minShare) {
     }
 
     public record Search(@DefaultValue("20") int defaultLimit, @DefaultValue("100") int maxLimit) {

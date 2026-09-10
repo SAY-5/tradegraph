@@ -17,5 +17,13 @@ public record ExposureLine(
         boolean viaSubsidiary,
         int pathLength,
         List<PathStep> lineagePath,
-        String explanation) {
+        String explanation,
+        BigDecimal weight,
+        BigDecimal weightedValue) {
+
+    /** The same line with the ownership weight of its path and the value that weight leaves. */
+    public ExposureLine weighted(BigDecimal ownership, BigDecimal weighted) {
+        return new ExposureLine(instrument, holder, issuerEntity, value, quantity, positions, asOf, direct,
+                viaAffiliate, viaSubsidiary, pathLength, lineagePath, explanation, ownership, weighted);
+    }
 }

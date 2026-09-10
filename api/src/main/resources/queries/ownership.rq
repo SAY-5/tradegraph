@@ -1,0 +1,6 @@
+# Ownership fraction of each named entity in its parent, for weighted exposure.
+SELECT ?entity ?fraction
+WHERE {
+  ${entityValues}
+  ?entity tg:ownershipFraction ?fraction .
+}

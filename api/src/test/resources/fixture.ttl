@@ -9,17 +9,20 @@ e:0000000001 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;
     tg:name "Acme Corp" ; tg:cik "0000000001" ; tg:ticker "ACME" .
 e:S00000101 a tg:LegalEntity, tg:Subsidiary ;
     tg:name "Acme Finance Corp." ; tg:jurisdiction "DE" ;
-    tg:subsidiaryOf e:0000000001 ; tg:filedIn f:0000000001-24-000001 .
+    tg:subsidiaryOf e:0000000001 ; tg:ownershipFraction 0.8 ; tg:ownershipAssumed false ;
+    tg:filedIn f:0000000001-24-000001 .
 e:0000000001 tg:hasSubsidiary e:S00000101 .
 e:S0000010101 a tg:LegalEntity, tg:Subsidiary ;
     tg:name "Acme Regional Unit 1 Ltd." ; tg:jurisdiction "GB" ;
-    tg:subsidiaryOf e:S00000101 ; tg:filedIn f:0000000001-24-000001 .
+    tg:subsidiaryOf e:S00000101 ; tg:ownershipFraction 0.75 ; tg:ownershipAssumed false ;
+    tg:filedIn f:0000000001-24-000001 .
 e:S00000101 tg:hasSubsidiary e:S0000010101 .
 
 e:0000000002 a tg:LegalEntity, tg:Counterparty, tg:Fund, tg:Issuer ;
     tg:name "Bigfund Inc" ; tg:cik "0000000002" ; tg:ticker "BIGF" .
 e:F00000201 a tg:LegalEntity, tg:Counterparty, tg:Fund ;
-    tg:name "Bigfund Growth Fund" ; tg:jurisdiction "US" ; tg:subsidiaryOf e:0000000002 .
+    tg:name "Bigfund Growth Fund" ; tg:jurisdiction "US" ; tg:subsidiaryOf e:0000000002 ;
+    tg:ownershipFraction 1.0 ; tg:ownershipAssumed true .
 e:0000000002 tg:hasSubsidiary e:F00000201 .
 
 e:0000000003 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;

@@ -1,0 +1,12 @@
+# Value held by ${fund} and every fund in its family, grouped by the issuer the
+# position names, for the reporting period bound by the inline data block.
+SELECT ?issuerEntity ?issuerEntityName (SUM(?v) AS ?value) (COUNT(?pos) AS ?positions)
+WHERE {
+  ${periodValues}
+  ${holderClause}
+  ?holder tg:holds ?pos .
+  ?pos tg:issuer ?issuerEntity ; tg:value ?v ; tg:asOf ?d .
+  ?issuerEntity tg:name ?issuerEntityName .
+}
+GROUP BY ?issuerEntity ?issuerEntityName
+ORDER BY DESC(?value)

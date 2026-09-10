@@ -15,6 +15,7 @@ public record ExposureResponse(
         long positions,
         boolean includeAffiliates,
         boolean includeSubsidiaries,
+        boolean weighted,
         int maxDepth,
         int longestPath,
         List<ExposureLine> byInstrument,

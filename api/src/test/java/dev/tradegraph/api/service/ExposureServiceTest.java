@@ -25,7 +25,7 @@ class ExposureServiceTest {
     private final LineageService lineage = mock(LineageService.class);
     private final ExposureService service = new ExposureService(mock(SparqlClient.class),
             mock(QueryTemplates.class), mock(EntityService.class), lineage, mock(PeriodService.class),
-            mock(TradeGraphProperties.class));
+            mock(OwnershipService.class), mock(TradeGraphProperties.class));
 
     @Test
     void holderClauseBindsFundDirectlyWithoutAffiliates() {
