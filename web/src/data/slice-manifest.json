@@ -1,6 +1,6 @@
 {
   "file": "slice.json",
-  "sha256": "6ad8b5c10b738c22b5ac4517561cb51d74824f913a71caed8cb756d245ab62b9",
+  "sha256": "3baa8fefb267580b4aceba3469a0e505f4cf73402c8e427e35e3191fe70759a7",
   "bytes": 586877,
   "source": "etl/sample",
   "topIssuers": 300,
