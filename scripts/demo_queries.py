@@ -11,6 +11,7 @@ import json
 import statistics
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -119,6 +120,40 @@ def main() -> None:
     _, cached_ms = get(f"/entities/{top[0][0]['id']}/exposure", issuer=top[0][1]["id"])
     print(f"  repeated query served from cache in {cached_ms:.0f} ms")
     print()
+    operations()
+
+
+def operations() -> None:
+    ops, _ = get("/ops/overview")
+    cache = ops["cache"]
+    quality = ops.get("quality")
+    print("Operations (/ops/overview)")
+    print(f"  store          : {ops['store']} reasoning={str(ops['reasoning']).lower()}, "
+          f"{ops['triples']:,} triples, exposure depth <= {ops['exposureMaxDepth']}, "
+          f"lineage depth <= {ops['lineageMaxDepth']}")
+    print(f"  cache          : {cache['hits']:,} hits, {cache['misses']:,} misses, "
+          f"hit ratio {cache['hitRatio']:.2f}, {cache['entries']:,} entries across {cache['caches']} caches")
+    slowest = ", ".join(f"{q['template']} {q['millis']} ms" for q in ops["slowestQueries"])
+    print(f"  slowest queries: {slowest}")
+    if quality:
+        print(f"  data quality   : conforms={str(quality['conforms']).lower()}, "
+              f"dangling {quality['danglingReferences']}, cycles {quality['subsidiaryCycles']}, "
+              f"missing identifiers {quality['missingIdentifiers']}, "
+              f"shape violations {quality['shaclViolations']} (checked {quality['checkedAt']})")
+    guard, code = cost_guard()
+    print(f"  cost guard     : depth={guard} answered {code}")
+    print()
+
+
+def cost_guard() -> tuple[int, int]:
+    """Ask for more depth than the API allows and report the status it answers with."""
+    depth = 9
+    url = f"{API}/entities/0000320193/lineage?depth={depth}"
+    try:
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            return depth, resp.status
+    except urllib.error.HTTPError as e:
+        return depth, e.code
 
 
 if __name__ == "__main__":

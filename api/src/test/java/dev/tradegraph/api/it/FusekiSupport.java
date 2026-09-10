@@ -13,6 +13,7 @@ import java.time.Duration;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /** Starts one Fuseki container per JVM and loads RDF into it over the Graph Store Protocol. */
 final class FusekiSupport {
@@ -26,8 +27,24 @@ final class FusekiSupport {
     private FusekiSupport() {
     }
 
+    /**
+     * The same image with the assembler from {@code deploy/fuseki} copied in, which adds a
+     * second read only service at {@code /ds-inf} over a Jena generic rule reasoner.
+     */
+    static GenericContainer<?> startWithInference() {
+        return configure(new GenericContainer<>(DockerImageName.parse(IMAGE))
+                .withCopyFileToContainer(MountableFile.forHostPath("../deploy/fuseki/assembler-inference.ttl"),
+                        "/fuseki-base/configuration/assembler.ttl")
+                .withCopyFileToContainer(MountableFile.forHostPath("../deploy/fuseki/tradegraph.rules"),
+                        "/fuseki-base/configuration/tradegraph.rules"));
+    }
+
     static GenericContainer<?> start() {
-        GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(IMAGE))
+        return configure(new GenericContainer<>(DockerImageName.parse(IMAGE)));
+    }
+
+    private static GenericContainer<?> configure(GenericContainer<?> base) {
+        GenericContainer<?> container = base
                 .withEnv("ADMIN_PASSWORD", "admin")
                 .withEnv("ENABLE_DATA_WRITE", "true")
                 .withEnv("ENABLE_UPDATE", "true")
@@ -45,6 +62,11 @@ final class FusekiSupport {
 
     static String queryUrl(GenericContainer<?> c) {
         return baseUrl(c) + "/sparql";
+    }
+
+    /** Query endpoint of the reasoning service added by {@link #startWithInference()}. */
+    static String inferenceQueryUrl(GenericContainer<?> c) {
+        return "http://" + c.getHost() + ":" + c.getMappedPort(3030) + "/ds-inf/sparql";
     }
 
     static void putGraph(GenericContainer<?> c, String graph, Path file, String contentType) {

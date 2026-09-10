@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 /** Typed view of the {@code tradegraph.*} configuration block. */
 @ConfigurationProperties(prefix = "tradegraph")
 public record TradeGraphProperties(Store store, Lineage lineage, Exposure exposure, Search search,
-        Quality quality, Cors cors) {
+        Quality quality, Ops ops, Cors cors) {
 
     public record Store(
             @DefaultValue("fuseki") String kind,
@@ -36,6 +36,9 @@ public record TradeGraphProperties(Store store, Lineage lineage, Exposure exposu
     }
 
     public record Search(@DefaultValue("20") int defaultLimit, @DefaultValue("100") int maxLimit) {
+    }
+
+    public record Ops(@DefaultValue("200") int queryBufferSize, @DefaultValue("5") int slowestQueries) {
     }
 
     public record Quality(@DefaultValue("../etl/build/quality.json") String reportPath) {

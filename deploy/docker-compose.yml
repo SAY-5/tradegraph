@@ -22,6 +22,32 @@ services:
       timeout: 3s
       retries: 20
 
+  # Same image and same TDB layout, with the assembler from deploy/fuseki mounted so
+  # that /ds-inf answers over a Jena rule reasoner. Bring it up with
+  # `docker compose -f deploy/docker-compose.yml --profile inference up -d fuseki-inference`
+  # and point tradegraph.store.query-url at http://localhost:3031/ds-inf/sparql with
+  # tradegraph.store.reasoning=true.
+  fuseki-inference:
+    image: secoresearch/fuseki:5.6.0
+    container_name: tradegraph-fuseki-inference
+    environment:
+      ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD:-admin}
+      ENABLE_DATA_WRITE: "true"
+      ENABLE_UPDATE: "true"
+      QUERY_TIMEOUT: "60000"
+      JVM_ARGS: "-Xmx1g"
+    volumes:
+      - ./fuseki/assembler-inference.ttl:/fuseki-base/configuration/assembler.ttl:ro
+      - ./fuseki/tradegraph.rules:/fuseki-base/configuration/tradegraph.rules:ro
+    ports:
+      - "3031:3030"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3030/$$/ping || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    profiles: ["inference"]
+
   api:
     build:
       context: ..

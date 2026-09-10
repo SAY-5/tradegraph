@@ -39,7 +39,7 @@ public class EntityService {
                 "q", SparqlValues.literal(query),
                 "qLower", SparqlValues.literal(query.toLowerCase(Locale.ROOT)),
                 "limit", SparqlValues.integer(effective)));
-        return sparql.select(rendered).stream()
+        return sparql.select("search", rendered).stream()
                 .map(r -> new EntitySummary(r.id("e"), r.str("name"), r.str("ticker"), r.str("cik"), r.kinds("types")))
                 .toList();
     }
@@ -47,12 +47,12 @@ public class EntityService {
     @Cacheable("entity")
     public EntityDetail get(String id) {
         String iri = SparqlValues.entityIri(id);
-        List<Row> rows = sparql.select(templates.render("entity", Map.of("iri", iri)));
+        List<Row> rows = sparql.select("entity", templates.render("entity", Map.of("iri", iri)));
         if (rows.isEmpty()) {
             throw new NotFoundException("entity not found: " + id);
         }
         Row r = rows.get(0);
-        Row counts = sparql.select(templates.render("entity_counts", Map.of("iri", iri))).get(0);
+        Row counts = sparql.select("entity_counts", templates.render("entity_counts", Map.of("iri", iri))).get(0);
         EntityRef parent = r.str("parent") == null
                 ? null
                 : new EntityRef(r.id("parent"), r.str("parentName"), List.of());

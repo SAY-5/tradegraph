@@ -25,7 +25,7 @@ public class StatsService {
     @Cacheable("stats")
     public Stats stats() {
         long started = System.nanoTime();
-        Row r = sparql.select(templates.render("stats", Map.of())).get(0);
+        Row r = sparql.select("stats", templates.render("stats", Map.of())).get(0);
         return new Stats(properties.store().kind(), r.asLong("entities"), r.asLong("issuers"), r.asLong("funds"),
                 r.asLong("subsidiaries"), r.asLong("positions"), r.asLong("filings"), r.asLong("lineageEdges"),
                 r.asLong("triples"), (System.nanoTime() - started) / 1_000_000);

@@ -1,0 +1,14 @@
+# Jena generic rules that reproduce the Stardog reasoning=true behaviour the API
+# relies on: tg:subsidiaryOf is an owl:TransitiveProperty and tg:hasSubsidiary is
+# its owl:inverseOf, both declared in ontology/tradegraph.ttl.
+
+@prefix tg: <https://tradegraph.dev/ontology#>.
+
+[subsidiaryOfTransitive:
+    (?a tg:subsidiaryOf ?b) (?b tg:subsidiaryOf ?c) -> (?a tg:subsidiaryOf ?c)]
+
+[hasSubsidiaryInverse:
+    (?a tg:subsidiaryOf ?b) -> (?b tg:hasSubsidiary ?a)]
+
+[subsidiaryOfInverse:
+    (?b tg:hasSubsidiary ?a) -> (?a tg:subsidiaryOf ?b)]

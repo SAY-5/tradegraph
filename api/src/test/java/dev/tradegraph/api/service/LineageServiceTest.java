@@ -1,6 +1,7 @@
 package dev.tradegraph.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.when;
 import dev.tradegraph.api.config.TradeGraphProperties;
 import dev.tradegraph.api.model.EntityRef;
 import dev.tradegraph.api.model.LineageNode;
+import dev.tradegraph.api.sparql.QueryCostException;
 import dev.tradegraph.api.sparql.QueryTemplates;
 import dev.tradegraph.api.sparql.RdfTerm;
 import dev.tradegraph.api.sparql.Row;
@@ -22,8 +24,9 @@ class LineageServiceTest {
 
     private final SparqlClient sparql = mock(SparqlClient.class);
     private final LineageService service = new LineageService(sparql, QueryTemplates.fromClasspath(),
-            mock(EntityService.class), new TradeGraphProperties(null, new TradeGraphProperties.Lineage(5),
-                    null, null, null, null));
+            mock(EntityService.class), new TradeGraphProperties(
+                    new TradeGraphProperties.Store("fuseki", null, null, null, false, null, null),
+                    new TradeGraphProperties.Lineage(5), null, null, null, null, null));
 
     private static Row edge(String child, String parent, String parentName) {
         return new Row(Map.of(
@@ -35,7 +38,7 @@ class LineageServiceTest {
 
     @Test
     void ancestorsAreOrderedNearestFirstRegardlessOfRowOrder() {
-        when(sparql.select(anyString())).thenReturn(List.of(
+        when(sparql.select(anyString(), anyString())).thenReturn(List.of(
                 edge("S00000101", "0000000001", "Acme Corp"),
                 edge("S0000010101", "S00000101", "Acme Finance Corp.")));
 
@@ -47,7 +50,7 @@ class LineageServiceTest {
 
     @Test
     void ancestorsAreCutAtDepth() {
-        when(sparql.select(anyString())).thenReturn(List.of(
+        when(sparql.select(anyString(), anyString())).thenReturn(List.of(
                 edge("S00000101", "0000000001", "Acme Corp"),
                 edge("S0000010101", "S00000101", "Acme Finance Corp.")));
 
@@ -66,7 +69,7 @@ class LineageServiceTest {
                 "child", new RdfTerm("uri", NS + "S0000010101", null, null),
                 "childName", new RdfTerm("literal", "Acme Regional Unit 1 Ltd.", null, null),
                 "childTypes", new RdfTerm("literal", "https://tradegraph.dev/ontology#Subsidiary", null, null)));
-        when(sparql.select(anyString())).thenReturn(List.of(level2, level1));
+        when(sparql.select(anyString(), anyString())).thenReturn(List.of(level2, level1));
         EntityRef acme = new EntityRef("0000000001", "Acme Corp", List.of("Issuer"));
 
         LineageNode full = service.descendants(acme, 5);
@@ -83,7 +86,7 @@ class LineageServiceTest {
     void clampDepthStaysWithinConfiguredMaximum() {
         assertThat(service.clampDepth(null)).isEqualTo(5);
         assertThat(service.clampDepth(0)).isEqualTo(1);
-        assertThat(service.clampDepth(99)).isEqualTo(5);
         assertThat(service.clampDepth(3)).isEqualTo(3);
+        assertThatThrownBy(() -> service.clampDepth(99)).isInstanceOf(QueryCostException.class);
     }
 }

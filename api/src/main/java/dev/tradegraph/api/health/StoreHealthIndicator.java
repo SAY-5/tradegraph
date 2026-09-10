@@ -26,7 +26,7 @@ public class StoreHealthIndicator implements HealthIndicator {
     public Health health() {
         long started = System.nanoTime();
         try {
-            boolean ok = sparql.ask(templates.render("ping", Map.of()));
+            boolean ok = sparql.ask("ping", templates.render("ping", Map.of()));
             Health.Builder b = ok ? Health.up() : Health.down();
             return b.withDetail("kind", properties.store().kind())
                     .withDetail("queryUrl", properties.store().queryUrl())

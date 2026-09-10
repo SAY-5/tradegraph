@@ -25,14 +25,16 @@ public class SparqlClient {
 
     private final RestClient client;
     private final boolean reasoning;
+    private final QueryMetrics metrics;
 
-    public SparqlClient(RestClient client, boolean reasoning) {
+    public SparqlClient(RestClient client, boolean reasoning, QueryMetrics metrics) {
         this.client = client;
         this.reasoning = reasoning;
+        this.metrics = metrics;
     }
 
-    public List<Row> select(String query) {
-        JsonNode json = execute(query);
+    public List<Row> select(String template, String query) {
+        JsonNode json = execute(template, query);
         List<Row> rows = new ArrayList<>();
         for (JsonNode binding : json.path("results").path("bindings")) {
             Map<String, RdfTerm> terms = new LinkedHashMap<>();
@@ -42,11 +44,12 @@ public class SparqlClient {
         return rows;
     }
 
-    public boolean ask(String query) {
-        return execute(query).path("boolean").asBoolean(false);
+    public boolean ask(String template, String query) {
+        return execute(template, query).path("boolean").asBoolean(false);
     }
 
-    private JsonNode execute(String query) {
+    private JsonNode execute(String template, String query) {
+        QueryGuard.rejectUnboundedPaths(query);
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("query", query);
         if (reasoning) {
@@ -60,15 +63,18 @@ public class SparqlClient {
                     .body(form)
                     .retrieve()
                     .body(JsonNode.class);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("sparql {} ms\n{}", (System.nanoTime() - started) / 1_000_000, query);
-            }
             if (body == null) {
                 throw new SparqlException("empty response from store", null);
             }
             return body;
         } catch (RestClientException e) {
             throw new SparqlException("store request failed: " + e.getMessage(), e);
+        } finally {
+            long millis = (System.nanoTime() - started) / 1_000_000;
+            metrics.record(template, millis);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("sparql {} {} ms\n{}", template, millis, query);
+            }
         }
     }
 

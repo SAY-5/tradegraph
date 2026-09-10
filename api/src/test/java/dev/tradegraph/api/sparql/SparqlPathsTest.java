@@ -26,4 +26,14 @@ class SparqlPathsTest {
                 .isEqualTo("UNION { <x> (tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf) ?c }");
         assertThat(SparqlPaths.unionHops("<x>", "?c", 1, 0)).isEmpty();
     }
+
+    @Test
+    void aStoreThatMaterialisesTheClosureNeedsOneHop() {
+        assertThat(SparqlPaths.bounded("tg:subsidiaryOf", 1, 4, true)).isEqualTo("tg:subsidiaryOf");
+        assertThat(SparqlPaths.unionHops("<f>", "?root", 1, 4, true))
+                .isEqualTo("UNION { <f> tg:subsidiaryOf ?root }");
+        assertThat(SparqlPaths.bounded("tg:subsidiaryOf", 1, 0, true)).isEmpty();
+        assertThat(SparqlPaths.bounded("tg:subsidiaryOf", 1, 2, false))
+                .isEqualTo("(tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf)");
+    }
 }

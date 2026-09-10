@@ -7,6 +7,7 @@ import dev.tradegraph.api.model.ExposureResponse;
 import dev.tradegraph.api.model.HolderTotal;
 import dev.tradegraph.api.model.Instrument;
 import dev.tradegraph.api.model.PathStep;
+import dev.tradegraph.api.sparql.QueryGuard;
 import dev.tradegraph.api.sparql.QueryTemplates;
 import dev.tradegraph.api.sparql.Row;
 import dev.tradegraph.api.sparql.SparqlClient;
@@ -54,8 +55,11 @@ public class ExposureService {
     }
 
     public int clampDepth(Integer requested) {
-        int max = properties.exposure().maxDepth();
-        return requested == null ? max : Math.min(Math.max(requested, 1), max);
+        return QueryGuard.depth(requested, properties.exposure().maxDepth(), "exposure");
+    }
+
+    private boolean closure() {
+        return properties.store().reasoning();
     }
 
     @Cacheable("exposure")
@@ -73,11 +77,11 @@ public class ExposureService {
                 "issuer", issuerIri,
                 "depth", SparqlValues.integer(depth),
                 "periodValues", periods.valuesBlock("d", period),
-                "holderClause", holderClause(fundIri, includeAffiliates, depth),
-                "issuerClause", issuerClause(issuerIri, includeSubsidiaries, depth)));
+                "holderClause", holderClause(fundIri, includeAffiliates, depth, closure()),
+                "issuerClause", issuerClause(issuerIri, includeSubsidiaries, depth, closure())));
 
         List<ExposureLine> lines = new ArrayList<>();
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("exposure", query)) {
             lines.add(toLine(r, fund, issuer, depth));
         }
         if (weighted) {
@@ -128,25 +132,26 @@ public class ExposureService {
                 .toList();
     }
 
-    static String holderClause(String fundIri, boolean includeAffiliates, int depth) {
+    public static String holderClause(String fundIri, boolean includeAffiliates, int depth, boolean closure) {
         if (!includeAffiliates) {
             return "BIND(" + fundIri + " AS ?holder)";
         }
         // The zero hop case is a FILTER rather than a BIND inside a UNION branch: a group
         // pattern cannot see ?root (bottom-up evaluation), so BIND(?root AS ?holder) would be unbound.
-        return "{ BIND(" + fundIri + " AS ?root) } " + SparqlPaths.unionHops(fundIri, "?root", 1, depth) + "\n"
+        return "{ BIND(" + fundIri + " AS ?root) } "
+                + SparqlPaths.unionHops(fundIri, "?root", 1, depth, closure) + "\n"
                 + "  FILTER NOT EXISTS { ?root tg:subsidiaryOf ?above }\n"
                 + "  ?holder a tg:Fund .\n"
                 + "  FILTER(?holder = ?root || EXISTS { ?holder "
-                + SparqlPaths.bounded(SparqlPaths.SUBSIDIARY_OF, 1, depth) + " ?root })";
+                + SparqlPaths.bounded(SparqlPaths.SUBSIDIARY_OF, 1, depth, closure) + " ?root })";
     }
 
-    static String issuerClause(String issuerIri, boolean includeSubsidiaries, int depth) {
+    public static String issuerClause(String issuerIri, boolean includeSubsidiaries, int depth, boolean closure) {
         if (!includeSubsidiaries) {
             return "BIND(" + issuerIri + " AS ?issuerEntity)";
         }
         return "{ BIND(" + issuerIri + " AS ?issuerEntity) } "
-                + SparqlPaths.unionHops("?issuerEntity", issuerIri, 1, depth);
+                + SparqlPaths.unionHops("?issuerEntity", issuerIri, 1, depth, closure);
     }
 
     private ExposureLine toLine(Row r, EntityRef fund, EntityRef issuer, int depth) {

@@ -58,11 +58,12 @@ public class ConcentrationService {
         String query = templates.render("concentration", Map.of(
                 "fund", iri,
                 "periodValues", periods.valuesBlock("d", period),
-                "holderClause", ExposureService.holderClause(iri, true, properties.exposure().maxDepth())));
+                "holderClause", ExposureService.holderClause(iri, true, properties.exposure().maxDepth(),
+                        properties.store().reasoning())));
 
         List<ConcentrationLine> all = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("concentration", query)) {
             BigDecimal value = r.decimal("value");
             all.add(new ConcentrationLine(new EntityRef(r.id("issuerEntity"), r.str("issuerEntityName"), List.of()),
                     value, BigDecimal.ZERO, r.asLong("positions")));

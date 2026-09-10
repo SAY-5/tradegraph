@@ -1,6 +1,7 @@
 package dev.tradegraph.api.web;
 
 import dev.tradegraph.api.service.NotFoundException;
+import dev.tradegraph.api.sparql.QueryCostException;
 import dev.tradegraph.api.sparql.SparqlException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -26,6 +27,11 @@ public class ApiExceptionHandler {
         MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
     public ProblemDetail badRequest(Exception e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(QueryCostException.class)
+    public ProblemDetail tooExpensive(QueryCostException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
     }
 
     @ExceptionHandler(SparqlException.class)

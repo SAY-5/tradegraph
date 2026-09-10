@@ -32,7 +32,7 @@ public class TradeService {
                 "periodValues", periods.valuesBlock("asOf", asOf),
                 "limit", SparqlValues.integer(Math.min(Math.max(limit, 1), 500)),
                 "offset", SparqlValues.integer(Math.max(offset, 0))));
-        return sparql.select(query).stream()
+        return sparql.select("trades", query).stream()
                 .map(r -> new TradeRecord(
                         r.str("pos").replace(SparqlValues.ENTITY_NS.replace("entity", "position"), ""),
                         new EntityRef(r.id("holder"), r.str("holderName"), List.of()),

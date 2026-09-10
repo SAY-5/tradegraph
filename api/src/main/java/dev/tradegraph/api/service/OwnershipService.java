@@ -37,7 +37,7 @@ public class OwnershipService {
         String query = templates.render("ownership", Map.of(
                 "entityValues", SparqlValues.values("entity", ids.stream().map(SparqlValues::entityIri).toList())));
         Map<String, BigDecimal> fractions = new HashMap<>();
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("ownership", query)) {
             fractions.put(r.id("entity"), r.decimal("fraction"));
         }
         return fractions;

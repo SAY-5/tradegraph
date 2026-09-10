@@ -35,7 +35,7 @@ public class GraphService {
         Map<String, NeighborGraph.Node> nodes = new LinkedHashMap<>();
         nodes.put(center.id(), new NeighborGraph.Node(center.id(), center.name(), center.kinds()));
         List<NeighborGraph.Link> links = new ArrayList<>();
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("neighbors", query)) {
             String other = r.id("other");
             nodes.putIfAbsent(other, new NeighborGraph.Node(other, r.str("otherName"), r.kinds("otherTypes")));
             String rel = r.str("rel");

@@ -23,7 +23,7 @@ import { SearchBar } from './search-bar';
         <label><input type="checkbox" [checked]="includeAffiliates()" (change)="toggle('affiliates')" /> affiliates</label>
         <label><input type="checkbox" [checked]="includeSubsidiaries()" (change)="toggle('subsidiaries')" /> subsidiaries</label>
         <label><input type="checkbox" [checked]="weighted()" (change)="toggle('weighted')" /> weighted</label>
-        <label>depth <input type="number" min="1" max="6" [value]="depth()" (change)="setDepth($any($event.target).value)" /></label>
+        <label>depth <input type="number" min="1" max="4" [value]="depth()" (change)="setDepth($any($event.target).value)" /></label>
         <label>period
           <select [value]="asOf()" (change)="setPeriod($any($event.target).value)">
             <option value="">latest</option>
@@ -196,10 +196,11 @@ export class ExposurePanel {
     this.run();
   }
 
+  /** Capped at tradegraph.exposure.max-depth; the API answers 422 above it. */
   setDepth(value: string): void {
     const n = Number(value);
     if (Number.isFinite(n) && n >= 1) {
-      this.depth.set(Math.min(n, 6));
+      this.depth.set(Math.min(n, 4));
     }
   }
 

@@ -4,6 +4,7 @@ import dev.tradegraph.api.config.TradeGraphProperties;
 import dev.tradegraph.api.model.EntityRef;
 import dev.tradegraph.api.model.LineageNode;
 import dev.tradegraph.api.model.LineageResponse;
+import dev.tradegraph.api.sparql.QueryGuard;
 import dev.tradegraph.api.sparql.QueryTemplates;
 import dev.tradegraph.api.sparql.Row;
 import dev.tradegraph.api.sparql.SparqlClient;
@@ -38,8 +39,18 @@ public class LineageService {
     }
 
     public int clampDepth(Integer requested) {
-        int max = properties.lineage().maxDepth();
-        return requested == null ? max : Math.min(Math.max(requested, 1), max);
+        return QueryGuard.depth(requested, properties.lineage().maxDepth(), "lineage");
+    }
+
+    /**
+     * A store that materialises the closure reports every ancestor as a direct parent, which
+     * would break the chain walk, so the edge queries ask for direct edges only.
+     */
+    private String directOnly(String child, String parent) {
+        return properties.store().reasoning()
+                ? "FILTER NOT EXISTS { " + child + " tg:subsidiaryOf ?between . ?between tg:subsidiaryOf "
+                        + parent + " }"
+                : "";
     }
 
     /** Ancestors nearest first, at most {@code depth} of them. */
@@ -49,9 +60,10 @@ public class LineageService {
         String query = templates.render("lineage_up", Map.of(
                 "iri", iri,
                 "depth", SparqlValues.integer(depth),
+                "directOnly", directOnly("?child", "?parent"),
                 "moreChildren", SparqlPaths.unionHops(iri, "?child", 1, depth - 1)));
         Map<String, EntityRef> parentOf = new HashMap<>();
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("lineage_up", query)) {
             parentOf.put(r.id("child"), new EntityRef(r.id("parent"), r.str("parentName"), r.kinds("parentTypes")));
         }
         List<EntityRef> chain = new ArrayList<>();
@@ -80,9 +92,10 @@ public class LineageService {
         String query = templates.render("lineage_down", Map.of(
                 "iri", iri,
                 "depth", SparqlValues.integer(depth),
+                "directOnly", directOnly("?child", "?parent"),
                 "moreParents", SparqlPaths.unionHops("?parent", iri, 1, depth - 1)));
         Map<String, List<Row>> childrenOf = new HashMap<>();
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("lineage_down", query)) {
             childrenOf.computeIfAbsent(r.id("parent"), k -> new ArrayList<>()).add(r);
         }
         LineageNode root = LineageNode.of(self.id(), self.name(), self.kinds(), null, 0);

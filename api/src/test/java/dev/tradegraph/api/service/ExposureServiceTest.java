@@ -29,12 +29,12 @@ class ExposureServiceTest {
 
     @Test
     void holderClauseBindsFundDirectlyWithoutAffiliates() {
-        assertThat(ExposureService.holderClause("<f>", false, 3)).isEqualTo("BIND(<f> AS ?holder)");
+        assertThat(ExposureService.holderClause("<f>", false, 3, false)).isEqualTo("BIND(<f> AS ?holder)");
     }
 
     @Test
     void holderClauseWalksToRootAndBackDownWithAffiliates() {
-        String clause = ExposureService.holderClause("<f>", true, 2);
+        String clause = ExposureService.holderClause("<f>", true, 2, false);
         String twoHops = "(tg:subsidiaryOf|tg:subsidiaryOf/tg:subsidiaryOf)";
         assertThat(clause).contains("{ BIND(<f> AS ?root) } UNION { <f> " + twoHops + " ?root }");
         assertThat(clause).contains("FILTER NOT EXISTS { ?root tg:subsidiaryOf ?above }");
@@ -45,8 +45,8 @@ class ExposureServiceTest {
 
     @Test
     void issuerClauseIncludesBoundedSubsidiaryPath() {
-        assertThat(ExposureService.issuerClause("<i>", false, 3)).isEqualTo("BIND(<i> AS ?issuerEntity)");
-        assertThat(ExposureService.issuerClause("<i>", true, 1))
+        assertThat(ExposureService.issuerClause("<i>", false, 3, false)).isEqualTo("BIND(<i> AS ?issuerEntity)");
+        assertThat(ExposureService.issuerClause("<i>", true, 1, false))
                 .isEqualTo("{ BIND(<i> AS ?issuerEntity) } UNION { ?issuerEntity (tg:subsidiaryOf) <i> }");
     }
 

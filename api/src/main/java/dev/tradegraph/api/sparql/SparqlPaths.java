@@ -12,6 +12,28 @@ public final class SparqlPaths {
     private SparqlPaths() {
     }
 
+    /**
+     * The same walk when the store already materialises the transitive closure, either
+     * Stardog with {@code reasoning=true} or the Fuseki inference dataset: one hop reaches
+     * everything the bounded alternation would.
+     */
+    public static String bounded(String property, int min, int max, boolean closureMaterialised) {
+        if (closureMaterialised && min <= 1) {
+            return max < min ? "" : property;
+        }
+        return bounded(property, min, max);
+    }
+
+    /** {@code UNION { subject path object }} against a store that materialises the closure. */
+    public static String unionHops(String subject, String object, int minHops, int maxHops,
+            boolean closureMaterialised) {
+        String path = bounded(SUBSIDIARY_OF, minHops, maxHops, closureMaterialised);
+        if (path.isEmpty()) {
+            return "";
+        }
+        return "UNION { " + subject + " " + path + " " + object + " }";
+    }
+
     /** {@code (p|p/p|p/p/p)} for min=1, max=3. Returns an empty string when max < min. */
     public static String bounded(String property, int min, int max) {
         if (min < 1) {

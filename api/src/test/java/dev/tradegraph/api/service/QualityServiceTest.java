@@ -16,7 +16,7 @@ class QualityServiceTest {
 
     private static QualityService service(String path) {
         TradeGraphProperties properties = new TradeGraphProperties(null, null, null, null,
-                new TradeGraphProperties.Quality(path), null);
+                new TradeGraphProperties.Quality(path), null, null);
         return new QualityService(properties, MAPPER);
     }
 

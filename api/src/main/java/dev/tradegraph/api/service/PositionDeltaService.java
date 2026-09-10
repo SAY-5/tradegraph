@@ -55,7 +55,7 @@ public class PositionDeltaService {
 
         Map<String, PositionLine> before = new LinkedHashMap<>();
         Map<String, PositionLine> after = new LinkedHashMap<>();
-        for (Row r : sparql.select(query)) {
+        for (Row r : sparql.select("positions_delta", query)) {
             LocalDate period = r.date("period");
             PositionLine line = toLine(r);
             if (period == null) {

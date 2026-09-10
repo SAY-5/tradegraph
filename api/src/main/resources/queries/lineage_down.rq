@@ -3,6 +3,7 @@ SELECT ?parent ?child ?childName ?jurisdiction (GROUP_CONCAT(DISTINCT ?t; separa
 WHERE {
   { BIND(${iri} AS ?parent) } ${moreParents}
   ?child tg:subsidiaryOf ?parent ; tg:name ?childName ; a ?t .
+  ${directOnly}
   OPTIONAL { ?child tg:jurisdiction ?jurisdiction }
   FILTER(?t != tg:LegalEntity && ?t != tg:Counterparty)
 }

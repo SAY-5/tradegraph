@@ -30,7 +30,7 @@ public class PeriodService {
     /** Periods present in the store, newest first. */
     @Cacheable("periods")
     public List<LocalDate> periods() {
-        return sparql.select(templates.render("periods", Map.of())).stream()
+        return sparql.select("periods", templates.render("periods", Map.of())).stream()
                 .map(r -> r.date("period"))
                 .filter(Objects::nonNull)
                 .toList();

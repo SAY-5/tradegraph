@@ -9,6 +9,7 @@ import dev.tradegraph.api.model.EntitySummary;
 import dev.tradegraph.api.model.ExposureResponse;
 import dev.tradegraph.api.model.LineageResponse;
 import dev.tradegraph.api.model.NeighborGraph;
+import dev.tradegraph.api.model.OpsOverview;
 import dev.tradegraph.api.model.QualityReport;
 import dev.tradegraph.api.model.Stats;
 import dev.tradegraph.api.model.TradeRecord;
@@ -228,6 +229,37 @@ class ApiIT {
         assertThat(report.shaclViolations()).isEqualTo(2);
         assertThat(report.findings()).anyMatch(f -> f.startsWith("subsidiaryOf cycle:"));
         assertThat(report.findings()).anyMatch(f -> f.contains("unknown issuer"));
+    }
+
+    @Test
+    void opsOverviewReportsTheStoreTheCacheAndTheLastQualityRun() {
+        rest.getForObject("/entities/0000000001", EntityDetail.class);
+        rest.getForObject("/entities/0000000001", EntityDetail.class);
+
+        OpsOverview ops = rest.getForObject("/ops/overview", OpsOverview.class);
+
+        assertThat(ops.store()).isEqualTo("fuseki");
+        assertThat(ops.reasoning()).isFalse();
+        assertThat(ops.triples()).isGreaterThan(80);
+        assertThat(ops.entities()).isEqualTo(6);
+        assertThat(ops.exposureMaxDepth()).isEqualTo(4);
+        assertThat(ops.lineageMaxDepth()).isEqualTo(5);
+        assertThat(ops.cache().hits()).isPositive();
+        assertThat(ops.cache().hitRatio()).isBetween(0.0, 1.0);
+        assertThat(ops.slowestQueries()).isNotEmpty();
+        assertThat(ops.slowestQueries().get(0).template()).isNotBlank();
+        assertThat(ops.quality().conforms()).isFalse();
+        assertThat(ops.quality().subsidiaryCycles()).isEqualTo(1);
+    }
+
+    @Test
+    void aDepthAboveTheConfiguredMaximumIsRejectedAsTooExpensive() {
+        assertThat(rest.getForEntity("/entities/0000000001/lineage?depth=9", String.class).getStatusCode())
+                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        ResponseEntity<String> exposure = rest.getForEntity(
+                "/entities/F00000201/exposure?issuer=0000000001&depth=7", String.class);
+        assertThat(exposure.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(exposure.getBody()).contains("above the configured maximum of 4");
     }
 
     @Test
