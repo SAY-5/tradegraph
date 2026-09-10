@@ -12,8 +12,8 @@ import * as q from './queries';
 import { TripleStore } from './store';
 import type { SliceData } from './store';
 import type {
-  EntitySummary, ExposureOptions, ExposureResponse, LineageResponse, NeighborGraph, Stats,
-  TradeRecord,
+  ConcentrationResponse, EntitySummary, ExposureOptions, ExposureResponse, LineageResponse,
+  NeighborGraph, Stats, TradeRecord,
 } from './types';
 
 export * from './types';
@@ -22,7 +22,8 @@ export { QueryCache } from './cache';
 export type { Cached } from './cache';
 export {
   boundedPath, clampDepth, ancestors, descendantIds, buildPath, mergeGraphs, assertedTypes,
-  MAX_DEPTH, SUBSIDIARY_OF,
+  periods, resolvePeriod, ownedOn, ownershipWeight,
+  MAX_DEPTH, EXPOSURE_MAX_DEPTH, DEFAULT_MIN_SHARE, SUBSIDIARY_OF,
 } from './queries';
 
 export const sliceManifest = manifest;
@@ -47,19 +48,37 @@ export class GraphApi {
   exposure(fundId: string, issuerId: string, options: ExposureOptions = {}): Cached<ExposureResponse> {
     const includeAffiliates = options.includeAffiliates ?? true;
     const includeSubsidiaries = options.includeSubsidiaries ?? true;
-    const depth = q.clampDepth(options.depth);
-    const key = `exposure ${fundId} ${issuerId} ${includeAffiliates} ${includeSubsidiaries} ${depth}`;
+    const weighted = options.weighted ?? false;
+    const depth = q.clampDepth(options.depth, q.EXPOSURE_MAX_DEPTH);
+    const asOf = options.asOf ?? null;
+    const key = `exposure ${fundId} ${issuerId} ${includeAffiliates} ${includeSubsidiaries} `
+      + `${weighted} ${depth} ${asOf ?? 'latest'}`;
     return this.cache.run(key, () => q.exposure(this.store, fundId, issuerId, {
-      includeAffiliates, includeSubsidiaries, depth,
+      includeAffiliates, includeSubsidiaries, weighted, depth, asOf,
     }));
+  }
+
+  concentration(
+    entityId: string,
+    limit = 10,
+    minShare = q.DEFAULT_MIN_SHARE,
+    asOf: string | null = null,
+  ): Cached<ConcentrationResponse> {
+    const key = `concentration ${entityId} ${limit} ${minShare} ${asOf ?? 'latest'}`;
+    return this.cache.run(key, () => q.concentration(this.store, entityId, limit, minShare, asOf));
+  }
+
+  periods(): Cached<string[]> {
+    return this.cache.run('periods', () => q.periods(this.store));
   }
 
   neighbors(id: string, limit = 40): Cached<NeighborGraph> {
     return this.cache.run(`neighbors ${id} ${limit}`, () => q.neighbors(this.store, id, limit));
   }
 
-  trades(id: string, limit = 20, offset = 0): Cached<TradeRecord[]> {
-    return this.cache.run(`trades ${id} ${limit} ${offset}`, () => q.trades(this.store, id, limit, offset));
+  trades(id: string, limit = 20, offset = 0, asOf: string | null = null): Cached<TradeRecord[]> {
+    const key = `trades ${id} ${limit} ${offset} ${asOf ?? 'latest'}`;
+    return this.cache.run(key, () => q.trades(this.store, id, limit, offset, asOf));
   }
 
   stats(): Cached<Stats> {

@@ -16,12 +16,15 @@
 
 import { RDF_TYPE, TG, TripleStore } from './store';
 import type {
-  EntityRef, EntitySummary, ExposureLine, ExposureOptions, ExposureResponse, HolderTotal,
-  Instrument, LineageNode, LineageResponse, NeighborGraph, NeighborLink, NeighborNode,
-  PathStep, PositionNode, Stats, TradeRecord,
+  ConcentrationLine, ConcentrationResponse, EntityRef, EntitySummary, ExposureLine, ExposureOptions,
+  ExposureResponse, HolderTotal, Instrument, LineageNode, LineageResponse, NeighborGraph, NeighborLink,
+  NeighborNode, PathStep, PositionNode, Stats, TradeRecord,
 } from './types';
 
+/** tradegraph.lineage.max-depth and tradegraph.exposure.max-depth from application.yml. */
 export const MAX_DEPTH = 5;
+export const EXPOSURE_MAX_DEPTH = 4;
+export const DEFAULT_MIN_SHARE = 0.01;
 export const SUBSIDIARY_OF = 'tg:subsidiaryOf';
 
 /** `(p|p/p|p/p/p)` for min=1, max=3, exactly as SparqlPaths.bounded builds it. */
@@ -38,6 +41,52 @@ export function boundedPath(property: string, min: number, max: number): string 
 export function clampDepth(requested: number | undefined, max = MAX_DEPTH): number {
   if (requested === undefined) return max;
   return Math.min(Math.max(Math.trunc(requested), 1), max);
+}
+
+/* ------------------------------------------------------------------ periods */
+
+/**
+ * Reporting periods in the store, newest first. A 13F-HR is filed for a quarter end, so
+ * every position carries the period of its filing and a query that pinned no period would
+ * sum the same holding once per quarter.
+ */
+export function periods(store: TripleStore): string[] {
+  return [...new Set(store.positions.map((position) => position.asOf))].sort().reverse();
+}
+
+/**
+ * The period an `asOf` request answers over: the latest period on or before the requested
+ * date, or the latest of all when no date was given. Null when nothing qualifies.
+ */
+export function resolvePeriod(store: TripleStore, asOf?: string | null): string | null {
+  const all = periods(store);
+  if (!asOf) return all[0] ?? null;
+  return all.find((period) => period <= asOf) ?? null;
+}
+
+/* --------------------------------------------------------------- ownership */
+
+/**
+ * Entity ids whose ownership fraction a path needs: a parent step is reached by owning the
+ * step before it, a subsidiary step by owning that step itself.
+ */
+export function ownedOn(path: PathStep[]): string[] {
+  const owned: string[] = [];
+  for (let i = 1; i < path.length; i += 1) {
+    if (path[i].hop === 'parent') owned.push(path[i - 1].id);
+    else if (path[i].hop === 'subsidiary') owned.push(path[i].id);
+  }
+  return owned;
+}
+
+/** Product of the fractions on the lineage hops of a path; an entity with no parent counts whole. */
+export function ownershipWeight(store: TripleStore, path: PathStep[]): number {
+  let weight = 1;
+  for (const id of ownedOn(path)) {
+    const entity = store.entity(id);
+    weight *= entity && entity.parent ? entity.ownership : 1;
+  }
+  return weight;
 }
 
 export function ref(store: TripleStore, id: string): EntityRef {
@@ -225,7 +274,9 @@ export function exposure(
   const started = performance.now();
   const includeAffiliates = options.includeAffiliates ?? true;
   const includeSubsidiaries = options.includeSubsidiaries ?? true;
-  const depth = clampDepth(options.depth);
+  const weighted = options.weighted ?? false;
+  const depth = clampDepth(options.depth, EXPOSURE_MAX_DEPTH);
+  const period = resolvePeriod(store, options.asOf);
   const fund = ref(store, fundId);
   const issuer = ref(store, issuerId);
 
@@ -257,6 +308,7 @@ export function exposure(
   for (const holderId of holders) {
     for (const position of store.heldBy.get(holderId) ?? []) {
       if (!issuerEntities.has(position.issuer)) continue;
+      if (position.asOf !== period) continue;
       const key = `${position.holder} ${position.issuer} ${position.cusip}`;
       const group = groups.get(key);
       if (group) {
@@ -304,6 +356,9 @@ export function exposure(
     const viaAffiliate = holder.id !== fund.id;
     const viaSubsidiary = issuerEntity.id !== issuer.id;
     const path = buildPath(store, fund, holder, issuerEntity, issuer, depth);
+    // Weighting multiplies a line by the ownership along its path, and the answer is then
+    // ordered by what is left rather than by the reported value.
+    const weight = weighted ? ownershipWeight(store, path) : null;
     const line: ExposureLine = {
       instrument,
       holder,
@@ -318,28 +373,40 @@ export function exposure(
       pathLength: path.length - 1,
       lineagePath: path,
       explanation: explain(path, instrument),
+      weight,
+      weightedValue: weight === null ? null : Math.round(group.value * weight * 100) / 100,
     };
     byInstrument.push(line);
+  }
 
-    totalValue += line.value;
+  if (weighted) {
+    byInstrument.sort((a, b) => (b.weightedValue ?? 0) - (a.weightedValue ?? 0)
+      || a.holder.id.localeCompare(b.holder.id)
+      || a.instrument.cusip.localeCompare(b.instrument.cusip));
+  }
+
+  for (const line of byInstrument) {
+    const value = weighted ? line.weightedValue ?? 0 : line.value;
+    totalValue += value;
     positions += line.positions;
     longestPath = Math.max(longestPath, line.pathLength);
-    if (line.direct) directValue += line.value;
-    else if (line.viaSubsidiary && !line.viaAffiliate) viaSubsidiariesValue += line.value;
-    else viaAffiliatesValue += line.value;
+    if (line.direct) directValue += value;
+    else if (line.viaSubsidiary && !line.viaAffiliate) viaSubsidiariesValue += value;
+    else viaAffiliatesValue += value;
 
-    const running = byHolder.get(holder.id);
+    const running = byHolder.get(line.holder.id);
     if (running) {
-      running.value += line.value;
+      running.value += value;
       running.positions += line.positions;
     } else {
-      byHolder.set(holder.id, { holder, value: line.value, positions: line.positions });
+      byHolder.set(line.holder.id, { holder: line.holder, value, positions: line.positions });
     }
   }
 
   return {
     fund,
     issuer,
+    asOf: period,
     totalValue,
     directValue,
     viaSubsidiariesValue,
@@ -347,6 +414,7 @@ export function exposure(
     positions,
     includeAffiliates,
     includeSubsidiaries,
+    weighted,
     maxDepth: depth,
     longestPath,
     byInstrument,
@@ -455,11 +523,20 @@ export function search(store: TripleStore, q: string, limit = 20): EntitySummary
 
 /* ------------------------------------------------------------------ trades */
 
-export function trades(store: TripleStore, entityId: string, limit = 20, offset = 0): TradeRecord[] {
+export function trades(
+  store: TripleStore,
+  entityId: string,
+  limit = 20,
+  offset = 0,
+  asOf?: string | null,
+): TradeRecord[] {
+  const period = resolvePeriod(store, asOf);
   const held = store.heldBy.get(entityId) ?? [];
   const issued = store.issuedBy.get(entityId) ?? [];
   const unique = new Map<string, PositionNode>();
-  for (const position of [...held, ...issued]) unique.set(position.iri, position);
+  for (const position of [...held, ...issued]) {
+    if (position.asOf === period) unique.set(position.iri, position);
+  }
   const ordered = [...unique.values()]
     .sort((a, b) => (b.value - a.value) || a.iri.localeCompare(b.iri))
     .slice(offset, offset + limit);
@@ -482,6 +559,72 @@ export function trades(store: TripleStore, entityId: string, limit = 20, offset 
       formType: filing?.formType ?? '',
     };
   });
+}
+
+/* ----------------------------------------------------------- concentration */
+
+/**
+ * Where a fund family's value sits: its positions grouped by the issuer each one names,
+ * with the share of the family total, cut off at `minShare`. Mirrors concentration.rq and
+ * ConcentrationService, which applies the share and the cut off after the query so one set
+ * of rows answers any threshold.
+ */
+export function concentration(
+  store: TripleStore,
+  entityId: string,
+  limit = 10,
+  minShare = DEFAULT_MIN_SHARE,
+  asOf?: string | null,
+): ConcentrationResponse {
+  const started = performance.now();
+  if (minShare < 0 || minShare > 1) throw new Error('minShare must be between 0 and 1');
+  const entity = ref(store, entityId);
+  const period = resolvePeriod(store, asOf);
+  const depth = clampDepth(undefined, EXPOSURE_MAX_DEPTH);
+
+  const root = familyRoot(store, entityId, depth);
+  const holders = new Set<string>();
+  if (root !== null) {
+    for (const id of [root, ...descendantIds(store, root, depth)]) {
+      if (store.entity(id)?.kinds.includes('Fund')) holders.add(id);
+    }
+  }
+
+  const totals = new Map<string, { value: number; positions: number }>();
+  let totalValue = 0;
+  for (const holderId of holders) {
+    for (const position of store.heldBy.get(holderId) ?? []) {
+      if (position.asOf !== period) continue;
+      const running = totals.get(position.issuer);
+      if (running) {
+        running.value += position.value;
+        running.positions += 1;
+      } else {
+        totals.set(position.issuer, { value: position.value, positions: 1 });
+      }
+      totalValue += position.value;
+    }
+  }
+
+  const lines: ConcentrationLine[] = totalValue <= 0 ? [] : [...totals.entries()]
+    .map(([id, running]) => ({
+      issuer: ref(store, id),
+      value: running.value,
+      share: running.value / totalValue,
+      positions: running.positions,
+    }))
+    .filter((line) => line.share >= minShare)
+    .sort((a, b) => (b.value - a.value) || a.issuer.id.localeCompare(b.issuer.id));
+
+  return {
+    entity,
+    asOf: period,
+    totalValue,
+    minShare,
+    matches: lines.length,
+    byIssuer: lines.slice(0, Math.max(1, Math.trunc(limit))),
+    queryMillis: performance.now() - started,
+  };
 }
 
 /* ------------------------------------------------------------------- stats */

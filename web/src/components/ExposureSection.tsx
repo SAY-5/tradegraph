@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { graph } from '../graph';
+import { EXPOSURE_MAX_DEPTH, graph } from '../graph';
 import type { ExposureLine } from '../graph';
 import { compactMoney, count, millis, money, percent } from '../lib/format';
 
@@ -43,8 +43,12 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
   const [issuer, setIssuer] = useState(PRESETS[0].issuer);
   const [includeAffiliates, setIncludeAffiliates] = useState(true);
   const [includeSubsidiaries, setIncludeSubsidiaries] = useState(true);
-  const [depth, setDepth] = useState(5);
+  const [weighted, setWeighted] = useState(false);
+  const [depth, setDepth] = useState(EXPOSURE_MAX_DEPTH);
+  const [period, setPeriod] = useState<string | null>(null);
   const [lineIndex, setLineIndex] = useState(0);
+
+  const allPeriods = graph.periods().value;
 
   const families = useMemo(() => [...graph.store.entities.values()]
     .filter((entity) => entity.kinds.includes('Fund') && entity.parent === null)
@@ -60,7 +64,10 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
       .sort((a, b) => (value.get(b.id) ?? 0) - (value.get(a.id) ?? 0) || a.name.localeCompare(b.name));
   }, []);
 
-  const answer = graph.exposure(fund, issuer, { includeAffiliates, includeSubsidiaries, depth });
+  const answer = graph.exposure(fund, issuer, {
+    includeAffiliates, includeSubsidiaries, weighted, depth, asOf: period,
+  });
+  const concentration = graph.concentration(fund, 6, 0.01, period);
   const result = answer.value;
   const lines = result.byInstrument;
   const focused = lines[Math.min(lineIndex, Math.max(0, lines.length - 1))];
@@ -159,13 +166,21 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
               />
               include issuer subsidiaries
             </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={weighted}
+                onChange={(event) => setWeighted(event.target.checked)}
+              />
+              weight by ownership
+            </label>
             <label className="control-label" htmlFor="exposure-depth" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               depth
               <input
                 id="exposure-depth"
                 type="range"
                 min={1}
-                max={5}
+                max={EXPOSURE_MAX_DEPTH}
                 step={1}
                 value={depth}
                 style={{ width: 120 }}
@@ -173,6 +188,21 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
               />
               <span className="mono" style={{ color: 'var(--accent)' }}>{depth}</span>
             </label>
+            <div className="field" style={{ minWidth: 180 }}>
+              <label htmlFor="period-picker">reporting period</label>
+              <div className="select-wrap">
+                <select
+                  id="period-picker"
+                  value={period ?? ''}
+                  onChange={(event) => setPeriod(event.target.value === '' ? null : event.target.value)}
+                >
+                  <option value="">latest ({allPeriods[0]})</option>
+                  {allPeriods.map((value) => (
+                    <option key={value} value={value}>{value}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -200,6 +230,8 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
               {`legs sum ${money(legSum)} = total ${money(result.totalValue)}`}
             </p>
             <div className="stat-row" aria-live="polite">
+              <span className="badge">{`as of ${result.asOf ?? 'no period'}`}</span>
+              {result.weighted ? <span className="badge badge--hit">ownership weighted</span> : null}
               <span className="badge">{`${count(result.positions)} positions`}</span>
               <span className="badge">{`${count(lines.length)} instrument lines`}</span>
               <span className="badge">{`${count(result.byHolder.length)} holders`}</span>
@@ -221,6 +253,9 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
                   <span className="badge">{`${focused.instrument.instrumentClass}${focused.instrument.ticker ? ` ${focused.instrument.ticker}` : ''}`}</span>
                   <span className="badge">{`cusip ${focused.instrument.cusip}`}</span>
                   <span className="badge">{money(focused.value)}</span>
+                  {focused.weight !== null ? (
+                    <span className="badge badge--hit">{`ownership ${(focused.weight * 100).toFixed(0)}%`}</span>
+                  ) : null}
                   {focused.direct ? <span className="badge badge--hit">direct</span> : null}
                   {focused.viaAffiliate ? <span className="badge">via affiliate</span> : null}
                   {focused.viaSubsidiary ? <span className="badge">via issuer subsidiary</span> : null}
@@ -247,6 +282,30 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
           </div>
         </div>
 
+        {concentration.value.byIssuer.length > 0 ? (
+          <div className="panel" style={{ marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <p className="control-label" style={{ margin: 0 }}>
+                {`where this family's value sits, ${result.asOf ?? 'no period'}`}
+              </p>
+              <span className="mono dim" style={{ fontSize: 11.5 }}>
+                {`${count(concentration.value.matches)} issuers at or above 1%, `}
+                {`${compactMoney(concentration.value.totalValue)} held in total`}
+              </span>
+            </div>
+            <ul className="holder-list">
+              {concentration.value.byIssuer.map((line) => (
+                <li key={line.issuer.id}>
+                  <span>{line.issuer.name}</span>
+                  <span className="num">
+                    {`${(line.share * 100).toFixed(1)}%  ${compactMoney(line.value)}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         {lines.length > 0 ? (
           <div className="panel panel--flush scroll-x" style={{ marginTop: 16 }}>
             <table>
@@ -260,7 +319,7 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
                   <th scope="col">instrument</th>
                   <th scope="col" className="num">hops</th>
                   <th scope="col" className="num">positions</th>
-                  <th scope="col" className="num">value</th>
+                  <th scope="col" className="num">{weighted ? 'weighted' : 'value'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -282,7 +341,7 @@ export function ExposureSection({ reduced }: { reduced: boolean }) {
                     </td>
                     <td className="num">{line.pathLength}</td>
                     <td className="num">{count(line.positions)}</td>
-                    <td className="num">{compactMoney(line.value)}</td>
+                    <td className="num">{compactMoney(weighted ? line.weightedValue ?? 0 : line.value)}</td>
                   </tr>
                 ))}
               </tbody>

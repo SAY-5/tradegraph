@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import queriesSource from '../graph/queries.ts?raw';
-import { boundedPath, graph, SUBSIDIARY_OF } from '../graph';
-import { renderExposure, renderLineageDown, renderLineageUp, renderNeighbors } from '../graph/sparql';
+import { boundedPath, graph, resolvePeriod, SUBSIDIARY_OF } from '../graph';
+import {
+  renderConcentration, renderExposure, renderLineageDown, renderLineageUp, renderNeighbors,
+} from '../graph/sparql';
 import { count } from '../lib/format';
 
 /*
@@ -13,7 +15,7 @@ import { count } from '../lib/format';
  * from the code that produced the numbers elsewhere on the page.
  */
 
-type QueryKey = 'lineage_down' | 'lineage_up' | 'exposure' | 'neighbors';
+type QueryKey = 'lineage_down' | 'lineage_up' | 'exposure' | 'concentration' | 'neighbors';
 
 const QUERIES: { key: QueryKey; file: string; fn: string; blurb: string }[] = [
   {
@@ -33,6 +35,12 @@ const QUERIES: { key: QueryKey; file: string; fn: string; blurb: string }[] = [
     file: 'exposure.rq',
     fn: 'exposure',
     blurb: 'One aggregate query with two generated clauses: the holder family and the issuing entities.',
+  },
+  {
+    key: 'concentration',
+    file: 'concentration.rq',
+    fn: 'concentration',
+    blurb: 'The family\u2019s positions grouped by issuer; the shares and the cut off are applied afterwards.',
   },
   {
     key: 'neighbors',
@@ -116,13 +124,19 @@ export function PathLab({ reduced }: { reduced: boolean }) {
   const [playing, setPlaying] = useState(false);
 
   const query = QUERIES.find((entry) => entry.key === queryKey) ?? QUERIES[0];
-  const path = boundedPath(SUBSIDIARY_OF, 1, queryKey === 'exposure' ? depth : Math.max(1, depth - 1));
+  const path = boundedPath(
+    SUBSIDIARY_OF,
+    1,
+    queryKey === 'exposure' || queryKey === 'concentration' ? depth : Math.max(1, depth - 1),
+  );
 
   const sparql = useMemo(() => {
     const store = graph.store;
     switch (queryKey) {
       case 'exposure':
-        return renderExposure(store, '0001880661', '0001691493', true, true, depth);
+        return renderExposure(store, '0001880661', '0001691493', true, true, depth, resolvePeriod(store));
+      case 'concentration':
+        return renderConcentration(store, '0001113169', resolvePeriod(store));
       case 'lineage_up':
         return renderLineageUp(store, subject, depth);
       case 'neighbors':

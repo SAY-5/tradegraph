@@ -52,7 +52,15 @@ type Kind = 'ISSUER' | 'FUND' | 'SUBSIDIARY';
 
 interface RawIssuer { cik: string; ticker: string; name: string }
 interface RawFund { id: string; name: string; cik: string | null; parent: string | null; jurisdiction: string | null }
-interface RawSubsidiary { id: string; name: string; parent: string; jurisdiction: string | null; filing: string }
+interface RawSubsidiary {
+  id: string;
+  name: string;
+  parent: string;
+  jurisdiction: string | null;
+  filing: string;
+  /** Fraction of the subsidiary the parent discloses owning; absent means undisclosed. */
+  ownership?: number;
+}
 interface RawRow {
   nameOfIssuer: string;
   issuerCik?: string;
@@ -78,6 +86,8 @@ interface Entity {
   cik: string | null;
   ticker: string | null;
   parent: string | null;
+  /** Disclosed ownership fraction, null when the disclosure carried no percentage. */
+  ownership: number | null;
   jurisdiction: string | null;
   /** Index into the filing list, or -1. */
   filing: number;
@@ -127,7 +137,7 @@ function readSample(): Sample {
   for (const r of issuers) {
     byId.set(r.cik, {
       id: r.cik, name: r.name, kinds: ['ISSUER'], cik: r.cik, ticker: r.ticker,
-      parent: null, jurisdiction: null, filing: -1,
+      parent: null, ownership: null, jurisdiction: null, filing: -1,
     });
   }
   for (const r of funds) {
@@ -139,6 +149,7 @@ function readSample(): Sample {
       cik: r.cik,
       ticker: listed ? listed.ticker : null,
       parent: r.parent,
+      ownership: null,
       jurisdiction: r.jurisdiction,
       filing: -1,
     });
@@ -146,7 +157,8 @@ function readSample(): Sample {
   for (const r of subsidiaries) {
     byId.set(r.id, {
       id: r.id, name: r.name, kinds: ['SUBSIDIARY'], cik: null, ticker: null,
-      parent: r.parent, jurisdiction: r.jurisdiction, filing: subsidiaryFiling.get(r.filing)!,
+      parent: r.parent, ownership: r.ownership ?? null,
+      jurisdiction: r.jurisdiction, filing: subsidiaryFiling.get(r.filing)!,
     });
   }
 
@@ -267,6 +279,11 @@ function parseTurtle(text: string): OntologyTriple[] {
 
 /* ------------------------------------------------------------------- slice */
 
+/** Lexical form the ETL writes: an absent disclosure defaults to 1.0 and is flagged assumed. */
+function ownershipLiteral(ownership: number | null): string {
+  return ownership === null ? '1.0' : String(ownership);
+}
+
 function descendants(childrenOf: Map<string, string[]>, root: string, depth: number): string[] {
   const seen = new Set<string>();
   let frontier = [root];
@@ -312,6 +329,8 @@ function countTriples(
     if (e.parent && known.has(e.parent)) {
       add(iri, `${TG}subsidiaryOf`, ENTITY_NS + e.parent);
       add(ENTITY_NS + e.parent, `${TG}hasSubsidiary`, iri);
+      add(iri, `${TG}ownershipFraction`, ownershipLiteral(e.ownership));
+      add(iri, `${TG}ownershipAssumed`, e.ownership === null ? 'true' : 'false');
     }
     if (e.filing >= 0) add(iri, `${TG}filedIn`, FILING_NS + filings[e.filing]!.accession);
   }
@@ -439,6 +458,7 @@ function main(): void {
     positions: sample.positions.length,
     filings: new Set(sample.filings.map((f) => f.accession)).size,
     lineageEdges: allEntities.filter((e) => e.parent).length,
+    periods: [...new Set(sample.positions.map((p) => sample.filings[p.filing]!.period))].sort().reverse(),
     triples: countTriples(
       allEntities, sample.filings, sample.positions, sample.instruments, ontologyTriples.length,
     ),
@@ -454,7 +474,7 @@ function main(): void {
       // page can say plainly how much of it the slice carries.
       full,
     },
-    // [id, name, kindBits, ticker, cik, parentIndex, jurisdiction, filingIndex]
+    // [id, name, kindBits, ticker, cik, parentIndex, jurisdiction, filingIndex, ownership]
     entities: slicedEntities.map((e) => [
       e.id,
       e.name,
@@ -464,6 +484,7 @@ function main(): void {
       e.parent !== null && entityIndex.has(e.parent) ? entityIndex.get(e.parent)! : -1,
       e.jurisdiction,
       e.filing,
+      e.ownership,
     ]),
     // [accession, formType, filerIndex, period]; one accession appears twice by design.
     filings: filings.map((f) => [f.accession, f.formType, entityIndex.get(f.filer) ?? -1, f.period]),
@@ -487,7 +508,8 @@ function main(): void {
     ]),
     // The SPARQL the API sends, quoted next to the in-browser equivalent.
     queries: Object.fromEntries(
-      ['prefixes', 'exposure', 'lineage_up', 'lineage_down', 'neighbors', 'search', 'stats']
+      ['prefixes', 'exposure', 'lineage_up', 'lineage_down', 'neighbors', 'search', 'stats',
+        'periods', 'ownership', 'concentration', 'trades']
         .map((name) => [
           name,
           readFileSync(join(REPO, 'api', 'src', 'main', 'resources', 'queries', `${name}.rq`), 'utf8').trimEnd(),
@@ -520,6 +542,7 @@ function main(): void {
       ontologyTriples: ontologyTriples.length,
       triples: countTriples(slicedEntities, filings, positions, sliceInstruments, ontologyTriples.length),
     },
+    periods: [...new Set(positions.map((p) => filings[p.filing]!.period))].sort().reverse(),
     full,
   };
   writeFileSync(join(OUT_DIR, 'slice-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);

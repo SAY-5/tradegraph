@@ -1,30 +1,38 @@
 {
   "file": "slice.json",
-  "sha256": "2d65306662ad083572542c9e676f1265ef0e56674c9d98b68a7f5fb0a03a2954",
-  "bytes": 402366,
+  "sha256": "30bc7e4cea11f82ebbb86a53a69855ec3b911fa33e51667b89bfe2840b3e3b7f",
+  "bytes": 586877,
   "source": "etl/sample",
   "topIssuers": 300,
   "maxDepth": 5,
   "counts": {
-    "entities": 1766,
-    "issuers": 342,
+    "entities": 1760,
+    "issuers": 340,
     "funds": 410,
-    "subsidiaries": 1072,
-    "positions": 4092,
-    "filings": 620,
-    "instruments": 884,
-    "lineageEdges": 1424,
-    "ontologyTriples": 140,
-    "triples": 65550
+    "subsidiaries": 1068,
+    "positions": 7894,
+    "filings": 1028,
+    "instruments": 877,
+    "lineageEdges": 1420,
+    "ontologyTriples": 150,
+    "triples": 104541
   },
+  "periods": [
+    "2024-06-30",
+    "2024-03-31"
+  ],
   "full": {
     "entities": 6100,
     "issuers": 3600,
     "funds": 410,
     "subsidiaries": 2148,
-    "positions": 12373,
-    "filings": 829,
+    "positions": 24336,
+    "filings": 1239,
     "lineageEdges": 2500,
-    "triples": 207095
+    "periods": [
+      "2024-06-30",
+      "2024-03-31"
+    ],
+    "triples": 323170
   }
 }

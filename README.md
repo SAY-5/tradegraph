@@ -94,10 +94,11 @@ deterministic. See `etl/sample/README.md`. The `--live` ETL mode pulls real
 
 `web/` is a static page that answers the same lineage and exposure questions with no API
 and no store: the ontology triples, the query semantics and the SPARQL templates are the
-ones in this repository, running over a 393 KiB slice of `etl/sample` (1,766 of 6,100
-entities, 4,092 of 12,373 positions). The four exposure pairs above reproduce to the
-dollar and `npm run selfcheck` asserts it; the milliseconds do not carry over, because
-the demo times function calls rather than an API and a store. See `web/README.md`.
+ones in this repository, running over a 573 KiB slice of `etl/sample` (1,760 of 6,100
+entities, 7,894 of 24,336 positions, both reporting periods, ownership fractions
+included). The four exposure pairs above reproduce to the dollar and `npm run selfcheck`
+asserts it; the milliseconds do not carry over, because the demo times function calls
+rather than an API and a store. See `web/README.md`.
 
 ## Components
 

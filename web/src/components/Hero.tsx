@@ -57,7 +57,7 @@ export function Hero({ reduced }: { reduced: boolean }) {
         <Counter
           value={full.positions}
           label="positions"
-          source="full dataset"
+          source={`full dataset, ${full.periods.length} quarters`}
           reduced={reduced}
         />
         <Counter
@@ -73,7 +73,8 @@ export function Hero({ reduced }: { reduced: boolean }) {
         {`slice in this page: ${count(sliceManifest.counts.entities)} entities, `}
         {`${count(sliceManifest.counts.positions)} positions, `}
         {`${count(sliceManifest.counts.triples)} triples, `}
-        {`${(sliceManifest.bytes / 1024).toFixed(0)} KiB`}
+        {`${(sliceManifest.bytes / 1024).toFixed(0)} KiB, `}
+        {`periods ${sliceManifest.periods.join(' and ')}`}
       </p>
     </section>
   );

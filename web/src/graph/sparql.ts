@@ -5,7 +5,7 @@
  * Mirrors QueryTemplates.render, SparqlValues and the clause builders in ExposureService.
  */
 
-import { boundedPath, SUBSIDIARY_OF } from './queries';
+import { boundedPath, EXPOSURE_MAX_DEPTH, SUBSIDIARY_OF } from './queries';
 import type { TripleStore } from './store';
 
 export const ENTITY_NS = 'https://tradegraph.dev/entity/';
@@ -40,6 +40,13 @@ export function issuerClause(issuerIri: string, includeSubsidiaries: boolean, de
   return `{ BIND(${issuerIri} AS ?issuerEntity) } ${unionHops('?issuerEntity', issuerIri, 1, depth)}`;
 }
 
+/** `VALUES ?var { "2024-06-30"^^xsd:date }`, pinning a query to one reporting period. */
+export function valuesBlock(variable: string, period: string | null): string {
+  return period === null
+    ? `VALUES ?${variable} { }`
+    : `VALUES ?${variable} { "${period}"^^xsd:date }`;
+}
+
 /** Renders `queries/<name>.rq` with the prefixes prepended, refusing unresolved placeholders. */
 export function render(store: TripleStore, name: string, params: Record<string, string>): string {
   const template = store.queries[name];
@@ -59,15 +66,26 @@ export function renderExposure(
   includeAffiliates: boolean,
   includeSubsidiaries: boolean,
   depth: number,
+  period: string | null,
 ): string {
   const fundIri = entityIri(fundId);
   const issuerIri = entityIri(issuerId);
   return render(store, 'exposure', {
     fund: fundIri,
     issuer: issuerIri,
-    depth: String(depth),
-    holderClause: holderClause(fundIri, includeAffiliates, depth),
-    issuerClause: issuerClause(issuerIri, includeSubsidiaries, depth),
+    depth: String(Math.min(depth, EXPOSURE_MAX_DEPTH)),
+    periodValues: valuesBlock('d', period),
+    holderClause: holderClause(fundIri, includeAffiliates, Math.min(depth, EXPOSURE_MAX_DEPTH)),
+    issuerClause: issuerClause(issuerIri, includeSubsidiaries, Math.min(depth, EXPOSURE_MAX_DEPTH)),
+  });
+}
+
+export function renderConcentration(store: TripleStore, fundId: string, period: string | null): string {
+  const iri = entityIri(fundId);
+  return render(store, 'concentration', {
+    fund: iri,
+    periodValues: valuesBlock('d', period),
+    holderClause: holderClause(iri, true, EXPOSURE_MAX_DEPTH),
   });
 }
 

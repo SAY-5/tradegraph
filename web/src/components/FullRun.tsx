@@ -57,6 +57,7 @@ function runDemo(api: GraphApi): string {
     + `funds ${count(stats.funds)}, subsidiaries ${count(stats.subsidiaries)})`);
   out.push(`${label('positions')}: ${count(stats.positions)} in ${count(stats.filings)} filings`);
   out.push(`${label('lineage edges')}: ${count(stats.lineageEdges)}`);
+  out.push(`${label('periods')}: ${api.periods().value.join(', ')} (answers use the latest)`);
   out.push(`${label('triples')}: ${count(stats.triples)}`);
   out.push(`${label('stats query')}: ${ms(statsCall.millis)}`);
   out.push('');
@@ -73,6 +74,7 @@ function runDemo(api: GraphApi): string {
   const families = FUND_FAMILIES.map((ticker) => first(ticker, 'Fund'));
   const issuers = ISSUERS.map((ticker) => first(ticker, 'Issuer'));
   const answers: { fund: string; issuer: string; result: ExposureResponse; millis: number }[] = [];
+  const weightedRuns: { fund: string; issuer: string; total: number; weightedTotal: number }[] = [];
   for (const fund of families) {
     for (const issuer of issuers) {
       const call = api.exposure(fund.id, issuer.id);
@@ -131,6 +133,24 @@ function runDemo(api: GraphApi): string {
 
   const nonZero = answers.filter((answer) => answer.result.totalValue > 0).length;
   const gridMillis = latencies.reduce((total, value) => total + value, 0);
+  for (const answer of top) {
+    const fundId = families.find((family) => family.name === answer.fund)?.id;
+    const issuerId = issuers.find((issuer) => issuer.name === answer.issuer)?.id;
+    if (!fundId || !issuerId) continue;
+    weightedRuns.push({
+      fund: answer.fund,
+      issuer: answer.issuer,
+      total: answer.result.totalValue,
+      weightedTotal: api.exposure(fundId, issuerId, { weighted: true }).value.totalValue,
+    });
+  }
+  if (weightedRuns.length > 0) {
+    out.push('  weighted by disclosed ownership along each path');
+    for (const run of weightedRuns) {
+      out.push(`    ${run.fund} -> ${run.issuer}: ${money(run.total)} unweighted, `
+        + `${money(run.weightedTotal)} weighted`);
+    }
+  }
   out.push(`  ${nonZero}/${answers.length} pairs have exposure; latency p50 ${ms(median(latencies))}, `
     + `max ${ms(Math.max(...latencies))} (uncached, in-browser)`);
   out.push(`  ${answers.length} uncached queries in ${gridMillis.toFixed(2)} ms; performance.now() steps in `

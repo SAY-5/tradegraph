@@ -13,7 +13,9 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { GraphApi, boundedPath, clampDepth, mergeGraphs, sliceManifest } from '../src/graph/index';
+import {
+  EXPOSURE_MAX_DEPTH, GraphApi, boundedPath, clampDepth, mergeGraphs, ownedOn, sliceManifest,
+} from '../src/graph/index';
 import { RDF_TYPE } from '../src/graph/store';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -74,6 +76,7 @@ eq('positions', stats.positions, sliceManifest.counts.positions);
 eq('filings', stats.filings, sliceManifest.counts.filings);
 eq('lineage edges', stats.lineageEdges, sliceManifest.counts.lineageEdges);
 eq('every fund family and sub-fund is present', stats.funds, sliceManifest.full.funds);
+eq('both reporting periods are in the slice', api.periods().value.join(','), '2024-06-30,2024-03-31');
 eq(
   'ontology classes carried over from tradegraph.ttl',
   store.match(undefined, RDF_TYPE, 'http://www.w3.org/2002/07/owl#Class').length,
@@ -151,9 +154,10 @@ ok('the Nu Finance leg is the whole of the TPG answer',
 /* ------------------------------------------------------------------ depth */
 
 group('depth cap');
-eq('clampDepth refuses more than five', clampDepth(9), 5);
+eq('clampDepth refuses more than the lineage cap', clampDepth(9), 5);
+eq('exposure clamps to its own, lower cap', clampDepth(9, EXPOSURE_MAX_DEPTH), 4);
 eq('clampDepth refuses less than one', clampDepth(0), 1);
-eq('exposure reports the capped depth', api.exposure(TPG, NU, { depth: 12 }).value.maxDepth, 5);
+eq('exposure reports the capped depth', api.exposure(TPG, NU, { depth: 12 }).value.maxDepth, 4);
 eq('a depth of one drops the issuer subsidiary leg',
   api.exposure(TPG, NU, { depth: 1 }).value.byInstrument.length, 1);
 eq('bounded path expansion matches SparqlPaths.bounded',
@@ -175,6 +179,54 @@ ok('a depth of one stops the tree at the first level',
   `deepest ${api.lineage(AAPL, 1).value.deepestLevel}`);
 
 /* ------------------------------------------------------------------ cache */
+
+group('reporting periods');
+eq('an answer names the period it covers', trowApple.asOf, '2024-06-30');
+const trowMarch = api.exposure(TROW, AAPL, { asOf: '2024-03-31' }).value;
+eq('the prior quarter is a different answer', trowMarch.asOf, '2024-03-31');
+ok('the prior quarter answers over its own positions', trowMarch.totalValue > 0,
+  `${Math.round(trowMarch.totalValue)}`);
+const juneFamily = api.concentration(TROW, 5, 0.01).value;
+const marchFamily = api.concentration(TROW, 5, 0.01, '2024-03-31').value;
+ok('the two quarters are different answers',
+  juneFamily.totalValue !== marchFamily.totalValue,
+  `${Math.round(juneFamily.totalValue)} vs ${Math.round(marchFamily.totalValue)}`);
+ok('an as_of before the first period answers over nothing',
+  api.exposure(TROW, AAPL, { asOf: '2020-01-01' }).value.totalValue === 0);
+ok('pinning a period is what stops a carried holding being counted twice',
+  trowApple.positions === trowMarch.positions
+    && trowApple.positions < store.heldBy.get(trowApple.byHolder[0].holder.id)!.length,
+  `${trowApple.positions} positions per quarter`);
+
+group('ownership weighting');
+const tpgWeighted = api.exposure(TPG, NU, { weighted: true }).value;
+const tpgLine = tpgWeighted.byInstrument[0];
+eq('weighting is reported on the answer', tpgWeighted.weighted, true);
+ok('the weight is the product of the fractions on the path',
+  tpgLine.weight !== null && tpgLine.weight > 0 && tpgLine.weight <= 1,
+  `weight ${tpgLine.weight}`);
+ok('the weighted value is the value times the weight',
+  Math.abs((tpgLine.weightedValue ?? 0) - tpgLine.value * (tpgLine.weight ?? 1)) < 0.01,
+  `${tpgLine.weightedValue} vs ${tpgLine.value * (tpgLine.weight ?? 1)}`);
+ok('weighting never raises the total',
+  tpgWeighted.totalValue <= tpgNu.totalValue + 1e-6,
+  `${Math.round(tpgWeighted.totalValue)} vs ${Math.round(tpgNu.totalValue)}`);
+ok('an unweighted answer carries no weight',
+  tpgNu.byInstrument.every((line) => line.weight === null));
+eq('a path owns the entities it descends through',
+  ownedOn(tpgLine.lineagePath).length, 2);
+
+group('concentration');
+const trowConcentration = api.concentration(TROW, 5, 0.01).value;
+ok('the report lists issuers, largest first',
+  trowConcentration.byIssuer.length > 0
+    && trowConcentration.byIssuer.every((line, i, all) => i === 0 || all[i - 1].value >= line.value),
+  `${trowConcentration.byIssuer.length} of ${trowConcentration.matches}`);
+ok('every listed issuer is at or above the threshold',
+  trowConcentration.byIssuer.every((line) => line.share >= 0.01));
+ok('shares are a fraction of the family total',
+  trowConcentration.byIssuer.every((line) => Math.abs(line.share - line.value / trowConcentration.totalValue) < 1e-9));
+eq('the report names the period it covers', trowConcentration.asOf, '2024-06-30');
 
 group('cache');
 const fresh = new GraphApi();

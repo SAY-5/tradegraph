@@ -11,6 +11,10 @@ export interface EntityNode {
   cik: string | null;
   jurisdiction: string | null;
   parent: string | null;
+  /** Fraction of this entity its parent discloses owning; 1 when nothing was disclosed. */
+  ownership: number;
+  /** True when the disclosure carried no percentage and the fraction defaulted to 1. */
+  ownershipAssumed: boolean;
   filing: string | null;
 }
 
@@ -91,6 +95,9 @@ export interface ExposureLine {
   pathLength: number;
   lineagePath: PathStep[];
   explanation: string;
+  /** Ownership along the path, and the value it leaves; null unless weighted was asked for. */
+  weight: number | null;
+  weightedValue: number | null;
 }
 
 export interface HolderTotal {
@@ -102,6 +109,8 @@ export interface HolderTotal {
 export interface ExposureResponse {
   fund: EntityRef;
   issuer: EntityRef;
+  /** The reporting period this answer covers, or null when the store holds no positions. */
+  asOf: string | null;
   totalValue: number;
   directValue: number;
   viaSubsidiariesValue: number;
@@ -109,6 +118,7 @@ export interface ExposureResponse {
   positions: number;
   includeAffiliates: boolean;
   includeSubsidiaries: boolean;
+  weighted: boolean;
   maxDepth: number;
   longestPath: number;
   byInstrument: ExposureLine[];
@@ -119,7 +129,28 @@ export interface ExposureResponse {
 export interface ExposureOptions {
   includeAffiliates?: boolean;
   includeSubsidiaries?: boolean;
+  /** Multiply every line by the ownership along its lineage path. */
+  weighted?: boolean;
   depth?: number;
+  /** Answer over the latest reporting period on or before this date. */
+  asOf?: string | null;
+}
+
+export interface ConcentrationLine {
+  issuer: EntityRef;
+  value: number;
+  share: number;
+  positions: number;
+}
+
+export interface ConcentrationResponse {
+  entity: EntityRef;
+  asOf: string | null;
+  totalValue: number;
+  minShare: number;
+  matches: number;
+  byIssuer: ConcentrationLine[];
+  queryMillis: number;
 }
 
 export interface LineageNode {
