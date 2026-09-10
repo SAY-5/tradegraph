@@ -6,6 +6,7 @@ import dev.tradegraph.api.model.TradeRecord;
 import dev.tradegraph.api.sparql.QueryTemplates;
 import dev.tradegraph.api.sparql.SparqlClient;
 import dev.tradegraph.api.sparql.SparqlValues;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,16 +17,19 @@ public class TradeService {
 
     private final SparqlClient sparql;
     private final QueryTemplates templates;
+    private final PeriodService periods;
 
-    public TradeService(SparqlClient sparql, QueryTemplates templates) {
+    public TradeService(SparqlClient sparql, QueryTemplates templates, PeriodService periods) {
         this.sparql = sparql;
         this.templates = templates;
+        this.periods = periods;
     }
 
     @Cacheable("trades")
-    public List<TradeRecord> forEntity(String id, int limit, int offset) {
+    public List<TradeRecord> forEntity(String id, int limit, int offset, LocalDate asOf) {
         String query = templates.render("trades", Map.of(
                 "iri", SparqlValues.entityIri(id),
+                "periodValues", periods.valuesBlock("asOf", asOf),
                 "limit", SparqlValues.integer(Math.min(Math.max(limit, 1), 500)),
                 "offset", SparqlValues.integer(Math.max(offset, 0))));
         return sparql.select(query).stream()

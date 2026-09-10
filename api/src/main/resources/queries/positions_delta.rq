@@ -1,0 +1,15 @@
+# Positions held by ${iri} in the two reporting periods being compared, one row
+# per instrument and period. The diff itself is done in the service.
+SELECT ?period ?cusip ?class ?ticker ?issuerEntity ?issuerEntityName
+       (SUM(?v) AS ?value) (SUM(?q) AS ?quantity) (COUNT(?pos) AS ?positions)
+WHERE {
+  ${periodValues}
+  ${iri} tg:holds ?pos .
+  ?pos tg:asOf ?period ; tg:issuer ?issuerEntity ; tg:instrument ?inst ;
+       tg:value ?v ; tg:quantity ?q .
+  ?issuerEntity tg:name ?issuerEntityName .
+  ?inst tg:cusip ?cusip ; tg:instrumentClass ?class .
+  OPTIONAL { ?inst tg:ticker ?ticker }
+}
+GROUP BY ?period ?cusip ?class ?ticker ?issuerEntity ?issuerEntityName
+ORDER BY ?cusip ?period

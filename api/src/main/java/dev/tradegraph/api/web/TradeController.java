@@ -3,7 +3,9 @@ package dev.tradegraph.api.web;
 import dev.tradegraph.api.model.TradeRecord;
 import dev.tradegraph.api.service.TradeService;
 import jakarta.validation.constraints.Pattern;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +25,9 @@ public class TradeController {
     public List<TradeRecord> trades(
             @RequestParam("entity") @Pattern(regexp = EntityController.ID_PATTERN) String entity,
             @RequestParam(value = "limit", defaultValue = "50") int limit,
-            @RequestParam(value = "offset", defaultValue = "0") int offset) {
-        return trades.forEntity(entity, limit, offset);
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "as_of", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+        return trades.forEntity(entity, limit, offset, asOf);
     }
 }

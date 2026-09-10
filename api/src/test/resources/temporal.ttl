@@ -1,0 +1,52 @@
+@prefix tg:  <https://tradegraph.dev/ontology#> .
+@prefix e:   <https://tradegraph.dev/entity/> .
+@prefix i:   <https://tradegraph.dev/instrument/> .
+@prefix f:   <https://tradegraph.dev/filing/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# One fund reporting for two quarters. Between 2024-03-31 and 2024-06-30 the
+# common line moved, the debt line was sold and the preferred line was opened.
+
+e:0000000001 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;
+    tg:name "Acme Corp" ; tg:cik "0000000001" ; tg:ticker "ACME" .
+e:S00000101 a tg:LegalEntity, tg:Subsidiary ;
+    tg:name "Acme Finance Corp." ; tg:jurisdiction "DE" ; tg:subsidiaryOf e:0000000001 .
+e:0000000001 tg:hasSubsidiary e:S00000101 .
+
+e:0000000002 a tg:LegalEntity, tg:Counterparty, tg:Fund ;
+    tg:name "Bigfund Inc" ; tg:cik "0000000002" ; tg:ticker "BIGF" .
+e:F00000201 a tg:LegalEntity, tg:Counterparty, tg:Fund ;
+    tg:name "Bigfund Growth Fund" ; tg:jurisdiction "US" ; tg:subsidiaryOf e:0000000002 .
+e:0000000002 tg:hasSubsidiary e:F00000201 .
+
+f:0000000002-24-000501 a tg:Filing ; tg:accessionNumber "0000000002-24-000501" ; tg:formType "13F-HR" ;
+    tg:filedBy e:F00000201 ; tg:periodOfReport "2024-03-31"^^xsd:date .
+f:0000000002-24-000001 a tg:Filing ; tg:accessionNumber "0000000002-24-000001" ; tg:formType "13F-HR" ;
+    tg:filedBy e:F00000201 ; tg:periodOfReport "2024-06-30"^^xsd:date .
+
+i:900000001 a tg:Instrument ; tg:cusip "900000001" ; tg:instrumentClass "COMMON" ; tg:ticker "ACME" ;
+    tg:issuedBy e:0000000001 ; tg:name "Acme Corp COMMON" .
+i:900000002 a tg:Instrument ; tg:cusip "900000002" ; tg:instrumentClass "DEBT" ;
+    tg:issuedBy e:S00000101 ; tg:name "Acme Finance Corp. DEBT" .
+i:900000003 a tg:Instrument ; tg:cusip "900000003" ; tg:instrumentClass "PREFERRED" ; tg:ticker "ACME" ;
+    tg:issuedBy e:0000000001 ; tg:name "Acme Corp PREFERRED" .
+
+<https://tradegraph.dev/position/0000000002-24-000501/0> a tg:Position ; tg:heldBy e:F00000201 ;
+    tg:issuer e:0000000001 ; tg:instrument i:900000001 ; tg:quantity 100 ; tg:value 1000.0 ;
+    tg:asOf "2024-03-31"^^xsd:date ; tg:filedIn f:0000000002-24-000501 .
+e:F00000201 tg:holds <https://tradegraph.dev/position/0000000002-24-000501/0> .
+<https://tradegraph.dev/position/0000000002-24-000501/1> a tg:Position ; tg:heldBy e:F00000201 ;
+    tg:issuer e:S00000101 ; tg:instrument i:900000002 ; tg:quantity 4000 ; tg:value 400.0 ;
+    tg:asOf "2024-03-31"^^xsd:date ; tg:filedIn f:0000000002-24-000501 .
+e:F00000201 tg:holds <https://tradegraph.dev/position/0000000002-24-000501/1> .
+
+<https://tradegraph.dev/position/0000000002-24-000001/0> a tg:Position ; tg:heldBy e:F00000201 ;
+    tg:issuer e:0000000001 ; tg:instrument i:900000001 ; tg:quantity 120 ; tg:value 1500.0 ;
+    tg:asOf "2024-06-30"^^xsd:date ; tg:filedIn f:0000000002-24-000001 .
+e:F00000201 tg:holds <https://tradegraph.dev/position/0000000002-24-000001/0> .
+<https://tradegraph.dev/position/0000000002-24-000001/1> a tg:Position ; tg:heldBy e:F00000201 ;
+    tg:issuer e:0000000001 ; tg:instrument i:900000003 ; tg:quantity 70 ; tg:value 700.0 ;
+    tg:asOf "2024-06-30"^^xsd:date ; tg:filedIn f:0000000002-24-000001 .
+e:F00000201 tg:holds <https://tradegraph.dev/position/0000000002-24-000001/1> .
+
+e:F00000201 tg:counterpartyOf e:0000000001, e:S00000101 .

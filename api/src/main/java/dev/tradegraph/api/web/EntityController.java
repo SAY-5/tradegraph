@@ -8,7 +8,9 @@ import dev.tradegraph.api.service.EntityService;
 import dev.tradegraph.api.service.ExposureService;
 import dev.tradegraph.api.service.LineageService;
 import jakarta.validation.constraints.Pattern;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,7 +57,10 @@ public class EntityController {
             @RequestParam("issuer") @Pattern(regexp = ID_PATTERN) String issuer,
             @RequestParam(value = "includeAffiliates", defaultValue = "true") boolean includeAffiliates,
             @RequestParam(value = "includeSubsidiaries", defaultValue = "true") boolean includeSubsidiaries,
-            @RequestParam(value = "depth", required = false) Integer depth) {
-        return exposure.exposure(id, issuer, includeAffiliates, includeSubsidiaries, exposure.clampDepth(depth));
+            @RequestParam(value = "depth", required = false) Integer depth,
+            @RequestParam(value = "as_of", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+        return exposure.exposure(id, issuer, includeAffiliates, includeSubsidiaries, exposure.clampDepth(depth),
+                asOf);
     }
 }

@@ -7,6 +7,7 @@ import { ExposureResponse } from '../models';
 const RESPONSE: ExposureResponse = {
   fund: { id: 'F00000201', name: 'Bigfund Growth Fund', kinds: ['Fund'] },
   issuer: { id: '0000000001', name: 'Acme Corp', kinds: ['Issuer'] },
+  asOf: '2024-06-30',
   totalValue: 50250.5,
   directValue: 0,
   viaSubsidiariesValue: 49000.5,
@@ -48,10 +49,15 @@ describe('ExposurePanel', () => {
     }).compileComponents();
   });
 
+  function flushPeriods(): void {
+    TestBed.inject(HttpTestingController).expectOne('/api/periods').flush(['2024-06-30', '2024-03-31']);
+  }
+
   it('runs the query when an issuer is picked and renders totals and the path', async () => {
     const fixture = TestBed.createComponent(ExposurePanel);
     fixture.componentRef.setInput('fund', { id: 'F00000201', name: 'Bigfund Growth Fund', kinds: ['Fund'] });
     await fixture.whenStable();
+    flushPeriods();
 
     fixture.componentInstance.pickIssuer({ id: '0000000001', name: 'Acme Corp', kinds: ['Issuer'] });
     const http = TestBed.inject(HttpTestingController);
@@ -75,7 +81,25 @@ describe('ExposurePanel', () => {
   it('does not query without a fund', () => {
     const fixture = TestBed.createComponent(ExposurePanel);
     fixture.componentInstance.pickIssuer({ id: '0000000001', name: 'Acme Corp', kinds: ['Issuer'] });
-    TestBed.inject(HttpTestingController).expectNone(() => true);
+    TestBed.inject(HttpTestingController).expectNone((r) => r.url.includes('/exposure'));
     expect(fixture.componentInstance.result()).toBeNull();
+  });
+
+  it('offers the filed periods and pins the query to the one that is picked', async () => {
+    const fixture = TestBed.createComponent(ExposurePanel);
+    fixture.componentRef.setInput('fund', { id: 'F00000201', name: 'Bigfund Growth Fund', kinds: ['Fund'] });
+    await fixture.whenStable();
+    flushPeriods();
+    await fixture.whenStable();
+
+    const options = (fixture.nativeElement as HTMLElement).querySelectorAll('select option');
+    expect([...options].map((o) => o.textContent?.trim())).toEqual(['latest', '2024-06-30', '2024-03-31']);
+
+    fixture.componentInstance.pickIssuer({ id: '0000000001', name: 'Acme Corp', kinds: ['Issuer'] });
+    const http = TestBed.inject(HttpTestingController);
+    expect(http.expectOne((r) => r.url.includes('/exposure')).request.params.get('as_of')).toBeNull();
+
+    fixture.componentInstance.setPeriod('2024-03-31');
+    expect(http.expectOne((r) => r.url.includes('/exposure')).request.params.get('as_of')).toBe('2024-03-31');
   });
 });

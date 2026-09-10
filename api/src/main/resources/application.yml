@@ -5,7 +5,7 @@ spring:
     default: fuseki
   cache:
     type: caffeine
-    cache-names: search,entity,lineage,ancestors,exposure,trades,neighbors,stats
+    cache-names: search,entity,lineage,ancestors,exposure,trades,neighbors,stats,periods,delta
     caffeine:
       spec: maximumSize=5000,expireAfterWrite=10m
   jackson:

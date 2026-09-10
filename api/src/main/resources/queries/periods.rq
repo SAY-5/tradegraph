@@ -1,0 +1,4 @@
+# Reporting periods present in the store, newest first.
+SELECT DISTINCT ?period
+WHERE { ?pos tg:asOf ?period }
+ORDER BY DESC(?period)

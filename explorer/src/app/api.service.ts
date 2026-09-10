@@ -46,6 +46,9 @@ export class ApiService {
     if (options.depth !== undefined) {
       params = params.set('depth', options.depth);
     }
+    if (options.asOf) {
+      params = params.set('as_of', options.asOf);
+    }
     return this.http.get<ExposureResponse>(`${this.base}/entities/${encodeURIComponent(fundId)}/exposure`, {
       params,
     });
@@ -63,5 +66,10 @@ export class ApiService {
 
   stats(): Observable<Stats> {
     return this.http.get<Stats>(`${this.base}/stats`);
+  }
+
+  /** Reporting periods held in the store, newest first. */
+  periods(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.base}/periods`);
   }
 }

@@ -85,6 +85,7 @@ export interface HolderTotal {
 export interface ExposureResponse {
   fund: EntityRef;
   issuer: EntityRef;
+  asOf?: string;
   totalValue: number;
   directValue: number;
   viaSubsidiariesValue: number;
@@ -147,6 +148,7 @@ export interface ExposureOptions {
   includeAffiliates?: boolean;
   includeSubsidiaries?: boolean;
   depth?: number;
+  asOf?: string;
 }
 
 /** Merge a neighbour expansion into an existing graph without duplicating nodes or links. */

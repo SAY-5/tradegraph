@@ -1,5 +1,7 @@
 package dev.tradegraph.api.sparql;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -49,5 +51,18 @@ public final class SparqlValues {
 
     public static String integer(long value) {
         return Long.toString(value);
+    }
+
+    /** An {@code xsd:date} literal, e.g. {@code "2024-06-30"^^xsd:date}. */
+    public static String date(LocalDate value) {
+        return "\"" + value + "\"^^xsd:date";
+    }
+
+    /**
+     * An inline data block. An empty term list produces {@code VALUES ?d { }}, which is legal
+     * SPARQL 1.1 and yields no solutions, so a period that matches nothing needs no special case.
+     */
+    public static String values(String variable, List<String> terms) {
+        return "VALUES ?" + variable + " { " + String.join(" ", terms) + " }";
     }
 }

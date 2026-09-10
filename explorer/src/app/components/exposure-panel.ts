@@ -23,6 +23,14 @@ import { SearchBar } from './search-bar';
         <label><input type="checkbox" [checked]="includeAffiliates()" (change)="toggle('affiliates')" /> affiliates</label>
         <label><input type="checkbox" [checked]="includeSubsidiaries()" (change)="toggle('subsidiaries')" /> subsidiaries</label>
         <label>depth <input type="number" min="1" max="6" [value]="depth()" (change)="setDepth($any($event.target).value)" /></label>
+        <label>period
+          <select [value]="asOf()" (change)="setPeriod($any($event.target).value)">
+            <option value="">latest</option>
+            @for (period of periods(); track period) {
+              <option [value]="period">{{ period }}</option>
+            }
+          </select>
+        </label>
         <button (click)="run()" [disabled]="!fund() || !issuer()">Run</button>
       </div>
     </div>
@@ -51,6 +59,7 @@ import { SearchBar } from './search-bar';
         </div>
       </div>
       <p class="muted summary">
+        as of {{ r.asOf || 'no filed period' }},
         {{ r.positions | number }} positions, {{ r.byInstrument.length }} instrument lines,
         {{ r.byHolder.length }} holders, longest path {{ r.longestPath }} hops,
         <span class="mono">{{ r.queryMillis }} ms</span>
@@ -115,6 +124,7 @@ import { SearchBar } from './search-bar';
     .opts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .opts label { display: flex; gap: 4px; align-items: center; color: var(--muted); }
     .opts input[type='number'] { width: 56px; padding: 3px 6px; }
+    .opts select { padding: 3px 6px; }
     .totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .total { display: flex; flex-direction: column; background: var(--panel-2); border-radius: 6px; padding: 8px 10px; }
     .total strong { font-size: 16px; }
@@ -140,6 +150,8 @@ export class ExposurePanel {
   readonly includeAffiliates = signal(true);
   readonly includeSubsidiaries = signal(true);
   readonly depth = signal(4);
+  readonly periods = signal<string[]>([]);
+  readonly asOf = signal('');
   readonly result = signal<ExposureResponse | null>(null);
   readonly error = signal<string | null>(null);
   readonly selected = signal<ExposureLine | null>(null);
@@ -148,7 +160,12 @@ export class ExposurePanel {
     includeAffiliates: this.includeAffiliates(),
     includeSubsidiaries: this.includeSubsidiaries(),
     depth: this.depth(),
+    asOf: this.asOf() || undefined,
   }));
+
+  constructor() {
+    this.api.periods().subscribe({ next: (p) => this.periods.set(p), error: () => this.periods.set([]) });
+  }
 
   pickIssuer(e: EntitySummary): void {
     this.issuer.set({ id: e.id, name: e.name, kinds: e.kinds });
@@ -161,6 +178,11 @@ export class ExposurePanel {
     } else {
       this.includeSubsidiaries.update((v) => !v);
     }
+  }
+
+  setPeriod(value: string): void {
+    this.asOf.set(value);
+    this.run();
   }
 
   setDepth(value: string): void {

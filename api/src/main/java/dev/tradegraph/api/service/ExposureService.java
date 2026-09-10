@@ -13,10 +13,12 @@ import dev.tradegraph.api.sparql.SparqlClient;
 import dev.tradegraph.api.sparql.SparqlPaths;
 import dev.tradegraph.api.sparql.SparqlValues;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -32,14 +34,16 @@ public class ExposureService {
     private final QueryTemplates templates;
     private final EntityService entities;
     private final LineageService lineage;
+    private final PeriodService periods;
     private final TradeGraphProperties properties;
 
     public ExposureService(SparqlClient sparql, QueryTemplates templates, EntityService entities,
-            LineageService lineage, TradeGraphProperties properties) {
+            LineageService lineage, PeriodService periods, TradeGraphProperties properties) {
         this.sparql = sparql;
         this.templates = templates;
         this.entities = entities;
         this.lineage = lineage;
+        this.periods = periods;
         this.properties = properties;
     }
 
@@ -50,17 +54,19 @@ public class ExposureService {
 
     @Cacheable("exposure")
     public ExposureResponse exposure(String fundId, String issuerId, boolean includeAffiliates,
-            boolean includeSubsidiaries, int depth) {
+            boolean includeSubsidiaries, int depth, LocalDate asOf) {
         long started = System.nanoTime();
         EntityRef fund = entities.ref(fundId);
         EntityRef issuer = entities.ref(issuerId);
         String fundIri = SparqlValues.entityIri(fundId);
         String issuerIri = SparqlValues.entityIri(issuerId);
+        Optional<LocalDate> period = periods.resolve(asOf);
 
         String query = templates.render("exposure", Map.of(
                 "fund", fundIri,
                 "issuer", issuerIri,
                 "depth", SparqlValues.integer(depth),
+                "periodValues", periods.valuesBlock("d", period),
                 "holderClause", holderClause(fundIri, includeAffiliates, depth),
                 "issuerClause", issuerClause(issuerIri, includeSubsidiaries, depth)));
 
@@ -91,7 +97,7 @@ public class ExposureService {
         List<HolderTotal> holders = byHolder.values().stream()
                 .sorted((a, b) -> b.value().compareTo(a.value()))
                 .toList();
-        return new ExposureResponse(fund, issuer, total, direct, viaSubs, viaAffiliates, positions,
+        return new ExposureResponse(fund, issuer, period.orElse(null), total, direct, viaSubs, viaAffiliates, positions,
                 includeAffiliates, includeSubsidiaries, depth, longest, lines, holders,
                 (System.nanoTime() - started) / 1_000_000);
     }

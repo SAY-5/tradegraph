@@ -1,6 +1,7 @@
 SELECT ?pos ?holder ?holderName ?issuer ?issuerName ?cusip ?class ?ticker
        ?quantity ?value ?asOf ?accession ?form
 WHERE {
+  ${periodValues}
   { ${iri} tg:holds ?pos } UNION { ?pos tg:issuer ${iri} }
   ?pos tg:heldBy ?holder ; tg:issuer ?issuer ; tg:instrument ?inst ;
        tg:quantity ?quantity ; tg:value ?value ; tg:asOf ?asOf ; tg:filedIn ?filing .

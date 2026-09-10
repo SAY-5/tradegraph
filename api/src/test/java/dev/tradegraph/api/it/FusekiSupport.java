@@ -68,8 +68,12 @@ final class FusekiSupport {
     }
 
     static void loadFixture(GenericContainer<?> c) {
+        loadFixture(c, "/fixture.ttl");
+    }
+
+    static void loadFixture(GenericContainer<?> c, String resource) {
         try {
-            Path fixture = Path.of(FusekiSupport.class.getResource("/fixture.ttl").toURI());
+            Path fixture = Path.of(FusekiSupport.class.getResource(resource).toURI());
             putGraph(c, GRAPH_ENTITIES, fixture, "text/turtle");
         } catch (java.net.URISyntaxException e) {
             throw new IllegalStateException(e);
