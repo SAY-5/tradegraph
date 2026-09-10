@@ -1,6 +1,6 @@
 {
   "file": "slice.json",
-  "sha256": "30bc7e4cea11f82ebbb86a53a69855ec3b911fa33e51667b89bfe2840b3e3b7f",
+  "sha256": "6ad8b5c10b738c22b5ac4517561cb51d74824f913a71caed8cb756d245ab62b9",
   "bytes": 586877,
   "source": "etl/sample",
   "topIssuers": 300,
@@ -27,12 +27,12 @@
     "funds": 410,
     "subsidiaries": 2148,
     "positions": 24336,
-    "filings": 1239,
+    "filings": 1240,
     "lineageEdges": 2500,
     "periods": [
       "2024-06-30",
       "2024-03-31"
     ],
-    "triples": 323170
+    "triples": 323173
   }
 }

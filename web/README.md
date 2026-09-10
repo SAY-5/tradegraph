@@ -43,9 +43,9 @@ those issuers to five levels, and every position whose holder and issuer are bot
 |---|---:|---:|
 | legal entities | 1,760 | 6,100 |
 | positions | 7,894 | 24,336 |
-| filings | 1,028 | 1,239 |
+| filings | 1,028 | 1,240 |
 | lineage edges | 1,420 | 2,500 |
-| triples | 104,541 | 323,170 |
+| triples | 104,541 | 323,173 |
 
 Both reporting periods (2024-03-31 and 2024-06-30) are in the slice, and so are the
 ownership fractions on the subsidiary edges, so the period selector and the ownership
@@ -58,7 +58,7 @@ weighting answer the way the API does.
 
 The store in this page materialises the same triples the Python ETL writes and counts
 them, so "104,541 triples" is a count, not a label; the full sample figure was checked
-against `rdflib` and matches at 323,170. The four exposure pairs the top-level README
+against `rdflib` and matches at 323,173. The four exposure pairs the top-level README
 prints reproduce to the dollar: $2,475,300,433, $1,980,265,856, $1,523,775,489, and
 $4,792,566 through Nu Finance Corp. at three hops. The lineage answers and the 26 of 72
 pairs with exposure reproduce too.

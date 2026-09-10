@@ -133,22 +133,29 @@ function runDemo(api: GraphApi): string {
 
   const nonZero = answers.filter((answer) => answer.result.totalValue > 0).length;
   const gridMillis = latencies.reduce((total, value) => total + value, 0);
-  for (const answer of top) {
-    const fundId = families.find((family) => family.name === answer.fund)?.id;
-    const issuerId = issuers.find((issuer) => issuer.name === answer.issuer)?.id;
+  const weightedPairs: { fund: string; issuer: string }[] = top.map((answer) => ({
+    fund: answer.fund, issuer: answer.issuer,
+  }));
+  if (best) weightedPairs.push({ fund: best.fund, issuer: best.issuer });
+  for (const pair of weightedPairs) {
+    const fundId = families.find((family) => family.name === pair.fund)?.id
+      ?? (pair.fund === best?.fund ? first(pair.fund.split(' ')[0], 'Fund').id : undefined);
+    const issuerId = issuers.find((issuer) => issuer.name === pair.issuer)?.id
+      ?? (pair.issuer === best?.issuer ? first(pair.issuer.split(' ')[0], 'Issuer').id : undefined);
     if (!fundId || !issuerId) continue;
     weightedRuns.push({
-      fund: answer.fund,
-      issuer: answer.issuer,
-      total: answer.result.totalValue,
+      fund: pair.fund,
+      issuer: pair.issuer,
+      total: api.exposure(fundId, issuerId).value.totalValue,
       weightedTotal: api.exposure(fundId, issuerId, { weighted: true }).value.totalValue,
     });
   }
   if (weightedRuns.length > 0) {
-    out.push('  weighted by disclosed ownership along each path');
+    out.push('  weighted by the disclosed ownership along each path');
     for (const run of weightedRuns) {
+      const share = run.total > 0 ? (run.weightedTotal / run.total) * 100 : 100;
       out.push(`    ${run.fund} -> ${run.issuer}: ${money(run.total)} unweighted, `
-        + `${money(run.weightedTotal)} weighted`);
+        + `${money(run.weightedTotal)} weighted (${share.toFixed(0)}%)`);
     }
   }
   out.push(`  ${nonZero}/${answers.length} pairs have exposure; latency p50 ${ms(median(latencies))}, `
