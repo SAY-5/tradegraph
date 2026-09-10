@@ -11,7 +11,7 @@ ETL_BUILD  := etl/build
 # Ryuk cannot bind mount the Docker socket on Colima; containers are stopped by a JVM shutdown hook instead.
 export TESTCONTAINERS_RYUK_DISABLED ?= true
 
-.PHONY: help setup lint test demo etl-sample etl-load api explorer explorer-dist fuseki-up fuseki-down clean
+.PHONY: help setup lint test demo etl-sample etl-validate etl-load api explorer explorer-dist fuseki-up fuseki-down clean
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -33,6 +33,9 @@ test: etl-sample ## Run every test suite (ETL pytest, API mvn verify with Testco
 
 etl-sample: ## Transform the committed sample to N-Triples under etl/build
 	cd etl && $(UV) run tradegraph-etl build --sample --out build
+
+etl-validate: ## Check the sample against the SHACL shapes and write etl/build/quality.json
+	cd etl && $(UV) run tradegraph-etl validate --sample --out build
 
 etl-load: ## Load etl/build into the Fuseki dataset
 	cd etl && $(UV) run tradegraph-etl load --endpoint $(FUSEKI_URL) --store fuseki --build-dir build

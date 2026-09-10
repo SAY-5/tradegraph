@@ -37,9 +37,15 @@ python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("entities=%s 
 step "Loading into Fuseki over the Graph Store Protocol"
 (cd etl && uv run tradegraph-etl load --endpoint "$FUSEKI_URL" --store fuseki --build-dir build) | tee "$OUT/etl-load.txt" | tail -1
 
+step "Checking the data against the SHACL shapes"
+(cd etl && uv run tradegraph-etl validate --sample --out build) > "$OUT/quality.json"
+python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("conforms=%s dangling=%s cycles=%s missingIdentifiers=%s shaclViolations=%s" % (d["conforms"], d["danglingReferences"], d["subsidiaryCycles"], d["missingIdentifiers"], d["shaclViolations"]))' "$OUT/quality.json"
+
 step "Starting the API (profile fuseki)"
-(cd api && [[ -f target/tradegraph-api-1.0.0.jar ]] || mvn -B -q -DskipTests -Dcheckstyle.skip package)
-java -jar api/target/tradegraph-api-1.0.0.jar --spring.profiles.active=fuseki \
+API_VERSION=$(python3 -c 'import re; print(re.search(r"</parent>.*?<version>([^<]+)</version>", open("api/pom.xml").read(), re.S).group(1))')
+API_JAR="api/target/tradegraph-api-$API_VERSION.jar"
+[[ -f "$API_JAR" ]] || (cd api && mvn -B -q -DskipTests -Dcheckstyle.skip package)
+java -jar "$API_JAR" --spring.profiles.active=fuseki \
     --tradegraph.store.query-url="$FUSEKI_URL/sparql" > "$OUT/api.log" 2>&1 &
 API_PID=$!
 scripts/wait-for.sh "$API_URL/actuator/health" 90

@@ -3,6 +3,19 @@
 All notable changes to TradeGraph are recorded here. Versions follow semantic
 versioning and each one is tagged `vN.0.0`.
 
+## [4.0.0] - 2026-09-10
+
+Data quality. The ETL now says whether what it produced is well formed, and the
+API serves that verdict.
+
+- `ontology/shapes.ttl`: SHACL shapes for entities, positions, instruments and filings, covering cardinality, datatypes, the CIK pattern, ownership between 0 and 1 and the closed instrument class vocabulary.
+- `tradegraph-etl validate --sample` runs the shapes with pyshacl and adds dangling references, `subsidiaryOf` cycles and issuers with no identifier, writing `etl/build/quality.json`; `--fail-on-violation` exits non zero.
+- The shapes caught a real defect: a listed manager's Exhibit 21 filing shared an accession number with its own first 13F, so 13F filings are now numbered from 1000.
+- `GET /quality` serves the report of the last load, and a missing report is a 404.
+- `tradegraph-etl load --since TIMESTAMP` pushes only the graph files modified at or after that time.
+- `lineage_depths` is bounded so cyclic data terminates instead of looping.
+- Tests: 40 ETL pytest, 45 API unit and 22 Testcontainers integration, 9 explorer specs.
+
 ## [3.0.0] - 2026-09-10
 
 Ownership weighting. Lineage edges carry how much of a subsidiary its parent

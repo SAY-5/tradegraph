@@ -40,12 +40,13 @@ this README come from Fuseki; Stardog was not exercised in this repository.
 Requirements: Docker, Java 21, Maven, `uv` (Python 3.12), Node 22.
 
 ```
-make setup      # uv sync, mvn dependency:go-offline, npm ci
-make lint       # ruff, checkstyle, eslint
-make test       # pytest, mvn verify (Testcontainers Fuseki), vitest + production build
-make demo       # Fuseki + ETL sample + API + scripted queries, prints the summary below
-make api        # API on :8080 against Fuseki (profile fuseki)
-make explorer   # Angular dev server on :4200, proxies /api to :8080
+make setup        # uv sync, mvn dependency:go-offline, npm ci
+make lint         # ruff, checkstyle, eslint
+make test         # pytest, mvn verify (Testcontainers Fuseki), vitest + production build
+make demo         # Fuseki + ETL sample + API + scripted queries, prints the summary below
+make etl-validate # SHACL shapes and the quality report into etl/build/quality.json
+make api          # API on :8080 against Fuseki (profile fuseki)
+make explorer     # Angular dev server on :4200, proxies /api to :8080
 ```
 
 `make demo` output, unedited:
@@ -104,8 +105,8 @@ rather than an API and a store. See `web/README.md`.
 
 | Directory | Stack | What it does |
 |---|---|---|
-| `ontology/` | OWL / Turtle | `tradegraph.ttl`: LegalEntity, Counterparty, Issuer, Fund, Subsidiary, Position, Trade, Instrument, Filing; `subsidiaryOf` (transitive), `hasSubsidiary`, `ownershipFraction`, `counterpartyOf`, `holds`, `issuer`, `filedIn`, `cik`, `lei`, `ticker`, `name` |
-| `etl/` | Python 3.12, rdflib, httpx, click | `tradegraph-etl build --sample|--live`, `load --endpoint URL --store fuseki|stardog`, `stats`; normalises reported periods and emits one N-Triples file per named graph |
+| `ontology/` | OWL / Turtle | `tradegraph.ttl` and `shapes.ttl` (SHACL): LegalEntity, Counterparty, Issuer, Fund, Subsidiary, Position, Trade, Instrument, Filing; `subsidiaryOf` (transitive), `hasSubsidiary`, `ownershipFraction`, `counterpartyOf`, `holds`, `issuer`, `filedIn`, `cik`, `lei`, `ticker`, `name` |
+| `etl/` | Python 3.12, rdflib, pyshacl, httpx, click | `tradegraph-etl build --sample|--live`, `load --endpoint URL --store fuseki|stardog [--since]`, `validate`, `stats`; normalises reported periods and emits one N-Triples file per named graph |
 | `api/` | Java 21, Spring Boot 3.5, Caffeine, Testcontainers | SPARQL client, query templates, lineage and exposure services, REST endpoints, store health indicator |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
 | `deploy/` | Docker Compose | Fuseki stack, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
@@ -129,6 +130,7 @@ Entity ids are the SEC CIK (ten digits) for issuers and 13F filers, and
 | `GET /positions/delta?entity=&from=&to=` | Lines the entity opened, closed and moved between two reporting periods |
 | `GET /graph/neighbors/{id}?limit=` | Parent, subsidiaries and strongest holding links for the explorer |
 | `GET /stats` | Entity, position, filing, lineage edge and triple counts |
+| `GET /quality` | The report `tradegraph-etl validate` wrote for the data that was last loaded |
 | `GET /actuator/health` | Includes a `store` component that runs `ASK {}` against the store |
 
 Errors use RFC 9457 problem details: 400 for malformed ids, short queries or a
@@ -155,6 +157,23 @@ by one of the issuer's subsidiaries, and `viaAffiliatesValue` is anything held
 by another fund in the same corporate family, whether on the issuer or on a
 subsidiary. Each line also carries `viaAffiliate` and `viaSubsidiary` flags.
 
+## Data quality
+
+`ontology/shapes.ttl` holds SHACL shapes for the vocabulary: cardinality,
+datatypes, the ten digit CIK pattern, ownership fractions between 0 and 1 and
+the closed instrument class vocabulary. `tradegraph-etl validate --sample` runs
+them with pyshacl and adds the three checks that are properties of the dataset
+rather than of one node, dangling references, `subsidiaryOf` cycles and issuers
+carrying neither a CIK nor a ticker. The result goes to `etl/build/quality.json`
+and the API serves it at `GET /quality`; `--fail-on-violation` makes the command
+exit non zero, which is what CI uses. The shapes found one real defect on their
+first run: the Exhibit 21 filing of a listed asset manager shared an accession
+number with its own first 13F, so the sample now numbers 13F filings from 1000.
+
+`tradegraph-etl load --since TIMESTAMP` pushes only the graph files modified at
+or after that time, so reloading after a build that touched one graph replaces
+one graph instead of all three.
+
 ## Ontology summary
 
 ```
@@ -177,8 +196,8 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 
 ## Tests
 
-- `etl/`: 32 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, dangling references, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 43 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking) and 21 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
+- `etl/`: 40 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
+- `api/`: 45 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 22 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
 - `explorer/`: 9 vitest specs (API client URLs, graph merging, exposure panel rendering, weighted values, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.
@@ -192,6 +211,7 @@ Tagged releases, newest last. `CHANGELOG.md` has the detail.
 | [v1.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v1.0.0) | 2026-09-10 | Baseline: ETL, SPARQL API, Angular explorer, Fuseki and Stardog stacks |
 | [v2.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v2.0.0) | 2026-09-10 | Temporal filings: reporting periods on positions, `as_of` queries, `/positions/delta`, period selector |
 | [v3.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v3.0.0) | 2026-09-10 | Ownership weighting: fractions on `subsidiaryOf` edges, weighted exposure, `/exposure/concentration` |
+| [v4.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v4.0.0) | 2026-09-10 | Data quality: SHACL shapes, `tradegraph-etl validate`, `/quality`, incremental `load --since` |
 
 ## License
 

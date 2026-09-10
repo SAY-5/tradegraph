@@ -23,7 +23,7 @@ class LineageServiceTest {
     private final SparqlClient sparql = mock(SparqlClient.class);
     private final LineageService service = new LineageService(sparql, QueryTemplates.fromClasspath(),
             mock(EntityService.class), new TradeGraphProperties(null, new TradeGraphProperties.Lineage(5),
-                    null, null, null));
+                    null, null, null, null));
 
     private static Row edge(String child, String parent, String parentName) {
         return new Row(Map.of(

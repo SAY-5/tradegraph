@@ -39,6 +39,8 @@ tradegraph:
   exposure:
     max-depth: 4
     min-share: 0.01
+  quality:
+    report-path: ../etl/build/quality.json
   search:
     default-limit: 20
     max-limit: 100

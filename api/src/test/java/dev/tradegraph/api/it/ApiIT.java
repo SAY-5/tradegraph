@@ -9,9 +9,11 @@ import dev.tradegraph.api.model.EntitySummary;
 import dev.tradegraph.api.model.ExposureResponse;
 import dev.tradegraph.api.model.LineageResponse;
 import dev.tradegraph.api.model.NeighborGraph;
+import dev.tradegraph.api.model.QualityReport;
 import dev.tradegraph.api.model.Stats;
 import dev.tradegraph.api.model.TradeRecord;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,6 +39,8 @@ class ApiIT {
     @DynamicPropertySource
     static void storeProperties(DynamicPropertyRegistry registry) {
         registry.add("tradegraph.store.query-url", () -> FusekiSupport.queryUrl(FUSEKI));
+        registry.add("tradegraph.quality.report-path",
+                () -> Path.of("src", "test", "resources", "quality.json").toAbsolutePath().toString());
     }
 
     @BeforeAll
@@ -213,6 +217,17 @@ class ApiIT {
 
         assertThat(rest.getForEntity("/exposure/concentration?entity=0000000002&min_share=2", String.class)
                 .getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void qualityServesTheReportOfTheLastLoad() {
+        QualityReport report = rest.getForObject("/quality", QualityReport.class);
+        assertThat(report.conforms()).isFalse();
+        assertThat(report.danglingReferences()).isEqualTo(1);
+        assertThat(report.subsidiaryCycles()).isEqualTo(1);
+        assertThat(report.shaclViolations()).isEqualTo(2);
+        assertThat(report.findings()).anyMatch(f -> f.startsWith("subsidiaryOf cycle:"));
+        assertThat(report.findings()).anyMatch(f -> f.contains("unknown issuer"));
     }
 
     @Test
