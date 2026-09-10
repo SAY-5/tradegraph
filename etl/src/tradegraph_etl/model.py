@@ -58,6 +58,10 @@ class Dataset:
     def entity_count(self) -> int:
         return len(self.entities)
 
+    def periods(self) -> list[str]:
+        """Reporting periods present in the positions, oldest first."""
+        return sorted({p.as_of for p in self.positions})
+
     def counts(self) -> dict[str, int]:
         kinds: dict[str, int] = {}
         for e in self.entities:

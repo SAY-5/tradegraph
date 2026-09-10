@@ -1,3 +1,5 @@
+from collections import Counter
+
 from rdflib import RDF
 
 from tradegraph_etl import transform
@@ -38,3 +40,12 @@ def test_sample_rdf_entity_count(sample_dataset):
     g = to_rdf(sample_dataset).graph(GRAPH_ENTITIES)
     entities = set(g.subjects(RDF.type, TG.LegalEntity))
     assert len(entities) == sample_dataset.counts()["entities"] >= 5000
+
+
+def test_sample_positions_span_two_reporting_periods(sample_dataset):
+    periods = sample_dataset.periods()
+    assert periods == ["2024-03-31", "2024-06-30"]
+    by_period = Counter(p.as_of for p in sample_dataset.positions)
+    assert by_period["2024-06-30"] > by_period["2024-03-31"] > 5000
+    thirteen_f = {f.period for f in sample_dataset.filings if f.form_type == "13F-HR"}
+    assert thirteen_f == set(periods)

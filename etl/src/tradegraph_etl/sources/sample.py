@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from tradegraph_etl.model import Dataset, Entity, Filing, Position
+from tradegraph_etl.periods import isoformat
 
 DEFAULT_SAMPLE_DIR = Path(__file__).resolve().parents[3] / "sample"
 
@@ -59,12 +60,13 @@ def read_sample(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dataset:
 
     for path in sorted((sample_dir / "holdings").glob("*.json")):
         for filing in json.loads(path.read_text()):
+            period = isoformat(filing["periodOfReport"])
             ds.filings.append(
                 Filing(
                     accession=filing["accessionNumber"],
                     form_type=filing["formType"],
                     filer=filing["filerId"],
-                    period=filing["periodOfReport"],
+                    period=period,
                 )
             )
             for i, row in enumerate(filing["infoTable"]):
@@ -80,7 +82,7 @@ def read_sample(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dataset:
                         ticker=row.get("ticker"),
                         quantity=float(row["sshPrnamt"]),
                         value=float(row["value"]),
-                        as_of=filing["periodOfReport"],
+                        as_of=period,
                     )
                 )
     return ds

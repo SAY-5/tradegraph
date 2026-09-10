@@ -14,6 +14,7 @@ from collections.abc import Iterable
 import httpx
 
 from tradegraph_etl.model import Dataset, Entity, Filing, Position
+from tradegraph_etl.periods import isoformat
 
 TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
@@ -84,10 +85,15 @@ class EdgarClient:
             recent.get("reportDate", []),
             strict=False,
         ):
-            if ftype == form:
-                return Filing(
-                    accession=acc, form_type=form, filer=cik10(submissions["cik"]), period=period
-                )
+            if ftype != form:
+                continue
+            try:
+                normalised = isoformat(period)
+            except ValueError:
+                continue
+            return Filing(
+                accession=acc, form_type=form, filer=cik10(submissions["cik"]), period=normalised
+            )
         return None
 
     def filing_index(self, cik: str, accession: str) -> list[str]:

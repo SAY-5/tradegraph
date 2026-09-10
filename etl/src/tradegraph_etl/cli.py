@@ -63,7 +63,7 @@ def build(
     out.mkdir(parents=True, exist_ok=True)
     for graph_iri, filename in GRAPH_FILES.items():
         store.graph(graph_iri).serialize(destination=out / filename, format="nt", encoding="utf-8")
-    summary = {**ds.counts(), "graphs": transform.graph_sizes(store)}
+    summary = {**ds.counts(), "periods": ds.periods(), "graphs": transform.graph_sizes(store)}
     summary["triples"] = sum(summary["graphs"].values())
     summary["seconds"] = round(time.monotonic() - started, 2)
     (out / "summary.json").write_text(json.dumps(summary, indent=2))

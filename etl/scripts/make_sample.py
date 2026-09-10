@@ -18,6 +18,7 @@ from pathlib import Path
 
 SEED = 20240630
 AS_OF = "2024-06-30"
+PRIOR_AS_OF = "2024-03-31"
 ISSUER_COUNT = 3600
 SUBSIDIARY_PARENTS = 420
 MANAGER_TICKERS = [
@@ -187,6 +188,41 @@ def cik10(cik: int | str) -> str:
     return f"{int(cik):010d}"
 
 
+def prior_table(table: list[dict], seq: int, issuers: list[dict], prices: dict) -> list[dict]:
+    """The previous quarter of a 13F table.
+
+    The first two lines of the current table are new this quarter, every third
+    carried line moved by twenty percent, and one line that was sold during the
+    quarter is still present.
+    """
+    carried = []
+    for i, row in enumerate(table[2:]):
+        prev = dict(row)
+        if i % 3 == 0:
+            prev["sshPrnamt"] = int(row["sshPrnamt"] * 0.8)
+            prev["value"] = round(row["value"] * 0.8, 2)
+        carried.append(prev)
+    held = {row["cusip"] for row in table}
+    for step in range(len(issuers)):
+        sold = issuers[(seq * 7919 + step) % len(issuers)]
+        cusip = cusip_for(sold["ticker"] + "COMMON")
+        if cusip not in held:
+            break
+    shares = 1_000 + (seq * 977) % 900_000
+    carried.append(
+        {
+            "nameOfIssuer": sold["name"],
+            "issuerCik": sold["cik"],
+            "ticker": sold["ticker"],
+            "titleOfClass": "COMMON",
+            "cusip": cusip,
+            "value": round(shares * prices[sold["ticker"]], 2),
+            "sshPrnamt": shares,
+        }
+    )
+    return carried
+
+
 def build(tickers_path: Path, out: Path) -> None:
     rng = random.Random(SEED)
     raw = json.loads(tickers_path.read_text())
@@ -309,6 +345,15 @@ def build(tickers_path: Path, out: Path) -> None:
                 "infoTable": table,
             }
         )
+        holdings[family].append(
+            {
+                "accessionNumber": f"{filer_cik}-24-{seq + 500:06d}",
+                "formType": "13F-HR",
+                "filerId": fund["id"],
+                "periodOfReport": PRIOR_AS_OF,
+                "infoTable": prior_table(table, seq, issuers, prices),
+            }
+        )
 
     out.mkdir(parents=True, exist_ok=True)
     (out / "holdings").mkdir(exist_ok=True)
@@ -319,10 +364,12 @@ def build(tickers_path: Path, out: Path) -> None:
     )
     for family, filings in holdings.items():
         (out / "holdings" / f"{family}.json").write_text(json.dumps(filings, separators=(",", ":")))
-    positions = sum(len(f["infoTable"]) for fs in holdings.values() for f in fs)
+    filings = [f for fs in holdings.values() for f in fs]
+    positions = sum(len(f["infoTable"]) for f in filings)
     print(
         f"issuers={len(issuers)} funds={len(funds)} subsidiaries={len(subsidiaries)} "
-        f"entities={len(issuers) + len(funds) + len(subsidiaries)} positions={positions}"
+        f"entities={len(issuers) + len(funds) + len(subsidiaries)} "
+        f"filings={len(filings)} positions={positions} periods={PRIOR_AS_OF},{AS_OF}"
     )
 
 
