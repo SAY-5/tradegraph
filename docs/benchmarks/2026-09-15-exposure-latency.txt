@@ -10,3 +10,9 @@ store        : fuseki, Fuseki in Testcontainers
 dataset      : 6100 entities, 24336 positions, 323023 triples
 jvm          : 21.0.12 on Mac OS X aarch64, 10 cores
 exposure latency over 12 pairs: max=338 ms avg=199 ms budget=1500 ms
+
+# A second run of the same API code on the same host, while it was busier. Both runs
+# are kept: the budget is what the test asserts, and the spread is what host load does
+# to the measurement.
+measuredAt   : 2026-09-15T19:36:35Z
+exposure latency over 12 pairs: max=666 ms avg=350 ms budget=1500 ms
