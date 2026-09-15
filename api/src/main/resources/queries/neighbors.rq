@@ -1,21 +1,28 @@
 # Adjacent entities of ${iri} for the explorer: parent, subsidiaries, and the
 # strongest holding relationships in either direction.
+#
+# ?prio keeps the lineage rows ahead of the holding rows, so ${limit} truncates
+# holdings, of which a well held issuer has hundreds, and never the few edges the
+# corporate tree is drawn from. Ordering by ?rel instead compares the relation
+# names as strings, and HELD_BY and HOLDS sort before PARENT and SUBSIDIARY.
 SELECT ?other ?otherName ?rel ?weight (GROUP_CONCAT(DISTINCT ?t; separator=",") AS ?otherTypes)
 WHERE {
   {
-    { SELECT ?other ("PARENT" AS ?rel) (0 AS ?weight) WHERE { ${iri} tg:subsidiaryOf ?other } }
+    { SELECT ?other ("PARENT" AS ?rel) (0 AS ?weight) (0 AS ?prio)
+      WHERE { ${iri} tg:subsidiaryOf ?other } }
     UNION
-    { SELECT ?other ("SUBSIDIARY" AS ?rel) (0 AS ?weight) WHERE { ?other tg:subsidiaryOf ${iri} } }
+    { SELECT ?other ("SUBSIDIARY" AS ?rel) (0 AS ?weight) (0 AS ?prio)
+      WHERE { ?other tg:subsidiaryOf ${iri} } }
     UNION
-    { SELECT ?other ("HOLDS" AS ?rel) (SUM(?v) AS ?weight)
+    { SELECT ?other ("HOLDS" AS ?rel) (SUM(?v) AS ?weight) (1 AS ?prio)
       WHERE { ${iri} tg:holds ?p . ?p tg:issuer ?other ; tg:value ?v } GROUP BY ?other }
     UNION
-    { SELECT ?other ("HELD_BY" AS ?rel) (SUM(?v) AS ?weight)
+    { SELECT ?other ("HELD_BY" AS ?rel) (SUM(?v) AS ?weight) (1 AS ?prio)
       WHERE { ?other tg:holds ?p . ?p tg:issuer ${iri} ; tg:value ?v } GROUP BY ?other }
   }
   ?other tg:name ?otherName ; a ?t .
   FILTER(?t != tg:LegalEntity && ?t != tg:Counterparty)
 }
-GROUP BY ?other ?otherName ?rel ?weight
-ORDER BY ?rel DESC(?weight) ?otherName
+GROUP BY ?other ?otherName ?rel ?weight ?prio
+ORDER BY ?prio DESC(?weight) ?otherName
 LIMIT ${limit}
