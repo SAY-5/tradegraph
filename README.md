@@ -1,7 +1,8 @@
 # TradeGraph
 
 Counterparty knowledge graph built from SEC filings. A Python ETL turns EDGAR
-data (company tickers, 13F-HR holdings, Exhibit 21 style subsidiary lists) into
+data (company tickers and 13F-HR holdings live, plus Exhibit 21 style subsidiary
+lists in the committed sample) into
 RDF that follows a compact FIBO-inspired ontology, loads it into a SPARQL 1.1
 store, and a Spring Boot API answers lineage and exposure questions over it with
 SPARQL property paths. An Angular explorer renders the neighbourhood graph, the
@@ -96,7 +97,10 @@ Operations (/ops/overview)
 Issuer and fund manager identities in the sample are real (SEC
 `company_tickers.json`); holdings, subsidiaries and values are synthetic and
 deterministic. See `etl/sample/README.md`. The `--live` ETL mode pulls real
-13F-HR information tables from `data.sec.gov` with a compliant User-Agent.
+13F-HR information tables from `data.sec.gov` with a compliant User-Agent. It
+builds issuers and holdings only: there is no Exhibit 21 reader in the live
+path, so no `subsidiaryOf` edges come out of it, and lineage and the exposure
+legs that walk subsidiaries need `--sample`.
 
 ## Browser demo
 
