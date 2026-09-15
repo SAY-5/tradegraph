@@ -53,7 +53,10 @@ make explorer     # Angular dev server on :4200, proxies /api to :8080
 
 `make demo` output, unedited. `scripts/demo_queries.py` writes the same figures to
 `web/src/data/demo-summary.json` with the commit, host and timestamp of the run, which is
-what the browser demo quotes and what the self check asserts against:
+what the browser demo quotes and what the self check asserts against. The block was
+captured at commit 3fb28dd on a 10 core arm64 host that was running other work at the
+same time, so the millisecond columns are higher than an idle machine would report; the
+counts and the dollar totals are deterministic and reproduce exactly:
 
 ```
 TradeGraph demo summary
@@ -63,37 +66,38 @@ entities loaded  : 6,100 (issuers 3,600, funds 410, subsidiaries 2,148)
 positions        : 24,336 in 1,240 filings
 lineage edges    : 2,500
 triples          : 323,173
-stats query      : 205 ms
+stats query      : 2043 ms
 
 Lineage (subsidiaryOf property paths, depth limited to 5)
-  Apple Inc.: 6 descendants, deepest level 2, 51 ms
-  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 28 ms
-  Invesco Ltd.: 7 descendants, deepest level 1, 26 ms
+  Apple Inc.: 6 descendants, deepest level 2, 727 ms
+  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 188 ms
+  Invesco Ltd.: 7 descendants, deepest level 1, 146 ms
 
 Exposure (fund family to issuer, through affiliates and subsidiaries, 72 queries)
   PRICE T ROWE GROUP INC -> Apple Inc.
     total $2,475,300,433  direct $0  via subsidiaries $0  via affiliates $2,475,300,433
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 65 ms
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 395 ms
     longest path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Global Select Fund holds COMMON AAPL issued by Apple Inc.
   BlackRock, Inc. -> Meta Platforms, Inc.
     total $1,980,265,856  direct $0  via subsidiaries $0  via affiliates $1,980,265,856
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 69 ms
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 786 ms
     longest path: BlackRock, Inc., whose subsidiary Blackrock International Value Fund holds PUT META issued by Meta Platforms, Inc.
   Invesco Ltd. -> Apple Inc.
     total $1,523,775,489  direct $0  via subsidiaries $0  via affiliates $1,523,775,489
-    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 69 ms
+    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 829 ms
     longest path: Invesco Ltd., whose subsidiary Invesco Dividend Focus Fund holds COMMON AAPL issued by Apple Inc.
   exposure through an issuer subsidiary: TPG Inc. -> Nu Holdings Ltd.
-    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 59 ms
+    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 178 ms
     path: TPG Inc., whose subsidiary TPG Global Select Fund holds DEBT issued by Nu Finance Corp. is a subsidiary of Nu Holdings Ltd.
-  26/72 pairs have exposure; latency p50 57 ms, max 110 ms (uncached, Fuseki)
-  repeated query served from cache in 2 ms
+  26/72 pairs have exposure; latency p50 385 ms, max 1396 ms (uncached, Fuseki)
+  repeated query served from cache in 3 ms
+  summary written to web/src/data/demo-summary.json
 
 Operations (/ops/overview)
   store          : fuseki reasoning=false, 323,173 triples, exposure depth <= 4, lineage depth <= 5
   cache          : 33 hits, 139 misses, hit ratio 0.19, 139 entries across 11 caches
-  slowest queries: search 50 ms, periods 33 ms, periods 29 ms, periods 28 ms, periods 28 ms
-  data quality   : conforms=true, dangling 0, cycles 0, missing identifiers 0, shape violations 0 (checked 2026-09-10T10:10:29Z)
+  slowest queries: periods 618 ms, periods 608 ms, periods 590 ms, periods 492 ms, periods 420 ms
+  data quality   : conforms=true, dangling 0, cycles 0, missing identifiers 0, shape violations 0 (checked 2026-09-15T19:28:35Z)
   cost guard     : depth=9 answered 422
 ```
 
@@ -245,7 +249,7 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 ## Tests
 
 - `etl/`: 47 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, 13F information table parsing, the live path against recorded EDGAR responses (including that it emits no `subsidiaryOf` triple), and the triple and entity counts the browser demo's manifest records.
-- `api/`: 60 unit tests (SPARQL escaping and id validation, position identifiers, bounded property paths, inline data blocks, template rendering, the cost guard over every shipped template, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 31 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, `NeighborLimitIT` over an issuer with more holders than the row limit allows, and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms. That test writes what it measured to `api/target/benchmarks/exposure-latency.txt`, with the dataset, the JVM and the host it ran on, and CI keeps the file as an artifact.
+- `api/`: 60 unit tests (SPARQL escaping and id validation, position identifiers, bounded property paths, inline data blocks, template rendering, the cost guard over every shipped template, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 31 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, `NeighborLimitIT` over an issuer with more holders than the row limit allows, and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms. The run recorded in `docs/benchmarks/2026-09-15-exposure-latency.txt` measured a maximum of 338 ms and a mean of 199 ms over 12 pairs against the full sample in a Testcontainers Fuseki, on JDK 21 and a 10 core arm64 host that was busy with other work at the time. The test writes that file on every run, CI keeps it as an artifact, and `make bench` reproduces it.
 - `explorer/`: 9 vitest specs (API client URLs, graph merging, exposure panel rendering, weighted values, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.

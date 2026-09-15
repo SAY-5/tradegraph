@@ -1,0 +1,12 @@
+# ExposurePerformanceIT, uncached exposure over the full sample.
+# Produced by make test (mvn -B verify) at commit 3fb28dd on branch revamp/2026-09, on a
+# host that was running other work at the same time. The test writes this file to
+# api/target/benchmarks/exposure-latency.txt on every run and CI keeps it as an
+# artifact; make bench reproduces it. The store holds the entities and positions
+# graphs, 323,023 triples; the ontology graph adds the remaining 150 of the 323,173
+# the ETL writes.
+measuredAt   : 2026-09-15T19:25:56Z
+store        : fuseki, Fuseki in Testcontainers
+dataset      : 6100 entities, 24336 positions, 323023 triples
+jvm          : 21.0.12 on Mac OS X aarch64, 10 cores
+exposure latency over 12 pairs: max=338 ms avg=199 ms budget=1500 ms
