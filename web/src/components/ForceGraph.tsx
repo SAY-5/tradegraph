@@ -1,4 +1,4 @@
-import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3';
+import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force';
 import { useMemo } from 'react';
 
 import type { NeighborGraph, NeighborNode } from '../graph';
@@ -13,10 +13,22 @@ import { compactMoney } from '../lib/format';
  * a node from its old place to its new one when an expansion changes the layout.
  */
 
+/**
+ * A middle ellipsis keeps the distinguishing tail of a fund name: a family's sub-funds
+ * share a long prefix, so cutting the end collapses them all to the same visible label.
+ * The full name stays in the node's <title>.
+ */
+function shorten(name: string, max = 24): string {
+  if (name.length <= max) return name;
+  const head = Math.ceil((max - 3) / 2);
+  const tail = Math.floor((max - 3) / 2);
+  return `${name.slice(0, head)}...${name.slice(name.length - tail)}`;
+}
+
 const WIDTH = 760;
 const HEIGHT = 500;
 /** Room kept at the sides for a label that reads outward from its node. */
-const LABEL_ROOM = 108;
+const LABEL_ROOM = 150;
 const TICKS = 320;
 
 interface SimNode extends NeighborNode {
@@ -93,7 +105,16 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
 
   return (
     <div className="canvas">
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label="Neighbourhood graph of the selected entity">
+      {/*
+        * Not role="img": the circles inside are focusable buttons, and a graphics role would
+        * hide them from assistive technology. Explorer renders the same neighbours as a list
+        * of buttons underneath, which is the path that does not depend on SVG focus.
+        */}
+      <svg
+        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+        role="group"
+        aria-label="Neighbourhood graph of the selected entity"
+      >
         <g>
           {layout.links.map((link, i) => {
             const source = typeof link.source === 'string' ? layout.at.get(link.source) : link.source;
@@ -128,7 +149,7 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
             const dx = node.x - centre.x;
             const dy = node.y - centre.y;
             const length = Math.hypot(dx, dy) || 1;
-            const label = node.name.length > 17 ? `${node.name.slice(0, 15)}...` : node.name;
+            const label = shorten(node.name);
             return (
               <g
                 key={node.id}
@@ -145,7 +166,12 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
                   aria-label={`${node.name}, expand neighbours`}
                   style={{ cursor: 'pointer', outlineOffset: 3 }}
                   onClick={() => onExpand(node.id)}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') onExpand(node.id); }}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    // Space scrolls the page unless the activation consumes it.
+                    event.preventDefault();
+                    onExpand(node.id);
+                  }}
                 >
                   <title>{`${node.name} (${node.kinds.join(', ')})`}</title>
                 </circle>

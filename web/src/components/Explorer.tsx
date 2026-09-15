@@ -37,6 +37,32 @@ export function Explorer({ reduced }: { reduced: boolean }) {
     return combined;
   }, [neighborhood.value, expansions, selected]);
 
+  // The same rows the graph draws, in the order neighbors.rq returns them: lineage first,
+  // then holdings by value. Clicking either expands the same way.
+  const neighbourRows = useMemo(() => {
+    const rows = merged.links.map((link) => {
+      const otherId = link.source === selected ? link.target : link.source;
+      const outgoing = link.source === selected;
+      const direction = link.rel === 'subsidiaryOf'
+        ? (outgoing ? 'parent of the selected entity' : 'subsidiary')
+        : (outgoing ? 'holds' : 'held by');
+      return {
+        id: otherId,
+        name: graph.store.entity(otherId)?.name ?? otherId,
+        rel: link.rel,
+        weight: link.weight,
+        direction,
+      };
+    });
+    const seen = new Set<string>();
+    return rows
+      .filter((row) => row.id !== selected && !seen.has(`${row.id}-${row.rel}`)
+        && seen.add(`${row.id}-${row.rel}`) !== undefined)
+      .sort((a, b) => (a.rel === b.rel ? 0 : a.rel === 'subsidiaryOf' ? -1 : 1)
+        || (b.weight - a.weight)
+        || a.name.localeCompare(b.name));
+  }, [merged, selected]);
+
   const held = graph.store.heldBy.get(selected) ?? [];
   const issued = graph.store.issuedBy.get(selected) ?? [];
   const heldValue = held.reduce((total, position) => total + position.value, 0);
@@ -170,6 +196,35 @@ export function Explorer({ reduced }: { reduced: boolean }) {
               <span><i style={{ background: 'var(--accent-line)', borderRadius: 0, height: 2, width: 16 }} />subsidiaryOf</span>
               <span><i style={{ background: 'var(--line-strong)', borderRadius: 0, height: 2, width: 16 }} />holds</span>
             </div>
+            <div className="panel" style={{ marginTop: 16 }}>
+              <p className="control-label">{`neighbours of ${entity?.name ?? selected}`}</p>
+              <ul className="result-list" style={{ marginTop: 8 }}>
+                {neighbourRows.map((row) => (
+                  <li key={`${row.id}-${row.rel}`}>
+                    <button
+                      type="button"
+                      className="result-btn"
+                      onClick={() => expand(row.id)}
+                      aria-current={expanded.has(row.id)}
+                    >
+                      <span className="name">{row.name}</span>
+                      <br />
+                      <span className="meta">
+                        {row.rel === 'subsidiaryOf'
+                          ? `${row.direction} ${row.id}`
+                          : `${row.direction} ${compactMoney(row.weight)}  ${row.id}`}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+                {neighbourRows.length === 0 ? (
+                  <li className="muted" style={{ padding: '10px 4px', fontSize: 13 }}>
+                    No neighbours in the slice.
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+
             <div className="stat-row" aria-live="polite">
               <span className="badge">{`${count(merged.nodes.length)} nodes`}</span>
               <span className="badge">{`${count(merged.links.length)} links`}</span>
