@@ -3,19 +3,34 @@
 The exposure section runs a fixed grid of fund families x issuers (72 queries), prints the
 three answers with the most contributing lines plus the largest answer that flows through an
 issuer subsidiary, and reports latency over the whole grid.
+
+With ``--summary PATH`` the same measurements are written to PATH as JSON, with the commit
+and host that produced them. That file is the one source for the figures quoted in README.md
+and in the browser demo, so a quoted number cannot fall behind the run it came from.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import platform
 import statistics
+import subprocess
 import sys
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
 
-API = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8080"
+ARGS = sys.argv[1:]
+SUMMARY_PATH: str | None = None
+if "--summary" in ARGS:
+    _at = ARGS.index("--summary")
+    SUMMARY_PATH = ARGS[_at + 1]
+    ARGS = ARGS[:_at] + ARGS[_at + 2 :]
+API = ARGS[0] if ARGS else "http://localhost:8080"
 
 FUND_FAMILIES = ["BLK", "IVZ", "TROW", "BEN", "STT", "AMP"]
 ISSUERS = ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "JPM", "XOM", "JNJ", "WMT", "PG", "UNH"]
@@ -69,6 +84,72 @@ def money(v) -> str:
     return f"${float(v):,.0f}"
 
 
+def commit() -> str:
+    """Short sha of the checkout the measurement ran against, or "unknown"."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+    return out.stdout.strip()
+
+
+def provenance() -> dict:
+    return {
+        "measuredAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "commit": commit(),
+        "host": f"{platform.system().lower()} {platform.machine()}, {os.cpu_count()} cores",
+        "python": platform.python_version(),
+    }
+
+
+def write_summary(path: str, store: str, endpoint: str, stats: dict, stats_ms: float,
+                  answers: list, top: list, latencies: list[float], non_zero: int,
+                  cached_ms: float) -> None:
+    """Every figure here was returned by the API in this run; nothing is carried over."""
+    summary = {
+        "generator": "scripts/demo_queries.py",
+        "provenance": provenance(),
+        "store": store,
+        "endpoint": endpoint,
+        "dataset": {
+            "entities": stats["entities"],
+            "issuers": stats["issuers"],
+            "funds": stats["funds"],
+            "subsidiaries": stats["subsidiaries"],
+            "positions": stats["positions"],
+            "filings": stats["filings"],
+            "lineageEdges": stats["lineageEdges"],
+            "triples": stats["triples"],
+        },
+        "statsQueryMillis": round(stats_ms),
+        "exposure": {
+            "queries": len(answers),
+            "pairsWithExposure": non_zero,
+            "p50Millis": round(statistics.median(latencies)),
+            "maxMillis": round(max(latencies)),
+            "cachedRepeatMillis": round(cached_ms),
+        },
+        "topPairs": [
+            {
+                "fund": fund["name"],
+                "issuer": issuer["name"],
+                "totalValue": r["totalValue"],
+                "millis": round(ms),
+            }
+            for fund, issuer, r, ms in top
+        ],
+    }
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(summary, indent=2) + "\n")
+    print(f"  summary written to {path}")
+
+
 def main() -> None:
     health, _ = get("/actuator/health")
     stats, stats_ms = get("/stats")
@@ -119,6 +200,10 @@ def main() -> None:
           f"max {max(latencies):.0f} ms (uncached, Fuseki)")
     _, cached_ms = get(f"/entities/{top[0][0]['id']}/exposure", issuer=top[0][1]["id"])
     print(f"  repeated query served from cache in {cached_ms:.0f} ms")
+    if SUMMARY_PATH:
+        write_summary(SUMMARY_PATH, stats["store"],
+                      health["components"]["store"]["details"]["queryUrl"], stats, stats_ms,
+                      answers, top, latencies, non_zero, cached_ms)
     print()
     operations()
 

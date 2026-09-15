@@ -52,4 +52,5 @@ API_PID=$!
 scripts/wait-for.sh "$API_URL/actuator/health" 90
 
 step "Running scripted queries"
-python3 scripts/demo_queries.py "$API_URL" | tee "$OUT/summary.txt"
+python3 scripts/demo_queries.py "$API_URL" --summary web/src/data/demo-summary.json \
+    | tee "$OUT/summary.txt"

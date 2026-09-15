@@ -14,8 +14,12 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  EXPOSURE_MAX_DEPTH, GraphApi, boundedPath, clampDepth, mergeGraphs, ownedOn, sliceManifest,
+  EXPOSURE_MAX_DEPTH, GraphApi, boundedPath, clampDepth, mergeGraphs, ownedOn, resolvePeriod,
+  sliceManifest,
 } from '../src/graph/index';
+import {
+  renderConcentration, renderExposure, renderLineageDown, renderLineageUp, renderNeighbors,
+} from '../src/graph/sparql';
 import { RDF_TYPE } from '../src/graph/store';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -283,6 +287,68 @@ for (const file of ['store.ts', 'queries.ts', 'cache.ts', 'index.ts', 'types.ts'
   const text = readFileSync(join(WEB, 'src', 'graph', file), 'utf8');
   ok(`graph/${file} has no random or eval`,
     !/Math\.random|\beval\s*\(|new Function\s*\(/.test(text));
+}
+
+/* ------------------------------------------------------ SPARQL the page shows */
+
+group('the embedded templates are the repository templates');
+const QUERY_DIR = resolve(WEB, '..', 'api', 'src', 'main', 'resources', 'queries');
+for (const name of Object.keys(store.queries).sort()) {
+  const onDisk = readFileSync(join(QUERY_DIR, `${name}.rq`), 'utf8').trimEnd();
+  eq(`${name}.rq is the file the API renders`, store.queries[name], onDisk);
+}
+
+group('every Path Lab tab renders with no placeholder left');
+const labPeriod = resolvePeriod(store);
+const labDepth = 3;
+for (const [file, text] of [
+  ['lineage_down.rq', renderLineageDown(store, AAPL, labDepth)],
+  ['lineage_up.rq', renderLineageUp(store, AAPL, labDepth)],
+  ['exposure.rq', renderExposure(store, TPG, NU, true, true, labDepth, labPeriod)],
+  ['concentration.rq', renderConcentration(store, TROW, labPeriod,
+    trowConcentration.totalValue * 0.01, 10)],
+  ['neighbors.rq', renderNeighbors(store, AAPL, 40)],
+] as const) {
+  const unresolved = text.match(/\$\{[a-zA-Z]+\}/g);
+  ok(`${file} renders`, unresolved === null, unresolved === null
+    ? `${text.length} chars`
+    : `unresolved ${unresolved.join(', ')}`);
+}
+
+/* ------------------------------------------------- figures quoted, not typed */
+
+group('the quoted Fuseki figures come from the committed demo summary');
+const demoSummary = JSON.parse(
+  readFileSync(join(WEB, 'src', 'data', 'demo-summary.json'), 'utf8'),
+) as {
+  store: string;
+  provenance: { commit: string; host: string; measuredAt: string };
+  dataset: Record<string, number>;
+  exposure: { queries: number; pairsWithExposure: number; p50Millis: number; maxMillis: number };
+  topPairs: { fund: string; issuer: string; totalValue: number }[];
+};
+
+eq('the summary names the store it measured', demoSummary.store, 'fuseki');
+ok('the summary carries the commit and host it was measured on',
+  demoSummary.provenance.commit.length > 0 && demoSummary.provenance.host.length > 0,
+  `${demoSummary.provenance.commit} on ${demoSummary.provenance.host}`);
+eq('full entities match the dataset the demo measured',
+  sliceManifest.full.entities, demoSummary.dataset.entities);
+eq('full positions match the dataset the demo measured',
+  sliceManifest.full.positions, demoSummary.dataset.positions);
+eq('full filings match the dataset the demo measured',
+  sliceManifest.full.filings, demoSummary.dataset.filings);
+eq('full triples match the dataset the demo measured',
+  sliceManifest.full.triples, demoSummary.dataset.triples);
+eq('the measured grid is the grid this page reproduces', demoSummary.exposure.queries, grid.length);
+eq('pairs with exposure agree with this page',
+  demoSummary.exposure.pairsWithExposure, grid.filter((answer) => answer.totalValue > 0).length);
+
+const computedTotals = new Set(grid.map((answer) => Math.round(answer.totalValue)));
+for (const pair of demoSummary.topPairs) {
+  ok(`${pair.fund} to ${pair.issuer} reproduces in this page`,
+    computedTotals.has(Math.round(pair.totalValue)),
+    `${Math.round(pair.totalValue)}`);
 }
 
 process.stdout.write(`\n${checks - failures}/${checks} checks passed\n`);

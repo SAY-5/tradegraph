@@ -1,0 +1,49 @@
+{
+  "generator": "scripts/demo_queries.py",
+  "provenance": {
+    "measuredAt": "2026-09-15T19:09:31Z",
+    "commit": "eb6f012",
+    "host": "darwin arm64, 10 cores",
+    "python": "3.14.7"
+  },
+  "store": "fuseki",
+  "endpoint": "http://localhost:3030/ds/sparql",
+  "dataset": {
+    "entities": 6100,
+    "issuers": 3600,
+    "funds": 410,
+    "subsidiaries": 2148,
+    "positions": 24336,
+    "filings": 1240,
+    "lineageEdges": 2500,
+    "triples": 323173
+  },
+  "statsQueryMillis": 1425,
+  "exposure": {
+    "queries": 72,
+    "pairsWithExposure": 26,
+    "p50Millis": 1193,
+    "maxMillis": 2685,
+    "cachedRepeatMillis": 17
+  },
+  "topPairs": [
+    {
+      "fund": "PRICE T ROWE GROUP INC",
+      "issuer": "Apple Inc.",
+      "totalValue": 2475300433.19,
+      "millis": 1568
+    },
+    {
+      "fund": "BlackRock, Inc.",
+      "issuer": "Meta Platforms, Inc.",
+      "totalValue": 1980265855.75,
+      "millis": 1726
+    },
+    {
+      "fund": "Invesco Ltd.",
+      "issuer": "Apple Inc.",
+      "totalValue": 1523775488.95,
+      "millis": 2041
+    }
+  ]
+}
