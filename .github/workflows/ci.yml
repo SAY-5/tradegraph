@@ -44,6 +44,35 @@ jobs:
           name: etl-build
           path: etl/build
       - run: mvn -B verify
+        env:
+          # No sample means ExposurePerformanceIT fails here rather than skipping quietly.
+          TRADEGRAPH_REQUIRE_SAMPLE: "1"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exposure-latency
+          path: api/target/benchmarks/exposure-latency.txt
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run selfcheck
+      - run: npm run weight
+      # The slice embeds etl/sample and queries/*.rq, so a change to either has to be
+      # regenerated in the same commit rather than left to stale silently.
+      - run: npm run slice
+      - run: git diff --exit-code src/data/
 
   explorer:
     runs-on: ubuntu-latest

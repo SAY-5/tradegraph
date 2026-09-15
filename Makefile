@@ -8,10 +8,11 @@ COMPOSE   ?= docker compose
 FUSEKI_URL ?= http://localhost:3030/ds
 API_URL    ?= http://localhost:8080
 ETL_BUILD  := etl/build
+BENCH_OUT  ?= demo-output/exposure-latency.txt
 # Ryuk cannot bind mount the Docker socket on Colima; containers are stopped by a JVM shutdown hook instead.
 export TESTCONTAINERS_RYUK_DISABLED ?= true
 
-.PHONY: help setup lint test demo etl-sample etl-validate etl-load api explorer explorer-dist fuseki-up fuseki-down clean
+.PHONY: help setup lint test demo web bench etl-sample etl-validate etl-load api explorer explorer-dist fuseki-up fuseki-down clean
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -56,8 +57,21 @@ explorer: ## Run the Angular dev server
 explorer-dist: ## Production build of the explorer into explorer/dist
 	cd explorer && $(NPM) run build
 
+web: ## Check the browser demo: types, bundle, self check, payload weight, slice drift
+	cd web && $(NPM) ci
+	cd web && $(NPM) run build
+	cd web && $(NPM) run selfcheck
+	cd web && $(NPM) run weight
+	cd web && $(NPM) run slice && git diff --exit-code src/data/
+
 demo: ## Start Fuseki, load the sample, start the API, run scripted queries and print a summary
 	@scripts/demo.sh
+
+bench: ## Re-measure the exposure latency budget over the full sample and keep the output
+	$(MAKE) etl-sample
+	cd api && $(MVN) -B verify -Dit.test=ExposurePerformanceIT -DfailIfNoSpecifiedTests=false \
+	    | tee ../$(BENCH_OUT)
+	@echo "wrote $(BENCH_OUT)"
 
 clean: ## Remove build outputs
 	rm -rf $(ETL_BUILD) api/target explorer/dist explorer/.angular

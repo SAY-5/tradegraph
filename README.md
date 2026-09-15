@@ -45,12 +45,15 @@ make setup        # uv sync, mvn dependency:go-offline, npm ci
 make lint         # ruff, checkstyle, eslint
 make test         # pytest, mvn verify (Testcontainers Fuseki), vitest + production build
 make demo         # Fuseki + ETL sample + API + scripted queries, prints the summary below
+make web          # browser demo: types, bundle, self check, payload weight, slice drift
 make etl-validate # SHACL shapes and the quality report into etl/build/quality.json
 make api          # API on :8080 against Fuseki (profile fuseki)
 make explorer     # Angular dev server on :4200, proxies /api to :8080
 ```
 
-`make demo` output, unedited:
+`make demo` output, unedited. `scripts/demo_queries.py` writes the same figures to
+`web/src/data/demo-summary.json` with the commit, host and timestamp of the run, which is
+what the browser demo quotes and what the self check asserts against:
 
 ```
 TradeGraph demo summary
@@ -106,11 +109,14 @@ legs that walk subsidiaries need `--sample`.
 
 `web/` is a static page that answers the same lineage and exposure questions with no API
 and no store: the ontology triples, the query semantics and the SPARQL templates are the
-ones in this repository, running over a 573 KiB slice of `etl/sample` (1,760 of 6,100
+ones in this repository, running over a 572 KiB slice of `etl/sample` (1,760 of 6,100
 entities, 7,894 of 24,336 positions, both reporting periods, ownership fractions
 included). The four exposure pairs above reproduce to the dollar and `npm run selfcheck`
-asserts it; the milliseconds do not carry over, because the demo times function calls
-rather than an API and a store. See `web/README.md`.
+asserts it against the same `demo-summary.json` this block was generated from. The
+milliseconds do not carry over, because the demo times function calls rather than an API
+and a store, so the page quotes the measured latency and labels it with the run that
+produced it. `make web` also asserts the payload weight and regenerates the slice to
+check it against the committed copy. See `web/README.md`.
 
 ## Components
 
@@ -121,7 +127,7 @@ rather than an API and a store. See `web/README.md`.
 | `api/` | Java 21, Spring Boot 3.5, Caffeine, Micrometer, Testcontainers | SPARQL client, query templates, cost guard, lineage and exposure services, REST endpoints, store health indicator and ops overview |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
 | `deploy/` | Docker Compose | Fuseki stack, Fuseki inference profile, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
-| `web/` | Vite, React 18, TypeScript, d3 7 | Static browser demo over a committed slice of the sample, no backend |
+| `web/` | Vite, React 18, TypeScript, d3-force 3 | Static browser demo over a committed slice of the sample, no backend |
 
 ## API
 
@@ -238,8 +244,8 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 
 ## Tests
 
-- `etl/`: 40 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 56 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, the cost guard, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 27 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
+- `etl/`: 47 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, 13F information table parsing, the live path against recorded EDGAR responses (including that it emits no `subsidiaryOf` triple), and the triple and entity counts the browser demo's manifest records.
+- `api/`: 60 unit tests (SPARQL escaping and id validation, position identifiers, bounded property paths, inline data blocks, template rendering, the cost guard over every shipped template, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 31 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, `NeighborLimitIT` over an issuer with more holders than the row limit allows, and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms. That test writes what it measured to `api/target/benchmarks/exposure-latency.txt`, with the dataset, the JVM and the host it ran on, and CI keeps the file as an artifact.
 - `explorer/`: 9 vitest specs (API client URLs, graph merging, exposure panel rendering, weighted values, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.

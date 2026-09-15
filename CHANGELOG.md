@@ -3,6 +3,22 @@
 All notable changes to TradeGraph are recorded here. Versions follow semantic
 versioning and each one is tagged `vN.0.0`.
 
+## [Unreleased]
+
+Correctness and provenance pass over the whole repository. No new endpoints:
+the changes make the claims in the documents follow from the code and the data.
+
+- `neighbors.rq` ranks lineage above holdings, so the row limit truncates holdings rather than the parent and subsidiary edges the explorer draws the corporate tree from. Ordering by the relation name sorted `HELD_BY` and `HOLDS` ahead of `PARENT` and `SUBSIDIARY`, which left a well held issuer such as Apple with no lineage edges at the limits the explorer asks for. `NeighborLimitIT` covers it.
+- The query cost guard runs over every template as `QueryTemplates` loads it instead of over every rendered query, where the pattern also matched inside a caller's quoted literal and answered 422 to ordinary search terms such as `tg:x+`.
+- `/exposure/concentration` is bounded in the store: a ranked page with `HAVING` and `LIMIT`, plus one row each for the family total and the number of issuers above the threshold. It previously returned a row per issuer the family held, which is up to 276 rows in the committed sample.
+- The live ETL path states what it reads. There is no Exhibit 21 reader in `--live`, so it produces holdings and no corporate tree, and a test asserts the transform emits no `subsidiaryOf` triple from live data.
+- `scripts/demo_queries.py --summary` writes `web/src/data/demo-summary.json` with the dataset counts, the exposure latencies and the commit, host and timestamp that produced them. The README demo block and the browser demo both quote that file instead of transcribing numbers.
+- `ExposurePerformanceIT` writes its latencies to `target/benchmarks/exposure-latency.txt` and fails rather than skipping when `TRADEGRAPH_REQUIRE_SAMPLE=1`, which CI now sets, so a missing artifact cannot become a silent pass.
+- CI gained a `web` job: type check, bundle, self check, payload weight, and a slice drift gate that regenerates the slice and fails on any diff. `make web` runs the same steps locally.
+- Browser demo: the hero leads with the figures the page computes and names the full sample beside them, the interactive SVGs are no longer labelled as images, Space activates a node without scrolling the page, the neighbourhood graph has a parallel list of buttons, count up animations announce the settled number once, and the payload dropped the full `d3` package and the five templates the page never shows.
+- A position id comes from its own namespace constant rather than a string rewrite of the entity namespace.
+- Documentation: the cache list, the `--funds` limit, the CLI command list and the contributor lint command now match the code, and the explorer's test fixture records the dataset the sample actually holds.
+
 ## [5.0.0] - 2026-09-10
 
 Operations. What the API is doing and what it will refuse to do are both
