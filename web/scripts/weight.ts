@@ -7,6 +7,10 @@
  * Both figures are printed: the bytes on disk and the bytes gzip produces, which is what a
  * static host serves. The slice dominates the payload, so the ceiling is set just above the
  * current total rather than at a round number that would hide a doubling.
+ *
+ * The gzip total depends on the zlib the running Node links, which differs by several
+ * thousand bytes between zlib versions on identical input, so the script prints the Node and
+ * zlib versions beside the total. The bytes on disk do not depend on either.
  */
 
 import { gzipSync } from 'node:zlib';
@@ -48,6 +52,8 @@ for (const path of files(DIST).sort()) {
 process.stdout.write(`dist/ contents\n${rows.join('\n')}\n`);
 process.stdout.write(`\ntotal ${raw} B on disk, ${gzip} B gzip `
   + `(${(raw / 1024).toFixed(0)} KiB, ${(gzip / 1024).toFixed(0)} KiB)\n`);
+process.stdout.write(`gzip measured by node ${process.versions.node} with zlib `
+  + `${process.versions.zlib}; the bytes on disk do not depend on either\n`);
 
 const failures: string[] = [];
 if (raw > RAW_CEILING) failures.push(`raw ${raw} B is over the ${RAW_CEILING} B ceiling`);
