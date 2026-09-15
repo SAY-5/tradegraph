@@ -15,7 +15,7 @@ scripts/    demo.sh, demo_queries.py, wait-for.sh
 
 1. `make setup` once.
 2. Change one component at a time and keep its checks green:
-   - ETL: `cd etl && uv run ruff check . && uv run ruff format . && uv run pytest`
+   - ETL: `cd etl && uv run ruff check . && uv run ruff format --check . && uv run pytest`
    - API: `cd api && mvn -B verify` (needs Docker for the Testcontainers suites;
      run `make etl-sample` first so `ExposurePerformanceIT` has data, otherwise it is skipped)
    - Explorer: `cd explorer && npm run lint && npm test && npm run build`

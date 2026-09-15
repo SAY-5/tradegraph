@@ -16,7 +16,7 @@ describe('App', () => {
     const http = TestBed.inject(HttpTestingController);
     http.expectOne('/api/stats').flush({
       store: 'fuseki', entities: 6100, issuers: 3600, funds: 410, subsidiaries: 2148,
-      positions: 12373, filings: 829, lineageEdges: 2500, triples: 207095, queryMillis: 5,
+      positions: 24336, filings: 1240, lineageEdges: 2500, triples: 323173, queryMillis: 5,
     });
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;

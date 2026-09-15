@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public final class SparqlValues {
 
     public static final String ENTITY_NS = "https://tradegraph.dev/entity/";
+    public static final String POSITION_NS = "https://tradegraph.dev/position/";
     private static final Pattern ID = Pattern.compile("[A-Za-z0-9_-]{1,64}");
 
     private SparqlValues() {
@@ -51,6 +52,15 @@ public final class SparqlValues {
 
     public static String integer(long value) {
         return Long.toString(value);
+    }
+
+    /**
+     * The local name of a position IRI, {@code accession/index}. An IRI from anywhere else
+     * is returned unchanged rather than half stripped, so a namespace change shows up as a
+     * recognisable id instead of a silently different one.
+     */
+    public static String positionId(String iri) {
+        return iri != null && iri.startsWith(POSITION_NS) ? iri.substring(POSITION_NS.length()) : iri;
     }
 
     /** An {@code xsd:date} literal, e.g. {@code "2024-06-30"^^xsd:date}. */

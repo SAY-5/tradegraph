@@ -34,7 +34,7 @@ public class TradeService {
                 "offset", SparqlValues.integer(Math.max(offset, 0))));
         return sparql.select("trades", query).stream()
                 .map(r -> new TradeRecord(
-                        r.str("pos").replace(SparqlValues.ENTITY_NS.replace("entity", "position"), ""),
+                        SparqlValues.positionId(r.str("pos")),
                         new EntityRef(r.id("holder"), r.str("holderName"), List.of()),
                         new EntityRef(r.id("issuer"), r.str("issuerName"), List.of()),
                         new Instrument(r.str("cusip"), r.str("ticker"), r.str("class")),

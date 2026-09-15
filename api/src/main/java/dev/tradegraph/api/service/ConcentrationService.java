@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,9 +20,12 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
- * Where a fund family's value sits. The store groups the family's positions by the issuer
- * each one names; the shares and the cut off are applied here so the same rows answer any
- * threshold without another query.
+ * Where a fund family's value sits. Three bounded queries answer it: the family total and
+ * its issuer count in one row, the number of issuers above the share threshold in one row,
+ * and the ranked page of lines itself, which the store cuts with the same threshold and a
+ * LIMIT. Shares are then arithmetic on the page. Returning a row per issuer instead would
+ * put no bound on the answer at all: a family in the committed sample holds as many as 276
+ * distinct issuers in one reporting period.
  */
 @Service
 public class ConcentrationService {
@@ -55,26 +59,45 @@ public class ConcentrationService {
         EntityRef entity = entities.ref(entityId);
         String iri = SparqlValues.entityIri(entityId);
         Optional<LocalDate> period = periods.resolve(asOf);
-        String query = templates.render("concentration", Map.of(
+        Map<String, String> family = Map.of(
                 "fund", iri,
                 "periodValues", periods.valuesBlock("d", period),
                 "holderClause", ExposureService.holderClause(iri, true, properties.exposure().maxDepth(),
-                        properties.store().reasoning())));
+                        properties.store().reasoning()));
 
-        List<ConcentrationLine> all = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
-        for (Row r : sparql.select("concentration", query)) {
-            BigDecimal value = r.decimal("value");
-            all.add(new ConcentrationLine(new EntityRef(r.id("issuerEntity"), r.str("issuerEntityName"), List.of()),
-                    value, BigDecimal.ZERO, r.asLong("positions")));
-            total = total.add(value);
+        Row totals = sparql.select("concentration_total",
+                templates.render("concentration_total", family)).get(0);
+        BigDecimal total = totals.decimal("total");
+        if (total.signum() <= 0) {
+            return new ConcentrationResponse(entity, period.orElse(null), BigDecimal.ZERO, minShare, 0,
+                    List.of(), (System.nanoTime() - started) / 1_000_000);
         }
-        List<ConcentrationLine> above = above(all, total, minShare);
-        return new ConcentrationResponse(entity, period.orElse(null), total, minShare, above.size(),
-                above.stream().limit(Math.max(limit, 1)).toList(), (System.nanoTime() - started) / 1_000_000);
+
+        Map<String, String> bounded = new HashMap<>(family);
+        bounded.put("floor", total.multiply(minShare).toPlainString());
+        bounded.put("limit", SparqlValues.integer(Math.max(limit, 1)));
+
+        List<ConcentrationLine> page = new ArrayList<>();
+        for (Row r : sparql.select("concentration", templates.render("concentration", bounded))) {
+            page.add(new ConcentrationLine(new EntityRef(r.id("issuerEntity"), r.str("issuerEntityName"),
+                    List.of()), r.decimal("value"), BigDecimal.ZERO, r.asLong("positions")));
+        }
+
+        // A threshold of zero keeps every issuer, which the total query already counted.
+        long matches = minShare.signum() == 0
+                ? totals.asLong("issuers")
+                : sparql.select("concentration_matches",
+                        templates.render("concentration_matches", bounded)).get(0).asLong("matches");
+
+        return new ConcentrationResponse(entity, period.orElse(null), total, minShare, (int) matches,
+                above(page, total, minShare), (System.nanoTime() - started) / 1_000_000);
     }
 
-    /** Lines whose share of {@code total} reaches {@code minShare}, largest first. */
+    /**
+     * Shares for the page the store returned, largest first. The store has already applied
+     * the same threshold; recomputing it here keeps the returned lines consistent with the
+     * share arithmetic even when the floor literal rounds.
+     */
     static List<ConcentrationLine> above(List<ConcentrationLine> lines, BigDecimal total, BigDecimal minShare) {
         if (total.signum() <= 0) {
             return List.of();

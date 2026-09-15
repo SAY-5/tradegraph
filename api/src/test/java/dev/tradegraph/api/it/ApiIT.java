@@ -278,6 +278,18 @@ class ApiIT {
     }
 
     @Test
+    void aSearchTermThatLooksLikeAPropertyPathIsAnswered() {
+        // The cost guard checks templates when they load, so a caller's literal is just a
+        // literal: this used to render a query the guard matched and answer 422.
+        ResponseEntity<String> response = rest.getForEntity("/entities?q={q}", String.class, "tg:x+");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo("[]");
+
+        ResponseEntity<String> parenthesised = rest.getForEntity("/entities?q={q}", String.class, "acme) *");
+        assertThat(parenthesised.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
     void neighborsReturnLineageAndHoldingLinks() {
         NeighborGraph g = rest.getForObject("/graph/neighbors/0000000001", NeighborGraph.class);
         assertThat(g.center()).isEqualTo("0000000001");

@@ -14,6 +14,10 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * Loads {@code queries/*.rq} from the classpath and renders {@code ${name}} placeholders.
  * Values are inserted verbatim, so callers must build them with {@link SparqlValues} or
  * {@link SparqlPaths}; rendering fails if a placeholder is left unresolved.
+ *
+ * <p>Every template is checked for an unbounded property path as it is loaded, which is the
+ * one place that invariant can be established for the whole API: a template is the only
+ * thing that could carry one, and it cannot change between requests.
  */
 public final class QueryTemplates {
 
@@ -25,6 +29,7 @@ public final class QueryTemplates {
     QueryTemplates(Map<String, String> templates) {
         this.templates = Map.copyOf(templates);
         this.prefixes = this.templates.getOrDefault("prefixes", "");
+        this.templates.forEach((name, text) -> QueryGuard.rejectUnboundedPaths(name + ".rq", text));
     }
 
     public static QueryTemplates fromClasspath() {
