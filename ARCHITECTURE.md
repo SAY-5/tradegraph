@@ -74,11 +74,14 @@ which every store evaluates identically. Depth is capped by configuration
 
 ### Cost guard and metrics
 
-Every rendered query passes `QueryGuard.rejectUnboundedPaths` before it reaches
-the store: a `*` or `+` property path walks the whole lineage closure and none
-of the templates render one, so a match is a defect rather than a request to
-serve. A requested depth above the configured maximum is a 422 rather than a
-silent clamp, and the two maxima are separate: `tradegraph.exposure.max-depth`
+`QueryTemplates` runs `QueryGuard.rejectUnboundedPaths` over every template as
+it loads it: a `*` or `+` property path walks the whole lineage closure, and a
+template is the only thing that could carry one, so the invariant is established
+once at startup and a failure names the template. The check is deliberately not
+applied to rendered queries, where the pattern would also match inside a quoted
+literal the caller supplied, and a search for `tg:x+` is an ordinary search
+term rather than a defect. A requested depth above the configured maximum is a
+422 rather than a silent clamp, and the two maxima are separate: `tradegraph.exposure.max-depth`
 is 4 and `tradegraph.lineage.max-depth` is 5. `SparqlClient` times every query
 and hands the result to `QueryMetrics`, which keeps a Micrometer timer tagged
 with the template name and a ring buffer of the last 200 timings; both are
@@ -130,20 +133,63 @@ sentence. Totals are partitioned into direct, via subsidiaries (held by the
 fund itself on a subsidiary's instrument) and via affiliates (held by another
 fund in the family).
 
+### Concentration
+
+`/exposure/concentration` answers with three bounded queries rather than one
+unbounded one: `concentration_total.rq` returns the family's total and issuer
+count in a single row, `concentration.rq` returns the ranked page the request
+asked for (`HAVING` the share threshold, `ORDER BY DESC(?value)`, `LIMIT`), and
+`concentration_matches.rq` counts the issuers above that threshold in a single
+row. `ConcentrationService` then turns values into shares. Grouping without a
+limit would put no bound on the answer: one family in the committed sample
+holds 276 distinct issuers in a single reporting period.
+
 ### Explorer graph
 
 `neighbors.rq` unions four subqueries (parent, subsidiaries, top holdings by
 value, top holders by value) and the explorer merges expansions client side
 (`mergeGraphs`), keeping the original centre.
 
+## Browser demo
+
+`web/` answers the same lineage and exposure questions with no API and no store,
+over a committed slice of `etl/sample`. It exists so the system can be read
+without Docker, and it is held to the same standard as the rest of the
+repository rather than treated as a brochure.
+
+- The slice. `web/scripts/extract-slice.ts` keeps every fund manager and
+  sub-fund, the top 300 issuers by position value plus the issuers the demo
+  names, their subsidiaries to five levels, and every position whose holder and
+  issuer are both kept. It writes `src/data/slice.json` and
+  `src/data/slice-manifest.json`, which records the counts, the periods and a
+  sha256 of the slice. `npm run selfcheck` recomputes all three.
+- Query parity. `src/graph/queries.ts` follows the Spring Boot services hop for
+  hop, and `src/graph/sparql.ts` renders `queries/*.rq` with the same
+  substitution and the same bounded path expansion `QueryTemplates` and
+  `SparqlPaths` use. The slice embeds the prefix file and the five templates the
+  property path lab shows, and the self check asserts each one is byte identical
+  to the file the API renders, so the SPARQL on the page cannot drift from the
+  SPARQL in this repository. CI regenerates the slice and fails on any diff.
+- The two depth caps come from `application.yml`: lineage 5, exposure 4.
+- Measured against quoted. Every figure on the page is computed in the browser
+  except the exposure latency, which is read from
+  `src/data/demo-summary.json`. `scripts/demo_queries.py` writes that file
+  during `make demo` with the commit, host and timestamp of the run, and the
+  self check asserts the page's dataset figures equal the ones the demo
+  measured and that the demo's dollar totals reproduce in the browser. In
+  browser timings are not comparable with the API's: the page times function
+  calls over an in memory store, the README times HTTP to Fuseki.
+
 ## Caching
 
 Spring's cache abstraction with Caffeine (`maximumSize=5000, expireAfterWrite=10m`)
-fronts every service method: `search`, `entity`, `lineage`, `ancestors`,
-`exposure`, `trades`, `neighbors`, `stats`. The demo shows the effect: an
-exposure answer that costs 40 to 110 ms uncached is served in 2 to 3 ms when
-repeated. `ExposurePerformanceIT` runs with `spring.cache.type=none` so it
-measures the store, not the cache.
+fronts every service method. `spring.cache.cache-names` in `application.yml` is
+the list: `search`, `entity`, `lineage`, `ancestors`, `exposure`,
+`concentration`, `trades`, `neighbors`, `stats`, `periods`, `delta`. The demo
+shows the effect: a repeated exposure answer is served from the cache, and the
+two figures are printed side by side by `make demo`.
+`ExposurePerformanceIT` runs with `spring.cache.type=none` so it measures the
+store, not the cache.
 
 ## Store configuration
 

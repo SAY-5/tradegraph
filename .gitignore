@@ -27,4 +27,5 @@ npm-debug.log*
 *.iml
 demo-output/
 demo-summary.txt
+scratch/
 *.log

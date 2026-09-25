@@ -80,20 +80,41 @@ export function renderExposure(
   });
 }
 
-export function renderConcentration(store: TripleStore, fundId: string, period: string | null): string {
+/**
+ * `floor` is what `ConcentrationService` renders: the share threshold times the family
+ * total, which the store applies as a HAVING clause before the LIMIT. Both bounds are part
+ * of the query text, so the page shows the same bounded query the API sends.
+ */
+export function renderConcentration(
+  store: TripleStore,
+  fundId: string,
+  period: string | null,
+  floor: number,
+  limit: number,
+): string {
   const iri = entityIri(fundId);
   return render(store, 'concentration', {
     fund: iri,
     periodValues: valuesBlock('d', period),
     holderClause: holderClause(iri, true, EXPOSURE_MAX_DEPTH),
+    floor: floor.toFixed(2),
+    limit: String(Math.max(1, Math.trunc(limit))),
   });
 }
+
+/**
+ * Empty, as `LineageService.directOnly` renders it with reasoning off. A store that
+ * materialises the closure reports every ancestor as a direct parent, and the filter
+ * keeps the chain walk on direct edges; this page never reasons, so it renders nothing.
+ */
+const DIRECT_ONLY = '';
 
 export function renderLineageDown(store: TripleStore, id: string, depth: number): string {
   const iri = entityIri(id);
   return render(store, 'lineage_down', {
     iri,
     depth: String(depth),
+    directOnly: DIRECT_ONLY,
     moreParents: unionHops('?parent', iri, 1, depth - 1),
   });
 }
@@ -103,6 +124,7 @@ export function renderLineageUp(store: TripleStore, id: string, depth: number): 
   return render(store, 'lineage_up', {
     iri,
     depth: String(depth),
+    directOnly: DIRECT_ONLY,
     moreChildren: unionHops(iri, '?child', 1, depth - 1),
   });
 }

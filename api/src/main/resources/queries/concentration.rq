@@ -1,5 +1,9 @@
-# Value held by ${fund} and every fund in its family, grouped by the issuer the
-# position names, for the reporting period bound by the inline data block.
+# The issuers that ${fund}'s family holds, for the reporting period bound by the inline
+# data block: grouped by the issuer each position names, cut to the ones reaching ${floor}
+# and ranked by value, at most ${limit} rows. A family in the committed sample groups into
+# as many as 276 issuers, so the bound belongs here rather than in the caller. The family
+# total and the number of issuers above the cut off come from concentration_total.rq and
+# concentration_matches.rq, which return one row each.
 SELECT ?issuerEntity ?issuerEntityName (SUM(?v) AS ?value) (COUNT(?pos) AS ?positions)
 WHERE {
   ${periodValues}
@@ -9,4 +13,6 @@ WHERE {
   ?issuerEntity tg:name ?issuerEntityName .
 }
 GROUP BY ?issuerEntity ?issuerEntityName
+HAVING (SUM(?v) >= ${floor})
 ORDER BY DESC(?value)
+LIMIT ${limit}

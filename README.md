@@ -1,7 +1,8 @@
 # TradeGraph
 
 Counterparty knowledge graph built from SEC filings. A Python ETL turns EDGAR
-data (company tickers, 13F-HR holdings, Exhibit 21 style subsidiary lists) into
+data (company tickers and 13F-HR holdings live, plus Exhibit 21 style subsidiary
+lists in the committed sample) into
 RDF that follows a compact FIBO-inspired ontology, loads it into a SPARQL 1.1
 store, and a Spring Boot API answers lineage and exposure questions over it with
 SPARQL property paths. An Angular explorer renders the neighbourhood graph, the
@@ -44,12 +45,18 @@ make setup        # uv sync, mvn dependency:go-offline, npm ci
 make lint         # ruff, checkstyle, eslint
 make test         # pytest, mvn verify (Testcontainers Fuseki), vitest + production build
 make demo         # Fuseki + ETL sample + API + scripted queries, prints the summary below
+make web          # browser demo: types, bundle, self check, payload weight, slice drift
 make etl-validate # SHACL shapes and the quality report into etl/build/quality.json
 make api          # API on :8080 against Fuseki (profile fuseki)
 make explorer     # Angular dev server on :4200, proxies /api to :8080
 ```
 
-`make demo` output, unedited:
+`make demo` output, unedited. `scripts/demo_queries.py` writes the same figures to
+`web/src/data/demo-summary.json` with the commit, host and timestamp of the run, which is
+what the browser demo quotes and what the self check asserts against. The block was
+captured at commit 3fb28dd on a 10 core arm64 host that was running other work at the
+same time, so the millisecond columns are higher than an idle machine would report; the
+counts and the dollar totals are deterministic and reproduce exactly:
 
 ```
 TradeGraph demo summary
@@ -59,54 +66,61 @@ entities loaded  : 6,100 (issuers 3,600, funds 410, subsidiaries 2,148)
 positions        : 24,336 in 1,240 filings
 lineage edges    : 2,500
 triples          : 323,173
-stats query      : 205 ms
+stats query      : 2043 ms
 
 Lineage (subsidiaryOf property paths, depth limited to 5)
-  Apple Inc.: 6 descendants, deepest level 2, 51 ms
-  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 28 ms
-  Invesco Ltd.: 7 descendants, deepest level 1, 26 ms
+  Apple Inc.: 6 descendants, deepest level 2, 727 ms
+  JPMORGAN CHASE & CO: 7 descendants, deepest level 1, 188 ms
+  Invesco Ltd.: 7 descendants, deepest level 1, 146 ms
 
 Exposure (fund family to issuer, through affiliates and subsidiaries, 72 queries)
   PRICE T ROWE GROUP INC -> Apple Inc.
     total $2,475,300,433  direct $0  via subsidiaries $0  via affiliates $2,475,300,433
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 65 ms
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 395 ms
     longest path: PRICE T ROWE GROUP INC, whose subsidiary Price T ROWE Global Select Fund holds COMMON AAPL issued by Apple Inc.
   BlackRock, Inc. -> Meta Platforms, Inc.
     total $1,980,265,856  direct $0  via subsidiaries $0  via affiliates $1,980,265,856
-    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 69 ms
+    3 positions across 3 instrument lines, 3 holders, longest path 2 hops, 786 ms
     longest path: BlackRock, Inc., whose subsidiary Blackrock International Value Fund holds PUT META issued by Meta Platforms, Inc.
   Invesco Ltd. -> Apple Inc.
     total $1,523,775,489  direct $0  via subsidiaries $0  via affiliates $1,523,775,489
-    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 69 ms
+    2 positions across 2 instrument lines, 2 holders, longest path 2 hops, 829 ms
     longest path: Invesco Ltd., whose subsidiary Invesco Dividend Focus Fund holds COMMON AAPL issued by Apple Inc.
   exposure through an issuer subsidiary: TPG Inc. -> Nu Holdings Ltd.
-    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 59 ms
+    $4,792,566 of total $4,792,566 is issued by Nu Finance Corp., 3 hops, 178 ms
     path: TPG Inc., whose subsidiary TPG Global Select Fund holds DEBT issued by Nu Finance Corp. is a subsidiary of Nu Holdings Ltd.
-  26/72 pairs have exposure; latency p50 57 ms, max 110 ms (uncached, Fuseki)
-  repeated query served from cache in 2 ms
+  26/72 pairs have exposure; latency p50 385 ms, max 1396 ms (uncached, Fuseki)
+  repeated query served from cache in 3 ms
+  summary written to web/src/data/demo-summary.json
 
 Operations (/ops/overview)
   store          : fuseki reasoning=false, 323,173 triples, exposure depth <= 4, lineage depth <= 5
   cache          : 33 hits, 139 misses, hit ratio 0.19, 139 entries across 11 caches
-  slowest queries: search 50 ms, periods 33 ms, periods 29 ms, periods 28 ms, periods 28 ms
-  data quality   : conforms=true, dangling 0, cycles 0, missing identifiers 0, shape violations 0 (checked 2026-09-10T10:10:29Z)
+  slowest queries: periods 618 ms, periods 608 ms, periods 590 ms, periods 492 ms, periods 420 ms
+  data quality   : conforms=true, dangling 0, cycles 0, missing identifiers 0, shape violations 0 (checked 2026-09-15T19:28:35Z)
   cost guard     : depth=9 answered 422
 ```
 
 Issuer and fund manager identities in the sample are real (SEC
 `company_tickers.json`); holdings, subsidiaries and values are synthetic and
 deterministic. See `etl/sample/README.md`. The `--live` ETL mode pulls real
-13F-HR information tables from `data.sec.gov` with a compliant User-Agent.
+13F-HR information tables from `data.sec.gov` with a compliant User-Agent. It
+builds issuers and holdings only: there is no Exhibit 21 reader in the live
+path, so no `subsidiaryOf` edges come out of it, and lineage and the exposure
+legs that walk subsidiaries need `--sample`.
 
 ## Browser demo
 
 `web/` is a static page that answers the same lineage and exposure questions with no API
 and no store: the ontology triples, the query semantics and the SPARQL templates are the
-ones in this repository, running over a 573 KiB slice of `etl/sample` (1,760 of 6,100
+ones in this repository, running over a 572 KiB slice of `etl/sample` (1,760 of 6,100
 entities, 7,894 of 24,336 positions, both reporting periods, ownership fractions
 included). The four exposure pairs above reproduce to the dollar and `npm run selfcheck`
-asserts it; the milliseconds do not carry over, because the demo times function calls
-rather than an API and a store. See `web/README.md`.
+asserts it against the same `demo-summary.json` this block was generated from. The
+milliseconds do not carry over, because the demo times function calls rather than an API
+and a store, so the page quotes the measured latency and labels it with the run that
+produced it. `make web` also asserts the payload weight and regenerates the slice to
+check it against the committed copy. See `web/README.md`.
 
 ## Components
 
@@ -117,7 +131,7 @@ rather than an API and a store. See `web/README.md`.
 | `api/` | Java 21, Spring Boot 3.5, Caffeine, Micrometer, Testcontainers | SPARQL client, query templates, cost guard, lineage and exposure services, REST endpoints, store health indicator and ops overview |
 | `explorer/` | Angular 22 standalone, d3 7, vitest | search, force-directed neighbour graph with expand-on-click, lineage tree, exposure panel with path explanations |
 | `deploy/` | Docker Compose | Fuseki stack, Fuseki inference profile, Stardog stack, multi-stage Dockerfiles, nginx proxy for the explorer |
-| `web/` | Vite, React 18, TypeScript, d3 7 | Static browser demo over a committed slice of the sample, no backend |
+| `web/` | Vite, React 18, TypeScript, d3-force 3 | Static browser demo over a committed slice of the sample, no backend |
 
 ## API
 
@@ -234,8 +248,8 @@ Named graphs: `https://tradegraph.dev/graph/entities`, `.../positions`,
 
 ## Tests
 
-- `etl/`: 40 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, and 13F information table parsing.
-- `api/`: 56 unit tests (SPARQL escaping and id validation, bounded property paths, inline data blocks, template rendering, the cost guard, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 27 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms (observed max 153 ms on an idle host, 1,023 ms with the host under load).
+- `etl/`: 47 pytest tests covering RDF mapping, period parsing, ownership fractions and their assumed flag, sample size (>= 5,000 entities), the two reporting periods in the sample, an injected `subsidiaryOf` cycle and dangling reference, SHACL conformance, incremental loads that push only the graph that moved, lineage depth, idempotent Graph Store loads against an in-process server, 13F information table parsing, the live path against recorded EDGAR responses (including that it emits no `subsidiaryOf` triple), and the triple and entity counts the browser demo's manifest records.
+- `api/`: 60 unit tests (SPARQL escaping and id validation, position identifiers, bounded property paths, inline data blocks, template rendering, the cost guard over every shipped template, query timings, lineage ordering, exposure path building, position delta matching, ownership products, concentration ranking, quality report reading) and 34 integration tests with Testcontainers Fuseki, including `TemporalIT` over a two period store, `ReasoningParityIT` against a Fuseki rule reasoner, `NeighborLimitIT` over an issuer with more holders than the row limit allows, `ExplorerGraphIT` over the full sample (the neighbour, lineage and concentration endpoints the explorer calls, where Apple's five subsidiary edges have to survive the fifteen row request the explorer makes and a fund family's concentration page stays capped while the count above the threshold covers the whole family), and `ExposurePerformanceIT`, which loads the full sample and asserts that uncached exposure answers stay under 1,500 ms. The two runs recorded in `docs/benchmarks/2026-09-15-exposure-latency.txt` measured maxima of 338 ms and 666 ms, and means of 199 ms and 350 ms, over 12 pairs against the full sample in a Testcontainers Fuseki on JDK 21 and a 10 core arm64 host that was running other work at the time; the spread between them is host load, not a code change. The test writes that file on every run, CI keeps it as an artifact, and `make bench` reproduces it.
 - `explorer/`: 9 vitest specs (API client URLs, graph merging, exposure panel rendering, weighted values, the period selector, app shell) plus ESLint and a production build.
 
 See `ARCHITECTURE.md` for the query design and `CONTRIBUTING.md` for the workflow.

@@ -1,0 +1,10 @@
+# Value held by ${fund} and every fund in its family for the reporting period bound by
+# the inline data block, and how many distinct issuers hold it. One row, so the size of
+# the answer does not grow with the family: the ranked page comes from concentration.rq.
+SELECT (COALESCE(SUM(?v), 0) AS ?total) (COUNT(DISTINCT ?issuerEntity) AS ?issuers)
+WHERE {
+  ${periodValues}
+  ${holderClause}
+  ?holder tg:holds ?pos .
+  ?pos tg:issuer ?issuerEntity ; tg:value ?v ; tg:asOf ?d .
+}

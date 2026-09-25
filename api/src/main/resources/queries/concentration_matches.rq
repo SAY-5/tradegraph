@@ -1,0 +1,17 @@
+# How many issuers reach ${floor} of what ${fund}'s family holds in the period bound by
+# the inline data block. One row. The page of lines itself is concentration.rq, which
+# applies the same HAVING clause and then a LIMIT, so the count and the page agree while
+# neither returns a row per issuer the family happens to hold.
+SELECT (COUNT(*) AS ?matches)
+WHERE {
+  { SELECT ?issuerEntity (SUM(?v) AS ?value)
+    WHERE {
+      ${periodValues}
+      ${holderClause}
+      ?holder tg:holds ?pos .
+      ?pos tg:issuer ?issuerEntity ; tg:value ?v ; tg:asOf ?d .
+    }
+    GROUP BY ?issuerEntity
+    HAVING (SUM(?v) >= ${floor})
+  }
+}

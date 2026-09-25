@@ -1,4 +1,4 @@
-"""Command line entry point: ``tradegraph-etl build|load|stats``."""
+"""Command line entry point: ``tradegraph-etl build|load|validate|stats``."""
 
 from __future__ import annotations
 
@@ -34,7 +34,12 @@ def main() -> None:
 @click.option("--live", "use_live", is_flag=True, help="Pull from SEC EDGAR.")
 @click.option("--sample-dir", type=click.Path(path_type=Path), default=DEFAULT_SAMPLE_DIR)
 @click.option("--user-agent", envvar="SEC_USER_AGENT", default=None)
-@click.option("--funds", type=int, default=None, help="Live mode: number of default 13F filers.")
+@click.option(
+    "--funds",
+    type=int,
+    default=None,
+    help="Live mode: how many of the default 13F filers to read.",
+)
 @click.option("--fund-cik", "fund_ciks", multiple=True, help="Live mode: 13F filer CIK.")
 @click.option("--issuer-limit", type=int, default=None)
 @click.option("--ontology", type=click.Path(path_type=Path), default=ONTOLOGY_PATH)
@@ -53,6 +58,11 @@ def build(
 
         if not user_agent:
             raise click.UsageError("--user-agent or SEC_USER_AGENT is required in live mode")
+        if funds is not None and funds > len(DEFAULT_13F_FILERS):
+            raise click.UsageError(
+                f"--funds {funds} is more than the {len(DEFAULT_13F_FILERS)} default "
+                "filers this build knows; name others with --fund-cik"
+            )
         ciks = list(fund_ciks) or (DEFAULT_13F_FILERS[:funds] if funds else None)
         ds = build_live(EdgarClient(user_agent), ciks, issuer_limit, log=click.echo)
     problems = transform.validate(ds)

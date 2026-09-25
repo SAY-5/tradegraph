@@ -49,7 +49,6 @@ public class SparqlClient {
     }
 
     private JsonNode execute(String template, String query) {
-        QueryGuard.rejectUnboundedPaths(query);
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("query", query);
         if (reasoning) {

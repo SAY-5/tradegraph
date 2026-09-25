@@ -40,6 +40,14 @@ const REQUIRED_ISSUER_TICKERS = [
 ];
 /** Fund families the README demo grid names. */
 const REQUIRED_FUND_TICKERS = ['BLK', 'IVZ', 'TROW', 'BEN', 'STT', 'AMP', 'TPG'];
+/**
+ * The templates the Path Lab renders, plus the prefixes block each one needs. The other
+ * templates in queries/ are not shown, so embedding them would ship bytes to every visitor
+ * that nothing on the page reads.
+ */
+const PATH_LAB_TEMPLATES = [
+  'prefixes', 'exposure', 'concentration', 'lineage_up', 'lineage_down', 'neighbors',
+];
 
 const TG = 'https://tradegraph.dev/ontology#';
 const ENTITY_NS = 'https://tradegraph.dev/entity/';
@@ -208,7 +216,8 @@ interface OntologyTriple { s: string; p: string; o: Term }
 /**
  * Turtle reader for the subset ontology/tradegraph.ttl uses: prefix declarations,
  * subject/predicate/object statements with ';' and ',' continuations, IRIs, prefixed
- * names, 'a', and plain string literals. Checked against rdflib: 140 triples.
+ * names, 'a', and plain string literals. The count this produces is asserted against
+ * rdflib in etl/tests/test_manifest_parity.py, which reads the manifest written here.
  */
 function parseTurtle(text: string): OntologyTriple[] {
   const prefixes = new Map<string, string>();
@@ -302,7 +311,8 @@ function descendants(childrenOf: Map<string, string[]>, root: string, depth: num
 /**
  * Materialises the triples the Python ETL would write for these records and returns the
  * size of the deduplicated set, so the counts in the manifest are counted, not estimated.
- * Verified against `rdflib` on the whole sample: 207,095 triples.
+ * The figure this returns for the whole sample is asserted against the count rdflib
+ * produces in etl/tests/test_manifest_parity.py, so neither can drift alone.
  */
 function countTriples(
   entities: Entity[],
@@ -508,8 +518,7 @@ function main(): void {
     ]),
     // The SPARQL the API sends, quoted next to the in-browser equivalent.
     queries: Object.fromEntries(
-      ['prefixes', 'exposure', 'lineage_up', 'lineage_down', 'neighbors', 'search', 'stats',
-        'periods', 'ownership', 'concentration', 'trades']
+      PATH_LAB_TEMPLATES
         .map((name) => [
           name,
           readFileSync(join(REPO, 'api', 'src', 'main', 'resources', 'queries', `${name}.rq`), 'utf8').trimEnd(),

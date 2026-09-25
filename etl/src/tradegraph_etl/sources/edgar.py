@@ -1,7 +1,11 @@
-"""Live source: pull issuers, 13F-HR holdings and subsidiaries from SEC EDGAR.
+"""Live source: pull issuers and 13F-HR holdings from SEC EDGAR.
 
 EDGAR asks for a descriptive User-Agent with contact details and allows at
 most ten requests per second; ``EdgarClient`` enforces both.
+
+There is no Exhibit 21 reader here, so ``build_live`` sets no ``Entity.parent``
+and the transform emits no ``tg:subsidiaryOf`` edge from live data. Lineage and
+the exposure legs that walk it come from the committed sample (``--sample``).
 """
 
 from __future__ import annotations

@@ -124,7 +124,12 @@ export function OntologyMap() {
 
         <div className="grid grid--wide-side" style={{ marginTop: 24 }}>
           <div className="canvas">
-            <svg viewBox="0 0 940 480" role="img" aria-label="TradeGraph ontology class and property diagram">
+            {/* role="group", not role="img": the boxes and arrows below are focusable buttons. */}
+            <svg
+              viewBox="0 0 940 480"
+              role="group"
+              aria-label="TradeGraph ontology class and property diagram"
+            >
               <defs>
                 <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
                   <path d="M0,0 L8,4 L0,8 z" fill="currentColor" />
@@ -156,7 +161,11 @@ export function OntologyMap() {
                     onMouseEnter={() => setActive(edge.key)}
                     onFocus={() => setActive(edge.key)}
                     onClick={() => setActive(edge.key)}
-                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setActive(edge.key); }}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' && event.key !== ' ') return;
+                      event.preventDefault();
+                      setActive(edge.key);
+                    }}
                     style={{ cursor: 'pointer' }}
                   >
                     <path
@@ -188,7 +197,11 @@ export function OntologyMap() {
                   onMouseEnter={() => setActive(box.key)}
                   onFocus={() => setActive(box.key)}
                   onClick={() => setActive(box.key)}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setActive(box.key); }}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    setActive(box.key);
+                  }}
                 >
                   <rect x={box.x} y={box.y} width={box.w} height={box.h} />
                   <text x={box.x + box.w / 2} y={box.y + box.h / 2 + 4} textAnchor="middle">

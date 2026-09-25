@@ -44,6 +44,15 @@ class SparqlValuesTest {
     }
 
     @Test
+    void positionIdStripsItsOwnNamespaceAndLeavesAnythingElseAlone() {
+        assertThat(SparqlValues.positionId("https://tradegraph.dev/position/0000000002-24-000001/0"))
+                .isEqualTo("0000000002-24-000001/0");
+        assertThat(SparqlValues.positionId("https://tradegraph.dev/entity/0000320193"))
+                .isEqualTo("https://tradegraph.dev/entity/0000320193");
+        assertThat(SparqlValues.positionId(null)).isNull();
+    }
+
+    @Test
     void literalNeutralisesInjectionAttempt() {
         String attack = "\") } ?s ?p ?o . FILTER(\"";
         String literal = SparqlValues.literal(attack);

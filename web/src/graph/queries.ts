@@ -426,6 +426,8 @@ export function exposure(
 /* --------------------------------------------------------------- neighbors */
 
 const REL_ORDER = ['HELD_BY', 'HOLDS', 'PARENT', 'SUBSIDIARY'] as const;
+/** neighbors.rq ranks lineage ahead of holdings with ?prio, so the limit drops holdings. */
+const REL_PRIO: Record<Rel, number> = { PARENT: 0, SUBSIDIARY: 0, HOLDS: 1, HELD_BY: 1 };
 type Rel = typeof REL_ORDER[number];
 
 export function neighbors(store: TripleStore, id: string, limit = 40): NeighborGraph {
@@ -459,8 +461,8 @@ export function neighbors(store: TripleStore, id: string, limit = 40): NeighborG
     if (other) rows.push({ other: other.id, name: other.name, rel: 'HELD_BY', weight });
   }
 
-  // ORDER BY ?rel DESC(?weight) ?otherName LIMIT n.
-  rows.sort((a, b) => (REL_ORDER.indexOf(a.rel) - REL_ORDER.indexOf(b.rel))
+  // ORDER BY ?prio DESC(?weight) ?otherName LIMIT n.
+  rows.sort((a, b) => (REL_PRIO[a.rel] - REL_PRIO[b.rel])
     || (b.weight - a.weight)
     || a.name.localeCompare(b.name));
 

@@ -1,3 +1,4 @@
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Explorer } from './components/Explorer';
 import { ExposureSection } from './components/ExposureSection';
 import { FullRun } from './components/FullRun';
@@ -37,12 +38,12 @@ export function App() {
 
       <main id="main">
         <div id="top" />
-        <Hero reduced={reduced} />
-        <OntologyMap />
-        <Explorer reduced={reduced} />
-        <ExposureSection reduced={reduced} />
-        <PathLab reduced={reduced} />
-        <FullRun />
+        <ErrorBoundary section="hero"><Hero reduced={reduced} /></ErrorBoundary>
+        <ErrorBoundary section="ontology"><OntologyMap /></ErrorBoundary>
+        <ErrorBoundary section="explorer"><Explorer reduced={reduced} /></ErrorBoundary>
+        <ErrorBoundary section="exposure"><ExposureSection reduced={reduced} /></ErrorBoundary>
+        <ErrorBoundary section="paths"><PathLab reduced={reduced} /></ErrorBoundary>
+        <ErrorBoundary section="run"><FullRun /></ErrorBoundary>
       </main>
 
       <SiteFooter />

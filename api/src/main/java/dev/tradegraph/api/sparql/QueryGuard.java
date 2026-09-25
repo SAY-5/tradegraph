@@ -6,8 +6,15 @@ import java.util.regex.Pattern;
  * Cost guard. Two things make a query on this graph unbounded in practice: a property path
  * with {@code *} or {@code +}, which walks the whole lineage closure, and a depth larger
  * than the store is configured for, which expands into an alternation the store then has to
- * evaluate branch by branch. The API never renders either, so a guard failure is a defect in
- * a template or a request that asked for more than the configuration allows.
+ * evaluate branch by branch.
+ *
+ * <p>The two are checked in different places because only one of them depends on the
+ * request. A property path can only come from a template or from {@link SparqlPaths}, so
+ * {@link QueryTemplates} checks every template as it loads it and a failure is a defect in
+ * the repository, caught at startup. Depth comes from the request, so {@link #depth} is
+ * checked per request and answers 422. Scanning a rendered query instead would read the
+ * quoted literals a caller supplied: a search for {@code tg:x+} contains the pattern and is
+ * a perfectly ordinary search term.
  */
 public final class QueryGuard {
 
@@ -29,10 +36,15 @@ public final class QueryGuard {
         return Math.max(requested, 1);
     }
 
-    /** Rejects a rendered query that walks an unbounded property path. */
+    /** Rejects SPARQL that walks an unbounded property path. */
     public static void rejectUnboundedPaths(String query) {
-        if (UNBOUNDED_PATH.matcher(query).find()) {
-            throw new QueryCostException("query walks an unbounded property path");
+        rejectUnboundedPaths("query", query);
+    }
+
+    /** The same check, naming what carried the path so a template defect points at itself. */
+    public static void rejectUnboundedPaths(String what, String sparql) {
+        if (UNBOUNDED_PATH.matcher(sparql).find()) {
+            throw new QueryCostException(what + " walks an unbounded property path");
         }
     }
 }

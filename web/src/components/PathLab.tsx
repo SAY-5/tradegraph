@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import queriesSource from '../graph/queries.ts?raw';
-import { boundedPath, graph, resolvePeriod, SUBSIDIARY_OF } from '../graph';
+import { boundedPath, DEFAULT_MIN_SHARE, graph, resolvePeriod, SUBSIDIARY_OF } from '../graph';
 import {
   renderConcentration, renderExposure, renderLineageDown, renderLineageUp, renderNeighbors,
 } from '../graph/sparql';
@@ -49,6 +49,10 @@ const QUERIES: { key: QueryKey; file: string; fn: string; blurb: string }[] = [
     blurb: 'Four subqueries unioned: parent, subsidiaries, strongest holdings, strongest holders.',
   },
 ];
+
+/** The family and page size the concentration tab renders, matching the API's defaults. */
+const CONCENTRATION_FUND = '0001113169';
+const CONCENTRATION_LIMIT = 10;
 
 const SUBJECTS = [
   { id: '0000320193', label: 'Apple Inc.' },
@@ -135,8 +139,12 @@ export function PathLab({ reduced }: { reduced: boolean }) {
     switch (queryKey) {
       case 'exposure':
         return renderExposure(store, '0001880661', '0001691493', true, true, depth, resolvePeriod(store));
-      case 'concentration':
-        return renderConcentration(store, '0001113169', resolvePeriod(store));
+      case 'concentration': {
+        // The floor the API would send: the default threshold times this family's total.
+        const family = graph.concentration(CONCENTRATION_FUND, CONCENTRATION_LIMIT).value;
+        return renderConcentration(store, CONCENTRATION_FUND, resolvePeriod(store),
+          family.totalValue * DEFAULT_MIN_SHARE, CONCENTRATION_LIMIT);
+      }
       case 'lineage_up':
         return renderLineageUp(store, subject, depth);
       case 'neighbors':

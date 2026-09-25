@@ -1,0 +1,44 @@
+@prefix tg:  <https://tradegraph.dev/ontology#> .
+@prefix e:   <https://tradegraph.dev/entity/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# An issuer with more holders than a neighbour request asks rows for, so the row
+# limit has to choose between lineage edges and holding edges.
+
+e:0000000010 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;
+    tg:name "Hub Corp" ; tg:cik "0000000010" ; tg:ticker "HUB" ;
+    tg:subsidiaryOf e:0000000009 ; tg:ownershipFraction 1.0 ; tg:ownershipAssumed true .
+e:0000000009 a tg:LegalEntity, tg:Counterparty, tg:Issuer ;
+    tg:name "Hub Group Holdings" ; tg:cik "0000000009" .
+e:0000000009 tg:hasSubsidiary e:0000000010 .
+
+e:S00001001 a tg:LegalEntity, tg:Subsidiary ;
+    tg:name "Hub Finance Corp." ; tg:jurisdiction "DE" ;
+    tg:subsidiaryOf e:0000000010 ; tg:ownershipFraction 1.0 ; tg:ownershipAssumed true .
+e:S00001002 a tg:LegalEntity, tg:Subsidiary ;
+    tg:name "Hub Services LLC" ; tg:jurisdiction "DE" ;
+    tg:subsidiaryOf e:0000000010 ; tg:ownershipFraction 0.9 ; tg:ownershipAssumed false .
+e:0000000010 tg:hasSubsidiary e:S00001001, e:S00001002 .
+
+e:0000000101 a tg:LegalEntity, tg:Counterparty, tg:Fund ; tg:name "Alpha Fund" .
+e:0000000102 a tg:LegalEntity, tg:Counterparty, tg:Fund ; tg:name "Bravo Fund" .
+e:0000000103 a tg:LegalEntity, tg:Counterparty, tg:Fund ; tg:name "Charlie Fund" .
+e:0000000104 a tg:LegalEntity, tg:Counterparty, tg:Fund ; tg:name "Delta Fund" .
+e:0000000105 a tg:LegalEntity, tg:Counterparty, tg:Fund ; tg:name "Echo Fund" .
+
+<https://tradegraph.dev/position/holders-24-000001/1> a tg:Position ; tg:heldBy e:0000000101 ; tg:issuer e:0000000010 ;
+    tg:quantity 500 ; tg:value 5000.0 ; tg:asOf "2024-06-30"^^xsd:date .
+<https://tradegraph.dev/position/holders-24-000001/2> a tg:Position ; tg:heldBy e:0000000102 ; tg:issuer e:0000000010 ;
+    tg:quantity 400 ; tg:value 4000.0 ; tg:asOf "2024-06-30"^^xsd:date .
+<https://tradegraph.dev/position/holders-24-000001/3> a tg:Position ; tg:heldBy e:0000000103 ; tg:issuer e:0000000010 ;
+    tg:quantity 300 ; tg:value 3000.0 ; tg:asOf "2024-06-30"^^xsd:date .
+<https://tradegraph.dev/position/holders-24-000001/4> a tg:Position ; tg:heldBy e:0000000104 ; tg:issuer e:0000000010 ;
+    tg:quantity 200 ; tg:value 2000.0 ; tg:asOf "2024-06-30"^^xsd:date .
+<https://tradegraph.dev/position/holders-24-000001/5> a tg:Position ; tg:heldBy e:0000000105 ; tg:issuer e:0000000010 ;
+    tg:quantity 100 ; tg:value 1000.0 ; tg:asOf "2024-06-30"^^xsd:date .
+
+e:0000000101 tg:holds <https://tradegraph.dev/position/holders-24-000001/1> .
+e:0000000102 tg:holds <https://tradegraph.dev/position/holders-24-000001/2> .
+e:0000000103 tg:holds <https://tradegraph.dev/position/holders-24-000001/3> .
+e:0000000104 tg:holds <https://tradegraph.dev/position/holders-24-000001/4> .
+e:0000000105 tg:holds <https://tradegraph.dev/position/holders-24-000001/5> .
