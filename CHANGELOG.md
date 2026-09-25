@@ -58,6 +58,7 @@ position at face value.
 - `GET /exposure/concentration?entity=&limit=&min_share=` lists the issuers that make up at least a share of what a fund family holds, largest first, with `tradegraph.exposure.min-share` as the default threshold.
 - The explorer exposure panel gains a weighted toggle and shows the ownership behind each line.
 - Tests: 32 ETL pytest, 43 API unit and 21 Testcontainers integration, 9 explorer specs.
+- `web/`: the browser demo page itself: hero, ontology map, explorer with the force graph and lineage tree, exposure section, property path lab and the full run block, with `web/README.md` and a link from the top-level README.
 
 ## [2.0.0] - 2026-09-10
 
@@ -71,6 +72,7 @@ per quarter.
 - `GET /periods` lists the periods held in the store and `GET /positions/delta?entity=&from=&to=` reports the lines a holder opened, closed and moved.
 - The explorer exposure panel gains a period selector and shows the period each answer was computed over.
 - Tests: 30 ETL pytest, 35 API unit and 19 Testcontainers integration, 8 explorer specs.
+- `web/`: the browser demo's in-memory triple store, the query functions that mirror the API hop for hop, and `scripts/extract-slice.ts`, which commits a deterministic slice of the ETL sample with a manifest that `scripts/selfcheck.ts` asserts.
 
 ## [1.0.0] - 2026-09-10
 
@@ -85,3 +87,4 @@ graph, a corporate tree and an exposure breakdown.
 - Explorer search, force-directed neighbour graph, lineage tree and exposure panel with a path explanation per line.
 - Deployment stacks for Apache Jena Fuseki and Stardog, plus `make demo`.
 - Tests: 20 ETL pytest, 30 API unit and 12 Testcontainers integration, 7 explorer specs.
+- `web/`: Vite, React and TypeScript scaffold for the browser demo; no page yet.

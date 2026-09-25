@@ -4,7 +4,7 @@ A static page that answers TradeGraph's lineage and exposure questions without t
 the store or Docker. Vite, React 18, TypeScript, d3-force. Deployed as a plain static site.
 
 ```
-npm install
+npm ci
 npm run dev         # local dev server
 npm run build       # type check and bundle into dist/
 npm run selfcheck   # the assertions the script lists, against the demo summary and the manifest

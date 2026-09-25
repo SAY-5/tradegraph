@@ -166,10 +166,10 @@ repository rather than treated as a brochure.
 - Query parity. `src/graph/queries.ts` follows the Spring Boot services hop for
   hop, and `src/graph/sparql.ts` renders `queries/*.rq` with the same
   substitution and the same bounded path expansion `QueryTemplates` and
-  `SparqlPaths` use. The slice embeds the six templates the property path lab
-  shows, and the self check asserts each one is byte identical to the file the
-  API renders, so the SPARQL on the page cannot drift from the SPARQL in this
-  repository. CI regenerates the slice and fails on any diff.
+  `SparqlPaths` use. The slice embeds the prefix file and the five templates the
+  property path lab shows, and the self check asserts each one is byte identical
+  to the file the API renders, so the SPARQL on the page cannot drift from the
+  SPARQL in this repository. CI regenerates the slice and fails on any diff.
 - The two depth caps come from `application.yml`: lineage 5, exposure 4.
 - Measured against quoted. Every figure on the page is computed in the browser
   except the exposure latency, which is read from
