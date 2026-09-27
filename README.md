@@ -53,10 +53,12 @@ make explorer     # Angular dev server on :4200, proxies /api to :8080
 
 `make demo` output, unedited. `scripts/demo_queries.py` writes the same figures to
 `web/src/data/demo-summary.json` with the commit, host and timestamp of the run, which is
-what the browser demo quotes and what the self check asserts against. The block was
-captured at commit 3fb28dd on a 10 core arm64 host that was running other work at the
-same time, so the millisecond columns are higher than an idle machine would report; the
-counts and the dollar totals are deterministic and reproduce exactly:
+what the browser demo quotes and what the self check asserts against. The self check also
+parses this block and the commit and host in the next sentence, and fails if any figure
+they share with that file differs. The block was captured at commit 3fb28dd on a 10 core
+arm64 host that was running other work at the same time, so the millisecond columns are
+higher than an idle machine would report; the counts and the dollar totals are
+deterministic and reproduce exactly:
 
 ```
 TradeGraph demo summary
