@@ -265,6 +265,7 @@ Tagged releases, newest last. `CHANGELOG.md` has the detail.
 | [v3.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v3.0.0) | 2026-09-10 | Ownership weighting: fractions on `subsidiaryOf` edges, weighted exposure, `/exposure/concentration` |
 | [v4.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v4.0.0) | 2026-09-10 | Data quality: SHACL shapes, `tradegraph-etl validate`, `/quality`, incremental `load --since` |
 | [v5.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v5.0.0) | 2026-09-10 | Operations: `/ops/overview`, query cost guard, Micrometer timers, Fuseki inference profile |
+| [v5.1.0](https://github.com/SAY-5/tradegraph/releases/tag/v5.1.0) | 2026-09-26 | Correctness and provenance: neighbour row ordering, bounded `/exposure/concentration`, cost guard at template load, measured figures on the demo page, `web` CI job |
 
 ## License
 
