@@ -366,6 +366,15 @@ const readme = readFileSync(join(WEB, '..', 'README.md'), 'utf8');
 const block = readme.match(/^```\n(TradeGraph demo summary\n[\s\S]*?)^```$/m)?.[1] ?? '';
 ok('README.md carries the demo block', block.length > 0);
 const grouped = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+/**
+ * Whole dollars as demo_queries.py prints them: its `f"${v:,.0f}"` rounds a tie to the even
+ * neighbour, where Math.round would take 100.5 to 101 and the block says 100.
+ */
+const wholeDollars = (v: number): number => {
+  const floor = Math.floor(v);
+  if (v - floor !== 0.5) return Math.round(v);
+  return floor % 2 === 0 ? floor : floor + 1;
+};
 /** The figures one line of the block carries, space separated, or which line is missing. */
 const quoted = (text: string, pattern: RegExp): string =>
   text.match(pattern)?.slice(1).join(' ') ?? `no line matching ${pattern}`;
@@ -390,7 +399,7 @@ const pairsInBlock = [...block.matchAll(
 eq('top pairs listed', pairsInBlock.length, demoSummary.topPairs.length);
 demoSummary.topPairs.forEach((pair, i) => {
   eq(`top pair ${i + 1}`, pairsInBlock[i] ?? 'missing',
-    `${pair.fund} -> ${pair.issuer}, $${grouped(Math.round(pair.totalValue))}, ${pair.millis} ms`);
+    `${pair.fund} -> ${pair.issuer}, $${grouped(wholeDollars(pair.totalValue))}, ${pair.millis} ms`);
 });
 eq('pairs with exposure and latency',
   quoted(block, /^ {2}(\d+)\/(\d+) pairs have exposure; latency p50 (\d+) ms, max (\d+) ms /m),
