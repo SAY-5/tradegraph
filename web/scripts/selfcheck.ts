@@ -322,10 +322,15 @@ const demoSummary = JSON.parse(
   readFileSync(join(WEB, 'src', 'data', 'demo-summary.json'), 'utf8'),
 ) as {
   store: string;
+  endpoint: string;
   provenance: { commit: string; host: string; measuredAt: string };
   dataset: Record<string, number>;
-  exposure: { queries: number; pairsWithExposure: number; p50Millis: number; maxMillis: number };
-  topPairs: { fund: string; issuer: string; totalValue: number }[];
+  statsQueryMillis: number;
+  exposure: {
+    queries: number; pairsWithExposure: number; p50Millis: number; maxMillis: number;
+    cachedRepeatMillis: number;
+  };
+  topPairs: { fund: string; issuer: string; totalValue: number; millis: number }[];
 };
 
 eq('the summary names the store it measured', demoSummary.store, 'fuseki');
@@ -350,6 +355,52 @@ for (const pair of demoSummary.topPairs) {
     computedTotals.has(Math.round(pair.totalValue)),
     `${Math.round(pair.totalValue)}`);
 }
+
+/*
+ * The README pastes the block scripts/demo_queries.py printed in the run that wrote
+ * demo-summary.json. Each figure the two share is read back out of the block and compared,
+ * so a re-measured summary with a stale paste, or a hand edit to either, fails here.
+ */
+group('the README demo block quotes the same run as the demo summary');
+const readme = readFileSync(join(WEB, '..', 'README.md'), 'utf8');
+const block = readme.match(/^```\n(TradeGraph demo summary\n[\s\S]*?)^```$/m)?.[1] ?? '';
+ok('README.md carries the demo block', block.length > 0);
+const grouped = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+/** The figures one line of the block carries, space separated, or which line is missing. */
+const quoted = (text: string, pattern: RegExp): string =>
+  text.match(pattern)?.slice(1).join(' ') ?? `no line matching ${pattern}`;
+const dataset = demoSummary.dataset;
+const measured = demoSummary.exposure;
+
+eq('store', quoted(block, /^store\s+: (\S+) \((\S+)\)$/m),
+  `${demoSummary.store} ${demoSummary.endpoint}`);
+eq('entities loaded',
+  quoted(block, /^entities loaded\s+: ([\d,]+) \(issuers ([\d,]+), funds ([\d,]+), subsidiaries ([\d,]+)\)$/m),
+  [dataset.entities, dataset.issuers, dataset.funds, dataset.subsidiaries].map(grouped).join(' '));
+eq('positions', quoted(block, /^positions\s+: ([\d,]+) in ([\d,]+) filings$/m),
+  [dataset.positions, dataset.filings].map(grouped).join(' '));
+eq('lineage edges', quoted(block, /^lineage edges\s+: ([\d,]+)$/m), grouped(dataset.lineageEdges));
+eq('triples', quoted(block, /^triples\s+: ([\d,]+)$/m), grouped(dataset.triples));
+eq('stats query', quoted(block, /^stats query\s+: (\d+) ms$/m), String(demoSummary.statsQueryMillis));
+eq('exposure queries', quoted(block, /^Exposure \(.*, (\d+) queries\)$/m), String(measured.queries));
+
+const pairsInBlock = [...block.matchAll(
+  /^ {2}(?!exposure through| )(.+) -> (.+)\n {4}total \$([\d,]+) .*\n {4}.*, (\d+) ms$/gm,
+)].map((m) => `${m[1]} -> ${m[2]}, $${m[3]}, ${m[4]} ms`);
+eq('top pairs listed', pairsInBlock.length, demoSummary.topPairs.length);
+demoSummary.topPairs.forEach((pair, i) => {
+  eq(`top pair ${i + 1}`, pairsInBlock[i] ?? 'missing',
+    `${pair.fund} -> ${pair.issuer}, $${grouped(Math.round(pair.totalValue))}, ${pair.millis} ms`);
+});
+eq('pairs with exposure and latency',
+  quoted(block, /^ {2}(\d+)\/(\d+) pairs have exposure; latency p50 (\d+) ms, max (\d+) ms /m),
+  [measured.pairsWithExposure, measured.queries, measured.p50Millis, measured.maxMillis].join(' '));
+eq('cached repeat', quoted(block, /^ {2}repeated query served from cache in (\d+) ms$/m),
+  String(measured.cachedRepeatMillis));
+
+const host = demoSummary.provenance.host.match(/ (\S+), (\d+) cores$/);
+eq('the run the prose names', quoted(readme, /captured\s+at\s+commit\s+(\w+)\s+on\s+a\s+(\d+)\s+core\s+(\S+)\s+host/),
+  `${demoSummary.provenance.commit} ${host?.[2]} ${host?.[1]}`);
 
 process.stdout.write(`\n${checks - failures}/${checks} checks passed\n`);
 if (failures > 0) process.exit(1);
