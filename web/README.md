@@ -94,11 +94,12 @@ Measured by `npm run weight` on the committed slice at this commit: 844,744 B on
 pins; Node 26.3.0 links the same zlib and prints the same total. The gzip figure is the one
 number here that depends on the toolchain rather than on the bundle: at 6c8c8aa, whose three
 files measured 240,873 B under that zlib, the same files measured 243,343 B, 238 KiB, under
-Node 26.7.0 with zlib 1.2.12, which is 2,470 B more on identical input. The script prints the Node and zlib versions beside the total for that
-reason, and the bytes on disk were the same under every Node tested. Most of it is the
-slice, 572 KiB of JSON embedded in the bundle. The script fails above 1,100,000 B on disk
-or 300,000 B gzipped, so a payload that doubles is a failed check rather than a slower
-page, and both gzip figures stay under that ceiling.
+Node 26.7.0 with zlib 1.2.12, which is 2,470 B more on identical input. The script prints
+the Node and zlib versions beside the total for that reason, and the bytes on disk were the
+same under every Node tested. Most of it is the slice, 572 KiB of JSON embedded in the
+bundle. The script fails above 1,100,000 B on disk or 300,000 B gzipped, so a payload that
+doubles is a failed check rather than a slower page, and both gzip figures stay under that
+ceiling.
 
 Runtime dependencies are `react`, `react-dom` and `d3-force`. The built page makes four
 third-party requests across two hosts: one stylesheet from `fonts.googleapis.com`, which
