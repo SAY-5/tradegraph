@@ -88,13 +88,13 @@ the host and the timestamp of the run that produced it.
 
 ## Payload
 
-Measured by `npm run weight` on the committed slice at this commit: 843,746 B on disk and
-240,873 B gzipped, which is 824 KiB and 235 KiB, across one JS bundle, one stylesheet and
+Measured by `npm run weight` on the committed slice at this commit: 844,744 B on disk and
+241,333 B gzipped, which is 825 KiB and 236 KiB, across one JS bundle, one stylesheet and
 `index.html`. That run was Node 22.22.2 with zlib 1.3.1-e00f703, the Node major the CI job
 pins; Node 26.3.0 links the same zlib and prints the same total. The gzip figure is the one
-number here that depends on the toolchain rather than on the bundle: the same three files
-measure 243,343 B, 238 KiB, under Node 26.7.0 with zlib 1.2.12, which is 2,470 B more on
-identical input. The script prints the Node and zlib versions beside the total for that
+number here that depends on the toolchain rather than on the bundle: at 6c8c8aa, whose three
+files measured 240,873 B under that zlib, the same files measured 243,343 B, 238 KiB, under
+Node 26.7.0 with zlib 1.2.12, which is 2,470 B more on identical input. The script prints the Node and zlib versions beside the total for that
 reason, and the bytes on disk were the same under every Node tested. Most of it is the
 slice, 572 KiB of JSON embedded in the bundle. The script fails above 1,100,000 B on disk
 or 300,000 B gzipped, so a payload that doubles is a failed check rather than a slower
