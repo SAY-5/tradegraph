@@ -1,24 +1,27 @@
 # Changelog
 
 All notable changes to TradeGraph are recorded here. Versions follow semantic
-versioning and each one is tagged `vN.0.0`.
+versioning and each one is tagged `vMAJOR.MINOR.PATCH`.
 
-## [Unreleased]
+## [5.1.0] - 2026-09-26
 
 Correctness and provenance pass over the whole repository. No new endpoints:
 the changes make the claims in the documents follow from the code and the data.
 
-- `neighbors.rq` ranks lineage above holdings, so the row limit truncates holdings rather than the parent and subsidiary edges the explorer draws the corporate tree from. Ordering by the relation name sorted `HELD_BY` and `HOLDS` ahead of `PARENT` and `SUBSIDIARY`, which left a well held issuer such as Apple with no lineage edges at the limits the explorer asks for. `NeighborLimitIT` covers it.
+- `neighbors.rq` ranks lineage above holdings, so the row limit truncates holdings rather than the parent and subsidiary edges the explorer draws the corporate tree from. Ordering by the relation name sorted `HELD_BY` and `HOLDS` ahead of `PARENT` and `SUBSIDIARY`, so a well held issuer such as Apple, which has 27 distinct holders and five direct subsidiaries in the sample, kept three of those five lineage edges at the explorer's initial thirty row request and none at its fifteen row expansion. `NeighborLimitIT` covers it, and two of its three cases fail against the previous `ORDER BY`.
 - `ExplorerGraphIT` runs the endpoints the explorer calls against the full sample rather than the six entity fixture, which is where row limits, ordering and truncation behave differently at all: it asserts Apple's five subsidiary edges survive the fifteen row request, the six descendant tree the demo documents, and a concentration page that stays capped while the count above the threshold covers the family.
 - The query cost guard runs over every template as `QueryTemplates` loads it instead of over every rendered query, where the pattern also matched inside a caller's quoted literal and answered 422 to ordinary search terms such as `tg:x+`.
 - `/exposure/concentration` is bounded in the store: a ranked page with `HAVING` and `LIMIT`, plus one row each for the family total and the number of issuers above the threshold. It previously returned a row per issuer the family held, which is up to 276 rows in the committed sample.
+- The property path lab renders the lineage templates again. The committed slice predated the `${directOnly}` placeholder `lineage_up.rq` and `lineage_down.rq` gained, so the page quoted stale SPARQL and regenerating the slice would have thrown on the unresolved placeholder. The browser renderers now pass that parameter the way `LineageService` renders it with reasoning off, the concentration tab renders the floor and the limit the API sends, the self check renders all five tabs and asserts no placeholder survives, and every section of the page sits behind an error boundary.
 - The live ETL path states what it reads. There is no Exhibit 21 reader in `--live`, so it produces holdings and no corporate tree, and a test asserts the transform emits no `subsidiaryOf` triple from live data.
-- `scripts/demo_queries.py --summary` writes `web/src/data/demo-summary.json` with the dataset counts, the exposure latencies and the commit, host and timestamp that produced them. The README demo block and the browser demo both quote that file instead of transcribing numbers.
-- `ExposurePerformanceIT` writes its latencies to `target/benchmarks/exposure-latency.txt` and fails rather than skipping when `TRADEGRAPH_REQUIRE_SAMPLE=1`, which CI now sets, so a missing artifact cannot become a silent pass.
-- CI gained a `web` job: type check, bundle, self check, payload weight, and a slice drift gate that regenerates the slice and fails on any diff. `make web` runs the same steps locally.
-- Browser demo: the hero leads with the figures the page computes and names the full sample beside them, the interactive SVGs are no longer labelled as images, Space activates a node without scrolling the page, the neighbourhood graph has a parallel list of buttons, count up animations announce the settled number once, and the payload dropped the full `d3` package and the five templates the page never shows.
+- `scripts/demo_queries.py --summary PATH` writes the dataset counts, the exposure latencies and the commit, host and timestamp that produced them; `make demo` points it at `web/src/data/demo-summary.json`, and the README demo block and the browser demo both quote that file instead of transcribing numbers.
+- `ExposurePerformanceIT` writes its latencies to `target/benchmarks/exposure-latency.txt` and fails rather than skipping when `TRADEGRAPH_REQUIRE_SAMPLE=1`, which CI now sets, so a missing artifact cannot become a silent pass. CI keeps the file as an artifact and `make bench` reproduces it; `docs/benchmarks/2026-09-15-exposure-latency.txt` records two runs with the dataset, JVM, host and commit behind them, in place of the two exposure latencies the README used to quote with no artifact behind either.
+- CI gained a `web` job: type check, bundle, self check, payload weight against ceilings of 1,100,000 B on disk and 300,000 B gzipped, and a slice drift gate that regenerates the slice and fails on any diff. `make web` runs the same steps locally.
+- Browser demo: the hero leads with the figures the page computes and names the full sample beside them, the interactive SVGs are no longer labelled as images, Space activates a node without scrolling the page, the neighbourhood graph has a parallel list of buttons, count up animations announce the settled number once, the dimmest text token measures 6.25:1 on the page background, and the payload dropped the full `d3` package and the five templates the page never shows.
 - A position id comes from its own namespace constant rather than a string rewrite of the entity namespace.
+- `etl/tests/test_manifest_parity.py` asserts the ontology, triple, entity and position counts in the slice manifest against what rdflib counts over the same sample, so the figures the browser demo commits cannot drift from the ones the ETL produces.
 - Documentation: the cache list, the `--funds` limit, the CLI command list and the contributor lint command now match the code, and the explorer's test fixture records the dataset the sample actually holds.
+- Tests: 47 ETL pytest, 60 API unit and 34 Testcontainers integration, 9 explorer specs, 104 browser demo self check assertions.
 
 ## [5.0.0] - 2026-09-10
 
