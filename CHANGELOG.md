@@ -3,6 +3,18 @@
 All notable changes to TradeGraph are recorded here. Versions follow semantic
 versioning and each one is tagged `vMAJOR.MINOR.PATCH`.
 
+## [5.1.1] - 2026-09-28
+
+Browser demo fixes. Nothing outside `web/` changes apart from the version
+numbers and the documentation.
+
+- The neighbourhood graph places its labels: `ForceGraph.tsx` tries the spot along the spoke, level with the node, above or below it, and on the side facing the centre, and keeps the first that stays inside the view and clears every label already placed and every other node. A label with no such spot is left out, except the centre's, and the node keeps its full name in its accessible name and its tooltip. In 5.1.0 every label was drawn on its spoke with no check against the others.
+- The lists under the graph name every node it draws: one for the selected entity and one per expansion, lineage first and then holdings by value. 5.1.0 had a single list that treated every drawn edge as if it touched the selected entity, so the nodes an expansion added were mostly missing from it; expanding Price T ROWE Global Select Fund from Apple draws 49 nodes and left 16 of them unnamed.
+- `npm run selfcheck` reads the demo block pasted into `README.md` back and fails when a figure it shares with `web/src/data/demo-summary.json` differs, and checks the same figures where the README's browser demo paragraph, `web/README.md`, `etl/sample/README.md` and `ARCHITECTURE.md` quote them. Dollar totals are rounded half to even, as `scripts/demo_queries.py` prints them.
+- `web/README.md` quotes the payload at this commit: 844,919 B on disk and 241,422 B gzipped.
+- The ETL package declares 5.1.1 in `etl/pyproject.toml` and `tradegraph_etl.__version__`, which read 5.0.0 and 1.0.0 in 5.1.0.
+- Tests: 47 ETL pytest, 60 API unit and 34 Testcontainers integration, 9 explorer specs, 135 browser demo self check assertions.
+
 ## [5.1.0] - 2026-09-26
 
 Correctness and provenance pass over the whole repository. No new endpoints:
