@@ -125,8 +125,9 @@ function spotsFor(node: SimNode, centre: { x: number; y: number }, radius: numbe
  * Picks a spot for each label in the order the nodes arrive (the centre, then lineage, then
  * holders by value), taking the first that stays inside the view and clears every label placed
  * so far and every other node. A label with no such spot is not drawn; the node keeps its full
- * name in its accessible name and its tooltip, and the list under the graph names it too. The
- * centre's label is always drawn.
+ * name in its accessible name and its tooltip, and Explorer's lists under the graph, one for the
+ * selected entity and one per expansion, name every node the graph draws. The centre's label is
+ * always drawn.
  */
 function placeLabels(
   nodes: SimNode[],

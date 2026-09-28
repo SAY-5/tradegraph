@@ -37,31 +37,38 @@ export function Explorer({ reduced }: { reduced: boolean }) {
     return combined;
   }, [neighborhood.value, expansions, selected]);
 
-  // The same rows the graph draws, in the order neighbors.rq returns them: lineage first,
-  // then holdings by value. Clicking either expands the same way.
-  const neighbourRows = useMemo(() => {
-    const rows = merged.links.map((link) => {
-      const otherId = link.source === selected ? link.target : link.source;
-      const outgoing = link.source === selected;
-      const direction = link.rel === 'subsidiaryOf'
-        ? (outgoing ? 'parent of the selected entity' : 'subsidiary')
-        : (outgoing ? 'holds' : 'held by');
-      return {
-        id: otherId,
-        name: graph.store.entity(otherId)?.name ?? otherId,
-        rel: link.rel,
-        weight: link.weight,
-        direction,
-      };
+  // The same rows the graph draws, one list per entity whose neighbours are drawn: the selected
+  // entity's first, then each expansion's, so every node the graph shows is named in a list even
+  // when its label is not drawn. Within a list the order is neighbors.rq's: lineage first, then
+  // holdings by value. Clicking a row expands it the way clicking its node does.
+  const neighbourLists = useMemo(() => {
+    const anchors = [selected, ...expansions.filter((id) => id !== selected)];
+    return anchors.map((anchor) => {
+      const seen = new Set<string>();
+      const rows = merged.links
+        .filter((link) => link.source === anchor || link.target === anchor)
+        .map((link) => {
+          const outgoing = link.source === anchor;
+          const otherId = outgoing ? link.target : link.source;
+          const direction = link.rel === 'subsidiaryOf'
+            ? (outgoing ? (anchor === selected ? 'parent of the selected entity' : 'parent') : 'subsidiary')
+            : (outgoing ? 'holds' : 'held by');
+          return {
+            id: otherId,
+            name: graph.store.entity(otherId)?.name ?? otherId,
+            rel: link.rel,
+            weight: link.weight,
+            direction,
+          };
+        })
+        .filter((row) => row.id !== anchor && !seen.has(`${row.id}-${row.rel}`)
+          && seen.add(`${row.id}-${row.rel}`) !== undefined)
+        .sort((a, b) => (a.rel === b.rel ? 0 : a.rel === 'subsidiaryOf' ? -1 : 1)
+          || (b.weight - a.weight)
+          || a.name.localeCompare(b.name));
+      return { anchor, name: graph.store.entity(anchor)?.name ?? anchor, rows };
     });
-    const seen = new Set<string>();
-    return rows
-      .filter((row) => row.id !== selected && !seen.has(`${row.id}-${row.rel}`)
-        && seen.add(`${row.id}-${row.rel}`) !== undefined)
-      .sort((a, b) => (a.rel === b.rel ? 0 : a.rel === 'subsidiaryOf' ? -1 : 1)
-        || (b.weight - a.weight)
-        || a.name.localeCompare(b.name));
-  }, [merged, selected]);
+  }, [merged, selected, expansions]);
 
   const held = graph.store.heldBy.get(selected) ?? [];
   const issued = graph.store.issuedBy.get(selected) ?? [];
@@ -196,34 +203,36 @@ export function Explorer({ reduced }: { reduced: boolean }) {
               <span><i style={{ background: 'var(--accent-line)', borderRadius: 0, height: 2, width: 16 }} />subsidiaryOf</span>
               <span><i style={{ background: 'var(--line-strong)', borderRadius: 0, height: 2, width: 16 }} />holds</span>
             </div>
-            <div className="panel" style={{ marginTop: 16 }}>
-              <p className="control-label">{`neighbours of ${entity?.name ?? selected}`}</p>
-              <ul className="result-list" style={{ marginTop: 8 }}>
-                {neighbourRows.map((row) => (
-                  <li key={`${row.id}-${row.rel}`}>
-                    <button
-                      type="button"
-                      className="result-btn"
-                      onClick={() => expand(row.id)}
-                      aria-current={expanded.has(row.id)}
-                    >
-                      <span className="name">{row.name}</span>
-                      <br />
-                      <span className="meta">
-                        {row.rel === 'subsidiaryOf'
-                          ? `${row.direction} ${row.id}`
-                          : `${row.direction} ${compactMoney(row.weight)}  ${row.id}`}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-                {neighbourRows.length === 0 ? (
-                  <li className="muted" style={{ padding: '10px 4px', fontSize: 13 }}>
-                    No neighbours in the slice.
-                  </li>
-                ) : null}
-              </ul>
-            </div>
+            {neighbourLists.map((list) => (
+              <div className="panel" style={{ marginTop: 16 }} key={list.anchor}>
+                <p className="control-label">{`neighbours of ${list.name}`}</p>
+                <ul className="result-list" style={{ marginTop: 8 }}>
+                  {list.rows.map((row) => (
+                    <li key={`${row.id}-${row.rel}`}>
+                      <button
+                        type="button"
+                        className="result-btn"
+                        onClick={() => expand(row.id)}
+                        aria-current={expanded.has(row.id)}
+                      >
+                        <span className="name">{row.name}</span>
+                        <br />
+                        <span className="meta">
+                          {row.rel === 'subsidiaryOf'
+                            ? `${row.direction} ${row.id}`
+                            : `${row.direction} ${compactMoney(row.weight)}  ${row.id}`}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                  {list.rows.length === 0 ? (
+                    <li className="muted" style={{ padding: '10px 4px', fontSize: 13 }}>
+                      No neighbours in the slice.
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
+            ))}
 
             <div className="stat-row" aria-live="polite">
               <span className="badge">{`${count(merged.nodes.length)} nodes`}</span>
