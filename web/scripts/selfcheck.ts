@@ -406,10 +406,49 @@ eq('pairs with exposure and latency',
   [measured.pairsWithExposure, measured.queries, measured.p50Millis, measured.maxMillis].join(' '));
 eq('cached repeat', quoted(block, /^ {2}repeated query served from cache in (\d+) ms$/m),
   String(measured.cachedRepeatMillis));
+eq('operations store and triples', quoted(block, /^ {2}store\s+: (\S+) reasoning=\S+, ([\d,]+) triples,/m),
+  `${demoSummary.store} ${grouped(dataset.triples)}`);
 
 const host = demoSummary.provenance.host.match(/ (\S+), (\d+) cores$/);
 eq('the run the prose names', quoted(readme, /captured\s+at\s+commit\s+(\w+)\s+on\s+a\s+(\d+)\s+core\s+(\S+)\s+host/),
   `${demoSummary.provenance.commit} ${host?.[2]} ${host?.[1]}`);
+
+/*
+ * The same run's dataset and exposure figures, where other documents quote them outside the
+ * block: the README's browser demo paragraph, the slice table and prose in web/README.md, the
+ * sample's own README and ARCHITECTURE.md.
+ */
+group('the other documents quote the same figures as the demo summary');
+const doc = (path: string) => readFileSync(join(WEB, '..', path), 'utf8');
+const webReadme = doc('web/README.md');
+const sampleReadme = doc('etl/sample/README.md');
+const architecture = doc('ARCHITECTURE.md');
+eq('README browser demo: full sample entities and positions',
+  quoted(readme, /slice of `etl\/sample` \([\d,]+ of ([\d,]+)\s+entities, [\d,]+ of ([\d,]+) positions/),
+  [dataset.entities, dataset.positions].map(grouped).join(' '));
+for (const [row, key] of [
+  ['legal entities', 'entities'], ['positions', 'positions'], ['filings', 'filings'],
+  ['lineage edges', 'lineageEdges'], ['triples', 'triples'],
+] as const) {
+  eq(`web/README table: full sample ${row}`,
+    quoted(webReadme, new RegExp(`^\\| ${row} \\| [\\d,]+ \\| ([\\d,]+) \\|$`, 'm')), grouped(dataset[key]));
+}
+eq('web/README: the triples the page and the ETL agree on',
+  quoted(webReadme, /drift apart at ([\d,]+)\./), grouped(dataset.triples));
+eq('web/README: the three top pair totals',
+  quoted(webReadme, /reproduce to the dollar:\s+\$([\d,]+), \$([\d,]+), \$([\d,]+), and/),
+  demoSummary.topPairs.map((pair) => grouped(wholeDollars(pair.totalValue))).join(' '));
+eq('web/README: pairs with exposure', quoted(webReadme, /the (\d+) of (\d+) pairs with exposure/),
+  `${measured.pairsWithExposure} ${measured.queries}`);
+eq('etl/sample/README: issuers', quoted(sampleReadme, /^\| `issuers\.json` \| First ([\d,]+) issuers .* \| ([\d,]+) \|$/m),
+  `${grouped(dataset.issuers)} ${grouped(dataset.issuers)}`);
+eq('etl/sample/README: funds', quoted(sampleReadme, /^\| `funds\.json` \| .* \| ([\d,]+) \|$/m), grouped(dataset.funds));
+eq('etl/sample/README: subsidiaries', quoted(sampleReadme, /^\| `subsidiaries\.json` \| .* \| ([\d,]+) \|$/m),
+  grouped(dataset.subsidiaries));
+eq('etl/sample/README: positions', quoted(sampleReadme, /^\| `holdings\/\*\.json` \| .* \| [\d,]+ filings, ([\d,]+) positions \|$/m),
+  grouped(dataset.positions));
+eq('etl/sample/README: legal entities', quoted(sampleReadme, /^Total legal entities: ([\d,]+) /m), grouped(dataset.entities));
+eq('ARCHITECTURE: issuers', quoted(architecture, /reads the committed sample: ([\d,]+) issuers/), grouped(dataset.issuers));
 
 process.stdout.write(`\n${checks - failures}/${checks} checks passed\n`);
 if (failures > 0) process.exit(1);
