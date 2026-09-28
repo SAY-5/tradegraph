@@ -30,6 +30,17 @@ const HEIGHT = 500;
 /** Room kept at the sides for a label that reads outward from its node. */
 const LABEL_ROOM = 150;
 const TICKS = 320;
+/**
+ * A label's box in viewBox units. The face is IBM Plex Mono at 12: Chrome measures 7.2 per
+ * character, 12.3 above the baseline and 3.1 below. The box is taken a little larger, so a
+ * fallback monospace face does not bring two labels into contact either.
+ */
+const LABEL_CHAR = 7.4;
+const LABEL_ASCENT = 12.6;
+const LABEL_DESCENT = 3.4;
+/** From a circle's edge to its label, and the clearance kept around every label. */
+const LABEL_GAP = 7;
+const LABEL_PAD = 2;
 
 interface SimNode extends NeighborNode {
   x: number;
@@ -57,6 +68,93 @@ function classFor(node: NeighborNode): { fill: string; stroke: string } {
   if (node.kinds.includes('Fund')) return { fill: 'var(--accent)', stroke: 'var(--accent)' };
   if (node.kinds.includes('Issuer')) return { fill: 'transparent', stroke: 'var(--accent-line)' };
   return { fill: 'var(--neutral-bar)', stroke: 'var(--line-strong)' };
+}
+
+/** Where a label sits, relative to its node: the baseline start, middle or end point. */
+interface LabelSpot {
+  x: number;
+  y: number;
+  anchor: 'start' | 'middle' | 'end';
+}
+
+interface Box {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+function labelBox(node: SimNode, spot: LabelSpot, text: string): Box {
+  const width = text.length * LABEL_CHAR;
+  const shift = spot.anchor === 'start' ? 0 : spot.anchor === 'middle' ? width / 2 : width;
+  const left = node.x + spot.x - shift;
+  return {
+    left: left - LABEL_PAD,
+    right: left + width + LABEL_PAD,
+    top: node.y + spot.y - LABEL_ASCENT - LABEL_PAD,
+    bottom: node.y + spot.y + LABEL_DESCENT + LABEL_PAD,
+  };
+}
+
+const intersects = (a: Box, b: Box): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/**
+ * Places to try for a label, best first. A neighbour's label reads outward along its spoke,
+ * which keeps a hub and its ring of neighbours legible; when that spot is taken it moves level
+ * with the node, then above or below it, then to the side facing the centre.
+ */
+function spotsFor(node: SimNode, centre: { x: number; y: number }, radius: number, isCentre: boolean): LabelSpot[] {
+  const above: LabelSpot = { x: 0, y: -(radius + 3 + LABEL_DESCENT), anchor: 'middle' };
+  if (isCentre) return [{ x: 0, y: radius + 13, anchor: 'middle' }, above];
+  const dx = node.x - centre.x;
+  const dy = node.y - centre.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const reach = radius + LABEL_GAP;
+  const outward = dx >= 0 ? 1 : -1;
+  const below: LabelSpot = { x: 0, y: radius + 3 + LABEL_ASCENT, anchor: 'middle' };
+  return [
+    { x: (dx / length) * reach, y: (dy / length) * reach + 3, anchor: outward > 0 ? 'start' : 'end' },
+    { x: outward * reach, y: 4, anchor: outward > 0 ? 'start' : 'end' },
+    ...(dy >= 0 ? [below, above] : [above, below]),
+    { x: -outward * reach, y: 4, anchor: outward > 0 ? 'end' : 'start' },
+  ];
+}
+
+/**
+ * Picks a spot for each label in the order the nodes arrive (the centre, then lineage, then
+ * holders by value), taking the first that stays inside the view and clears every label placed
+ * so far and every other node. A label with no such spot is not drawn; the node keeps its full
+ * name in its accessible name and its tooltip, and Explorer's lists under the graph, one for the
+ * selected entity and one per expansion, name every node the graph draws. The centre's label is
+ * always drawn.
+ */
+function placeLabels(
+  nodes: SimNode[],
+  centreId: string,
+  centre: { x: number; y: number },
+): Map<string, LabelSpot & { text: string }> {
+  const circles = nodes.map((node) => {
+    const r = radiusFor(node, node.id === centreId) + 1;
+    return { id: node.id, box: { left: node.x - r, right: node.x + r, top: node.y - r, bottom: node.y + r } };
+  });
+  const placed: Box[] = [];
+  const spots = new Map<string, LabelSpot & { text: string }>();
+  for (const node of nodes) {
+    const isCentre = node.id === centreId;
+    const text = shorten(node.name);
+    const candidates = spotsFor(node, centre, radiusFor(node, isCentre), isCentre);
+    const spot = candidates.find((candidate) => {
+      const box = labelBox(node, candidate, text);
+      return box.left >= 0 && box.right <= WIDTH && box.top >= 0 && box.bottom <= HEIGHT
+        && !placed.some((other) => intersects(other, box))
+        && !circles.some((circle) => circle.id !== node.id && intersects(circle.box, box));
+    }) ?? (isCentre ? candidates[0] : undefined);
+    if (!spot) continue;
+    placed.push(labelBox(node, spot, text));
+    spots.set(node.id, { ...spot, text });
+  }
+  return spots;
 }
 
 interface Props {
@@ -98,10 +196,8 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
     }
     const at = new Map(nodes.map((node) => [node.id, node]));
     const centre = at.get(data.center) ?? { x: WIDTH / 2, y: HEIGHT / 2 };
-    return { nodes, links, at, centre };
+    return { nodes, links, at, labels: placeLabels(nodes, data.center, centre) };
   }, [data]);
-
-  const centre = layout.centre;
 
   return (
     <div className="canvas">
@@ -143,13 +239,7 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
           {layout.nodes.map((node) => {
             const isCentre = node.id === data.center;
             const colours = classFor(node);
-            const radius = radiusFor(node, isCentre);
-            // Labels sit on the spoke away from the centre, which keeps a hub and its ring
-            // of neighbours legible where centred labels would pile up on each other.
-            const dx = node.x - centre.x;
-            const dy = node.y - centre.y;
-            const length = Math.hypot(dx, dy) || 1;
-            const label = shorten(node.name);
+            const label = layout.labels.get(node.id);
             return (
               <g
                 key={node.id}
@@ -178,14 +268,11 @@ export function ForceGraph({ data, reduced, onExpand, expanded }: Props) {
                 {expanded.has(node.id) && !isCentre ? (
                   <circle r={radiusFor(node, false) + 4} fill="none" stroke="var(--accent-line)" strokeDasharray="2 2" />
                 ) : null}
-                <text
-                  className="node-label"
-                  x={isCentre ? 0 : (dx / length) * (radius + 7)}
-                  y={isCentre ? radius + 13 : (dy / length) * (radius + 7) + 3}
-                  textAnchor={isCentre ? 'middle' : (dx >= 0 ? 'start' : 'end')}
-                >
-                  {label}
-                </text>
+                {label ? (
+                  <text className="node-label" x={label.x} y={label.y} textAnchor={label.anchor}>
+                    {label.text}
+                  </text>
+                ) : null}
               </g>
             );
           })}

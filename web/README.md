@@ -77,7 +77,10 @@ at three hops. The lineage answers and the 26 of 72 pairs with exposure reproduc
 None of those figures is transcribed: `scripts/demo_queries.py` writes
 `src/data/demo-summary.json` during `make demo`, and the self check asserts that the
 dataset counts in the manifest equal the ones that run measured and that each of its
-dollar totals reproduces in the browser.
+dollar totals reproduces in the browser. It also parses the demo block the top-level README
+pastes, and the dataset and exposure figures quoted in the top-level README's browser demo
+paragraph, in the table and the paragraphs above, in `etl/sample/README.md` and in
+`ARCHITECTURE.md`, and fails if any of them differs from `demo-summary.json`.
 
 Milliseconds do not carry over and are not meant to. The README times a Spring Boot API
 talking to Fuseki over HTTP; this page times function calls over an in-memory store, so
@@ -88,17 +91,18 @@ the host and the timestamp of the run that produced it.
 
 ## Payload
 
-Measured by `npm run weight` on the committed slice at this commit: 843,746 B on disk and
-240,873 B gzipped, which is 824 KiB and 235 KiB, across one JS bundle, one stylesheet and
+Measured by `npm run weight` on the committed slice at this commit: 844,919 B on disk and
+241,422 B gzipped, which is 825 KiB and 236 KiB, across one JS bundle, one stylesheet and
 `index.html`. That run was Node 22.22.2 with zlib 1.3.1-e00f703, the Node major the CI job
 pins; Node 26.3.0 links the same zlib and prints the same total. The gzip figure is the one
-number here that depends on the toolchain rather than on the bundle: the same three files
-measure 243,343 B, 238 KiB, under Node 26.7.0 with zlib 1.2.12, which is 2,470 B more on
-identical input. The script prints the Node and zlib versions beside the total for that
-reason, and the bytes on disk were the same under every Node tested. Most of it is the
-slice, 572 KiB of JSON embedded in the bundle. The script fails above 1,100,000 B on disk
-or 300,000 B gzipped, so a payload that doubles is a failed check rather than a slower
-page, and both gzip figures stay under that ceiling.
+number here that depends on the toolchain rather than on the bundle: at 6c8c8aa, whose three
+files measured 240,873 B under that zlib, the same files measured 243,343 B, 238 KiB, under
+Node 26.7.0 with zlib 1.2.12, which is 2,470 B more on identical input. The script prints
+the Node and zlib versions beside the total for that reason, and the bytes on disk were the
+same under every Node tested. Most of it is the slice, 572 KiB of JSON embedded in the
+bundle. The script fails above 1,100,000 B on disk or 300,000 B gzipped, so a payload that
+doubles is a failed check rather than a slower page, and both gzip figures stay under that
+ceiling.
 
 Runtime dependencies are `react`, `react-dom` and `d3-force`. The built page makes four
 third-party requests across two hosts: one stylesheet from `fonts.googleapis.com`, which
