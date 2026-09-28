@@ -78,7 +78,9 @@ None of those figures is transcribed: `scripts/demo_queries.py` writes
 `src/data/demo-summary.json` during `make demo`, and the self check asserts that the
 dataset counts in the manifest equal the ones that run measured and that each of its
 dollar totals reproduces in the browser. It also parses the demo block the top-level README
-pastes and fails if any figure the block shares with `demo-summary.json` differs from it.
+pastes, and the dataset and exposure figures quoted in the top-level README's browser demo
+paragraph, in the table and the paragraphs above, in `etl/sample/README.md` and in
+`ARCHITECTURE.md`, and fails if any of them differs from `demo-summary.json`.
 
 Milliseconds do not carry over and are not meant to. The README times a Spring Boot API
 talking to Fuseki over HTTP; this page times function calls over an in-memory store, so
