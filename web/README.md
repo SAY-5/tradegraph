@@ -89,8 +89,8 @@ the host and the timestamp of the run that produced it.
 
 ## Payload
 
-Measured by `npm run weight` on the committed slice at this commit: 844,744 B on disk and
-241,333 B gzipped, which is 825 KiB and 236 KiB, across one JS bundle, one stylesheet and
+Measured by `npm run weight` on the committed slice at this commit: 844,919 B on disk and
+241,422 B gzipped, which is 825 KiB and 236 KiB, across one JS bundle, one stylesheet and
 `index.html`. That run was Node 22.22.2 with zlib 1.3.1-e00f703, the Node major the CI job
 pins; Node 26.3.0 links the same zlib and prints the same total. The gzip figure is the one
 number here that depends on the toolchain rather than on the bundle: at 6c8c8aa, whose three
