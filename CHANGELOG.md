@@ -3,6 +3,23 @@
 All notable changes to TradeGraph are recorded here. Versions follow semantic
 versioning and each one is tagged `vMAJOR.MINOR.PATCH`.
 
+## [5.1.2] - 2026-10-25
+
+Dependency refresh. An OSV scan of the lockfiles and the API's pom flagged 18
+packages with published advisories and flags none after it. Nothing changes
+outside the manifests, the lockfiles, the version numbers and the documentation.
+
+- The API's Spring Boot parent moves from 3.5.3 to 3.5.16, the newest 3.5 release, past GHSA-wwpq-f5c3-7hvx (fixed in 3.5.14). The advisory needs a local user on the same host to take over the `ApplicationTemp` directory, and the impact it describes runs through `server.servlet.session.persistent`, which the API does not set.
+- The ETL's certifi moves from 2026.7.22 to 2026.10.19 (GHSA-6q48-6c7w-9gw2), which drops the `emSign ECC Root CA - G3` root whose intermediates had compromised keys. httpx takes its CA bundle from certifi, so `--live` checks the SEC EDGAR certificate against the new bundle.
+- The explorer's Angular framework packages move together from 22.1.5 to 22.2.1, the first 22.x release clear of the three `@angular/router` advisories (GHSA-ff3f-86qr-9cv3, GHSA-62vg-58rm-qff7, GHSA-57xq-rjx2-v5xh). All three are denial of service in server side rendering; the explorer is a browser only build, and its source imports neither `@angular/router` nor `@angular/forms`.
+- `@angular/build` and `@angular/cli` move together from 22.1.7 to 22.2.3. The 22.1 tooling pinned piscina 5.2.0 (GHSA-67c8-pqhq-4rmx), `@modelcontextprotocol/sdk` 1.30.0 (GHSA-22jm-h49p-29qw, GHSA-46jr-4wx8-v453, GHSA-6prh-2h8m-c8cw, GHSA-6qxp-vccf-f47h, GHSA-rvq5-wwqv-78pq) and zod 4.4.3 (GHSA-mrhx-c7xc-m3w5) exactly. 22.2.3 pins piscina 5.3.2 and zod 4.6.6, and is the first CLI release whose zod pin is fixed; its MCP server is built on `@modelcontextprotocol/server` 2.3.1, so the SDK left the tree, and with it express, express-rate-limit and the four flagged packages they and the SDK pulled in: body-parser 2.3.0 (GHSA-27r3-jxmh-p828), proxy-addr 2.0.7 (GHSA-jqcg-44mw-7w3h), hono 4.13.7 (GHSA-5r4p-p66f-jhc7) and ip-address 10.7.0 (GHSA-h3mg-xc3c-68pw, GHSA-j6r3-76f7-8jcv, GHSA-rxp7-6hxx-x8q5).
+- Every `@angular/build` 22.2 release pins vite 8.3.0, which still carries the five advisories flagged on the explorer's vite 8.1.5 (GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-9jrq-w75r-8gcw, GHSA-rq7h-c2jc-7f22) and adds GHSA-vfpm-58rq-9qcg, so `explorer/package.json` overrides vite to 8.3.3. All six concern the development server, two of them only on Windows.
+- vitest and `@vitest/mocker` move from 4.1.11 to 4.1.12 (GHSA-qxg6-89mg-rqv8, GHSA-xp26-3454-mjgp), brace-expansion from 5.0.9 to 5.0.12 (GHSA-6j4f-fj2g-mc7p, GHSA-qhr7-859c-m2p7, GHSA-q2hr-2g5m-vwhr), fast-uri from 3.1.7 to 3.1.9 (GHSA-333x-w4r6-6crp, GHSA-hrr3-gc8f-f4qj, GHSA-w74x-v6f9-j3xg, GHSA-wjr9-j795-jxcr, GHSA-xhq7-xmqj-769h), source-map-js from 1.2.1 to 1.2.2 (GHSA-68fv-2mgg-jv7q) and undici from 7.29.1 to 7.30.1 (GHSA-4qv8-2p9j-2685, GHSA-f72v-6w45-q472, GHSA-xjj6-f33q-929c), each inside the range its dependents declare.
+- Of the fourteen flagged explorer packages only `@angular/router` and zod are in the production dependency tree, zod through `@angular/forms`. The other twelve belong to the Angular CLI and build, vitest and jsdom, which the application code does not import; the explorer image serves only what `ng build` writes to `dist/explorer/browser`.
+- The web demo's vite moves from 6.4.3 to 6.4.4, past the same five development server advisories, and source-map-js from 1.2.1 to 1.2.2; both are development dependencies of the static build.
+- `explorer/package-lock.json` records the package's own name and version, `tradegraph-explorer` 5.1.2, where it read `explorer` 0.0.0.
+- Tests: 47 ETL pytest, 60 API unit and 34 Testcontainers integration, 9 explorer specs, 135 browser demo self check assertions.
+
 ## [5.1.1] - 2026-09-28
 
 Browser demo fixes. Nothing outside `web/` changes apart from the version

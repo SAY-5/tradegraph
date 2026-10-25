@@ -269,6 +269,7 @@ Tagged releases, newest last. `CHANGELOG.md` has the detail.
 | [v5.0.0](https://github.com/SAY-5/tradegraph/releases/tag/v5.0.0) | 2026-09-10 | Operations: `/ops/overview`, query cost guard, Micrometer timers, Fuseki inference profile |
 | [v5.1.0](https://github.com/SAY-5/tradegraph/releases/tag/v5.1.0) | 2026-09-26 | Correctness and provenance: neighbour row ordering, bounded `/exposure/concentration`, cost guard at template load, measured figures on the demo page, `web` CI job |
 | [v5.1.1](https://github.com/SAY-5/tradegraph/releases/tag/v5.1.1) | 2026-09-28 | Browser demo fixes: graph labels placed clear of each other, a neighbour list per expansion, the README demo block checked against its summary |
+| [v5.1.2](https://github.com/SAY-5/tradegraph/releases/tag/v5.1.2) | 2026-10-25 | Dependency refresh past published advisories: Spring Boot 3.5.16, certifi 2026.10.19, Angular 22.2, vite 8.3.3 and 6.4.4 |
 
 ## License
 
